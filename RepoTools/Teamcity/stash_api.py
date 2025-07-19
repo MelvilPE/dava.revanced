@@ -26,7 +26,7 @@ class StashRequest:
             return response
 
         except:
-            print "Unexpected error:", sys.exc_info()[0]
+            print("Unexpected error:", sys.exc_info()[0])
             raise
 
     def get_pull_requests_info(self, pull_requests ):
@@ -57,7 +57,7 @@ class StashRequest:
                                      headers={'Content-Type': 'application/json'}, data=json.dumps( build_status_dict ) )
 
         except Exception as e:
-            print "Unexpected error:", e
+            print("Unexpected error:", e)
             raise
 
 

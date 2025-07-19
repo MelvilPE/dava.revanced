@@ -21,7 +21,7 @@ def check_format(file):
     stdout, stderr = proc.communicate()
     if stdout.find("<replacement ") > -1:
         errorMsg = "##teamcity[message text=\'" + "%s not formatted" % file + "\' errorDetails=\'\' status=\'" + "ERROR" + "\']\n"
-        print errorMsg
+        print(errorMsg)
 
 def format(file):
     proc = subprocess.Popen([cwd+'/'+execName, '-i', '--style=file', file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)

@@ -1,52 +1,52 @@
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
-#include "Base/Platform.h"
 #include "Base/Exception.h"
+#include "Base/Platform.h"
 #include "Debug/Backtrace.h"
 
+#include "Concurrency/LockGuard.h"
+#include "Debug/DVAssert.h"
 #include "FileSystem/FileAPIHelper.h"
+#include "FileSystem/FileList.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileSystemDelegate.h"
-#include "FileSystem/FileList.h"
-#include "FileSystem/YamlNode.h"
-#include "Debug/DVAssert.h"
-#include "Utils/Utils.h"
-#include "Logger/Logger.h"
 #include "FileSystem/ResourceArchive.h"
-#include "Concurrency/LockGuard.h"
+#include "FileSystem/YamlNode.h"
+#include "Logger/Logger.h"
+#include "Utils/Utils.h"
 
 #include "Engine/Private/EngineBackend.h"
 
 #if defined(__DAVAENGINE_MACOS__)
-#include <copyfile.h>
-#include <libproc.h>
-#include <libgen.h>
-#include <unistd.h>
 #include <CoreServices/CoreServices.h>
+#include <copyfile.h>
+#include <libgen.h>
+#include <libproc.h>
+#include <unistd.h>
 #elif defined(__DAVAENGINE_IPHONE__)
 #include <copyfile.h>
 #include <libgen.h>
 #include <sys/sysctl.h>
 #include <unistd.h>
 #elif defined(__DAVAENGINE_WINDOWS__)
+#include <Shlobj.h>
 #include <direct.h>
 #include <io.h>
-#include <Shlobj.h>
-#include <tchar.h>
 #include <process.h>
+#include <tchar.h>
 #if defined(__DAVAENGINE_WIN_UAP__)
 #include "Platform/DeviceInfo.h"
 #endif
 #elif defined(__DAVAENGINE_ANDROID__)
-#include "Engine/Private/Android/AssetsManagerAndroid.h"
 #include "Engine/Private/Android/AndroidBridge.h"
+#include "Engine/Private/Android/AssetsManagerAndroid.h"
 #include <unistd.h>
 #elif defined(__DAVAENGINE_LINUX__)
-#include <sys/types.h>
 #include <pwd.h>
+#include <sys/types.h>
 #include <unistd.h>
-#endif //PLATFORMS
+#endif // PLATFORMS
 
 namespace DAVA
 {
@@ -87,13 +87,13 @@ FileSystem::eCreateDirectoryResult FileSystem::CreateDirectory(const FilePath& f
             tokens[0] = path.substr(0, pos) + tokens[0];
         }
     }
-#else //#if defined (__DAVAENGINE_WINDOWS__)
+#else // #if defined (__DAVAENGINE_WINDOWS__)
     String::size_type find = path.find(":");
     if (find == String::npos)
     {
         dir = "/";
     }
-#endif //#if defined (__DAVAENGINE_WINDOWS__)
+#endif // #if defined (__DAVAENGINE_WINDOWS__)
 
     for (size_t k = 0; k < tokens.size(); ++k)
     {
@@ -122,7 +122,7 @@ FileSystem::eCreateDirectoryResult FileSystem::CreateExactDirectory(const FilePa
 #elif defined(__DAVAENGINE_POSIX__)
     int res = mkdir(filePath.GetAbsolutePathname().c_str(), 0777);
     return (res == 0) ? (DIRECTORY_CREATED) : (DIRECTORY_CANT_CREATE);
-#endif //PLATFORMS
+#endif // PLATFORMS
 }
 
 bool FileSystem::CopyFile(const FilePath& existingFile, const FilePath& newFile, bool overwriteExisting /* = false */)
@@ -141,10 +141,9 @@ bool FileSystem::CopyFile(const FilePath& existingFile, const FilePath& newFile,
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
-    COPYFILE2_EXTENDED_PARAMETERS params =
-    {
-      /* dwSize */ sizeof(COPYFILE2_EXTENDED_PARAMETERS),
-      /* dwCopyFlags */ overwriteExisting ? DWORD(0) : COPY_FILE_FAIL_IF_EXISTS
+    COPYFILE2_EXTENDED_PARAMETERS params = {
+        /* dwSize */ sizeof(COPYFILE2_EXTENDED_PARAMETERS),
+        /* dwCopyFlags */ overwriteExisting ? DWORD(0) : COPY_FILE_FAIL_IF_EXISTS
     };
     return ::CopyFile2(existingFilePath.c_str(), newFilePath.c_str(), &params) == S_OK;
 
@@ -196,10 +195,10 @@ bool FileSystem::CopyFile(const FilePath& existingFile, const FilePath& newFile,
 
     return copied;
 
-#else //iphone & macos
+#else // iphone & macos
     int ret = copyfile(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), NULL, overwriteExisting ? COPYFILE_ALL : COPYFILE_ALL | COPYFILE_EXCL);
     return ret == 0;
-#endif //PLATFORMS
+#endif // PLATFORMS
 }
 
 bool FileSystem::MoveFile(const FilePath& existingFile, const FilePath& newFile, bool overwriteExisting /* = false*/)
@@ -335,7 +334,7 @@ bool FileSystem::DeleteDirectory(const FilePath& path, bool isRecursive)
 #elif defined(__DAVAENGINE_POSIX__)
     int32 res = rmdir(path.GetAbsolutePathname().c_str());
     return (res == 0);
-#endif //PLATFORMS
+#endif // PLATFORMS
 }
 
 uint32 FileSystem::DeleteDirectoryFiles(const FilePath& path, bool isRecursive)
@@ -391,6 +390,33 @@ Vector<FilePath> FileSystem::EnumerateFilesInDirectory(const FilePath& path, boo
         else
         {
             result.push_back(fileList->GetPathname(i));
+        }
+    }
+
+    return result;
+}
+
+Vector<FilePath> FileSystem::EnumerateDirectoriesInDirectory(const FilePath& path, bool isRecursive)
+{
+    ScopedPtr<FileList> fileList(new FileList(path));
+    Vector<FilePath> result;
+
+    for (uint32 i = 0; i < fileList->GetCount(); ++i)
+    {
+        if (fileList->IsNavigationDirectory(i) || !fileList->IsDirectory(i))
+        {
+            continue;
+        }
+        else
+        {
+            FilePath dirPath = fileList->GetPathname(i);
+            result.push_back(dirPath);
+
+            if (isRecursive)
+            {
+                Vector<FilePath> subDirList = EnumerateDirectoriesInDirectory(dirPath, true);
+                std::move(subDirList.begin(), subDirList.end(), std::back_inserter(result));
+            }
         }
     }
 
@@ -487,7 +513,7 @@ FilePath FileSystem::GetCurrentWorkingDirectory()
     getcwd(tempDir.data(), PATH_MAX);
     currentWorkingDirectory = FilePath(tempDir.data());
 
-#endif //PLATFORMS
+#endif // PLATFORMS
 
     return currentWorkingDirectory.MakeDirectoryPathname();
 }
@@ -510,7 +536,7 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
     // dava.engine's internals can invoke GetCurrentExecutableDirectory before Engine instance is created
     const String& str = Private::EngineBackend::Instance()->GetCommandLine().at(0);
     currentExecuteDirectory = FilePath(str).GetDirectory();
-#endif //PLATFORMS
+#endif // PLATFORMS
 
     return currentExecuteDirectory.MakeDirectoryPathname();
 }
@@ -519,14 +545,13 @@ FilePath FileSystem::GetPluginDirectory()
 {
     FilePath currentExecuteDirectory = GetCurrentExecutableDirectory();
 
-
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     FilePath pluginDirectory = currentExecuteDirectory + "../PlugIns/";
 
 #else
     FilePath pluginDirectory = currentExecuteDirectory + "PlugIns/";
 
-#endif //PLATFORMS
+#endif // PLATFORMS
 
     return pluginDirectory;
 }
@@ -541,7 +566,7 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath& newWorkingDirectory)
     return (res != 0);
 #elif defined(__DAVAENGINE_POSIX__)
     return (chdir(newWorkingDirectory.GetAbsolutePathname().c_str()) == 0);
-#elif //PLATFORMS
+#elif // PLATFORMS
 #error "Unknown platform"
 #endif
 }
@@ -802,7 +827,7 @@ const FilePath FileSystem::GetUserDocumentsPath()
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
-    //take local folder as user documents folder
+    // take local folder as user documents folder
     using ::Windows::Storage::ApplicationData;
 
     WideString roamingFolder = ApplicationData::Current->LocalFolder->Path->Data();
@@ -828,7 +853,7 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
-    //take the first removable storage as public documents folder
+    // take the first removable storage as public documents folder
     List<DeviceInfo::StorageInfo> storageList = DeviceInfo::GetStoragesList();
     for (const auto& x : storageList)
     {
@@ -859,9 +884,7 @@ const FilePath FileSystem::GetUserDocumentsPath()
     // TODO: linux
 
     // Return HOME directory
-    struct passwd pwd
-    {
-    };
+    struct passwd pwd{};
     struct passwd* result = nullptr;
 
     size_t bufsize = static_cast<size_t>(sysconf(_SC_GETPW_R_SIZE_MAX));
@@ -994,18 +1017,18 @@ int32 FileSystem::Spawn(const String& command)
 #elif defined(__DAVAENGINE_WINDOWS__)
 
     /* std::system calls "start" command from Windows command line
-	Start help:
-	Starts a separate window to run a specified program or command.
+    Start help:
+    Starts a separate window to run a specified program or command.
 
-	START ["title"] [/D path] [/I] [/MIN] [/MAX] [/SEPARATE | /SHARED]
-	[/LOW | /NORMAL | /HIGH | /REALTIME | /ABOVENORMAL | /BELOWNORMAL]
-	[/NODE <NUMA node>] [/AFFINITY <hex affinity mask>] [/WAIT] [/B]
-	[command/program] [parameters]
+    START ["title"] [/D path] [/I] [/MIN] [/MAX] [/SEPARATE | /SHARED]
+    [/LOW | /NORMAL | /HIGH | /REALTIME | /ABOVENORMAL | /BELOWNORMAL]
+    [/NODE <NUMA node>] [/AFFINITY <hex affinity mask>] [/WAIT] [/B]
+    [command/program] [parameters]
 
-	If we use "" for path to executable, start resolves it as title. So we need to specify call of start
-	http://stackoverflow.com/questions/5681055/how-do-i-start-a-windows-program-with-spaces-in-the-path-from-perl
+    If we use "" for path to executable, start resolves it as title. So we need to specify call of start
+    http://stackoverflow.com/questions/5681055/how-do-i-start-a-windows-program-with-spaces-in-the-path-from-perl
 
-	*/
+    */
 
     String startString = "start \"\" /WAIT " + command;
     retCode = ::system(startString.c_str());
@@ -1248,4 +1271,4 @@ FileSystemDelegate* FileSystem::GetDelegate() const
 {
     return fsDelegate;
 }
-}
+} // namespace DAVA

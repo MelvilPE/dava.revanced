@@ -32,7 +32,7 @@ class Preparation:
                             self.white_list.add(path)
 
         except IOError:
-            print "##teamcity[message text='Unable to open file white_list.txt' status='ERROR']"
+            print("##teamcity[message text='Unable to open file white_list.txt' status='ERROR']")
             sys.exit(3)
 
     def execute_cmd(self, cmd):
@@ -44,7 +44,7 @@ class Preparation:
             sys.stdout.write(cmd_log)
             sys.stdout.flush()
         except subprocess.CalledProcessError as cmd_except:
-            print "##teamcity[message text='CMD Error' errorDetails='CMD: {cmd} ERROR: {error}' status='ERROR']".format(cmd=cmd, error=cmd_except.output)
+            print("##teamcity[message text='CMD Error' errorDetails='CMD: {cmd} ERROR: {error}' status='ERROR']".format(cmd=cmd, error=cmd_except.output))
             sys.exit(3)
 
     def do(self):

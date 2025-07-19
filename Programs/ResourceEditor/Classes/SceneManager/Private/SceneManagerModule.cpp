@@ -6,6 +6,7 @@
 #include "Classes/Qt/TextureBrowser/TextureBrowser.h"
 #include "Classes/Qt/TextureBrowser/TextureCache.h"
 #include "Classes/Qt/Tools/ExportSceneDialog/ExportSceneDialog.h"
+#include "Classes/Qt/Plugins/PythonPluginsSingleton.h"
 
 #include <REPlatform/Commands/Private/RECommandStack.h>
 #include <REPlatform/Commands/TilemaskEditorCommands.h>
@@ -889,6 +890,9 @@ void SceneManagerModule::OpenSceneByPath(const DAVA::FilePath& scenePath)
 
     CreateSceneProperties(sceneDataPtr);
     scene->LoadSystemsLocalProperties(sceneDataPtr->GetPropertiesRoot(), accessor);
+
+    PythonPluginsSingleton* instance = PythonPluginsSingleton::GetInstance();
+    instance->SetLastLoadedScenePath(scenePath.GetAbsolutePathname());
 }
 
 void SceneManagerModule::AddSceneByPath(const DAVA::FilePath& scenePath)
@@ -941,6 +945,9 @@ void SceneManagerModule::SaveScene(bool saveAs)
     {
         CreateSceneProperties(data);
     }
+
+    PythonPluginsSingleton* instance = PythonPluginsSingleton::GetInstance();
+    instance->SetLastSavedScenePath(saveAsPath.GetAbsolutePathname());
 }
 
 void SceneManagerModule::SaveScene()

@@ -8,7 +8,7 @@ from PIL import Image, ImageChops
 
 
 def call(*arg): 
-	print "subprocess.call " + "[%s]" % ", ".join(map(str, arg))
+	print("subprocess.call " + "[%s]" % ", ".join(map(str, arg)))
 	subprocess.call(arg)
 	
 def zip(src, dst):
@@ -56,7 +56,7 @@ def compare_img(expected, actual):
 	else:
 		for i in xrange(0, len(data1)):
 			difpic += compare_pixel(data1[i], data2[i])
-		print "Different pixels: %d/%d" % (difpic, len(data1))
+		print("Different pixels: %d/%d" % (difpic, len(data1)))
 		return float(difpic) / len(data1)
 		
 def save_diff(expected, actual):

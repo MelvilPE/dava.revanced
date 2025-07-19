@@ -20,7 +20,7 @@ def build( program ):
 
     os.chdir(program_dir)
 
-    print "===== Building % s =====" % (program)
+    print("===== Building % s =====" % (program))
     
     command = '{}:assembleFatRelease'.format(program);
     bat_file = ''  # empty on UNIX platforms

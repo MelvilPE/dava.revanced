@@ -12,6 +12,6 @@ for rootdir, dirs, files in os.walk( args.path_to_strip ):
     for file in files:   
         if file.endswith( '.so' ):
             full_file = rootdir + '/' + file
-            print 'Strip ' + full_file
+            print('Strip ' + full_file)
             call_string = [args.strip_program, '--strip-unneeded', full_file]
             subprocess.check_output(call_string)

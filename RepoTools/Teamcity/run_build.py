@@ -47,7 +47,7 @@ def main():
 
     run_build_result = teamcity.run_build( args.configuration_name, args.branch, properties, triggering_options, agent_id )
 
-    print run_build_result
+    print(run_build_result)
 
 if __name__ == '__main__':
     main()

@@ -25,12 +25,12 @@ def process_files(arg, dirname, names):
         filesCount += 1;
   
 if len(sys.argv) < 2:
-    print "Usage : createPackageInfo.py <deploy app folder>"
+    print("Usage : createPackageInfo.py <deploy app folder>")
     exit()
     
     
 deployDir = sys.argv[1]
-print "creating info list";
+print("creating info list";)
 changesFile = io.open(os.path.join(deployDir, "Launcher.packageInfo"), 'w', newline='')
 os.path.walk(deployDir, process_files, None);
 

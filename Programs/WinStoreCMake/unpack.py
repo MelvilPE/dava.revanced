@@ -2,7 +2,7 @@ import sys
 import zipfile
 
 if len(sys.argv) < 2:
-    print 'Usage: Please enter path to zip-file and output folder'
+    print('Usage: Please enter path to zip-file and output folder')
     exit(1)
 
 zipName = sys.argv[1]

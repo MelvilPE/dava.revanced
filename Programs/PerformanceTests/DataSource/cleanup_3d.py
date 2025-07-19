@@ -16,5 +16,5 @@ import shutil;
 currentDir = os.getcwd(); 
 dataDir =  os.path.realpath(currentDir + "/../Data/3d/")
 if os.path.exists(dataDir):    
-    print "delete " + dataDir
+    print("delete " + dataDir)
     shutil.rmtree(dataDir)

@@ -7,6 +7,8 @@
 #include <TArc/Utils/QtConnections.h>
 #include <TArc/Utils/QtDelayedExecutor.h>
 
+#include "Classes/Qt/Plugins/PythonPluginsSingleton.h"
+
 namespace DAVA
 {
 class ProjectManagerData;

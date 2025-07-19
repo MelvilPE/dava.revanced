@@ -18,7 +18,7 @@ for i, line in enumerate(lines):
     for match in re.finditer(pattern, line):
         lines[i] = define_engine + '"{0}"\n'.format( version_framework )
 
-print 'changed to version {0}'.format( version_framework )
+print('changed to version {0}'.format( version_framework ))
 
 f_version.seek(0)
 f_version.truncate()

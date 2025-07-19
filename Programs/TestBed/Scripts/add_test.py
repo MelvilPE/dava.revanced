@@ -28,10 +28,10 @@ def checkTest(className):
     cpp_write = "Sources/Tests/"+className+".cpp"
 
     if os.path.exists(h_write):
-        print "Header with name %s already exists!" % h_write
+        print("Header with name %s already exists!" % h_write)
         return True
     if os.path.exists(cpp_write):
-        print "Source with name %s already exists!" % cpp_write
+        print("Source with name %s already exists!" % cpp_write)
         return False
 
     return True
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     """Stand-alone run"""
 
     if len(sys.argv) != 2:
-        print """usage: add_test.py TestClassName"""
+        print("""usage: add_test.py TestClassName""")
         quit()
 
     test_class_name = sys.argv[1]
@@ -76,5 +76,5 @@ if __name__ == "__main__":
     createHeader(test_class_name)
     createSource(test_class_name)
     updateTestBed(test_class_name)
-    print "Complete"
+    print("Complete")
 

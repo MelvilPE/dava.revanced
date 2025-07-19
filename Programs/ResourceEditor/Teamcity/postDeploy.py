@@ -5,14 +5,14 @@ from shutil import copytree, rmtree, ignore_patterns, copyfile
 
 
 def CopyFolder(srcFolder, dstFolder):
-    print "Copy folder " + srcFolder + " to " + dstFolder
+    print("Copy folder " + srcFolder + " to " + dstFolder)
 
     IGNORE_PATTERNS = ('.svn')
     copytree(srcFolder, dstFolder, symlinks=False, ignore=ignore_patterns(IGNORE_PATTERNS))
 
 def main():
     if len(sys.argv) < 2:
-        print "Usage : postDeploy.py <deploy_root_folder> [beast_lib_folder]"
+        print("Usage : postDeploy.py <deploy_root_folder> [beast_lib_folder]")
         exit()
 
     deployRoot = sys.argv[1]
@@ -26,8 +26,8 @@ def main():
         beastFolderPath = sys.argv[2].rstrip("\\/")
         beastDstPath = os.path.join(deployRoot, 'Data.beast')
 
-        print "Beast Path: " + beastFolderPath
-        print "DST Path: " + beastDstPath
+        print("Beast Path: " + beastFolderPath)
+        print("DST Path: " + beastDstPath)
 
         if os.path.exists(beastDstPath):
             rmtree(beastDstPath)
@@ -44,7 +44,7 @@ def main():
             srcFile = srcBinFolder + binaryFile
             dstFile = dstBinFolder + binaryFile
 
-            print "Copy file " + srcFile + " to " + dstFile
+            print("Copy file " + srcFile + " to " + dstFile)
 
             copyfile(srcFile, dstFile)
 

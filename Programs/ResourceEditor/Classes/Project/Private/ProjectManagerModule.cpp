@@ -2,6 +2,7 @@
 #include "Classes/Application/FileSystemData.h"
 #include "Classes/Qt/MaterialEditor/MaterialEditor.h"
 #include "Classes/Qt/TextureBrowser/TextureBrowser.h"
+#include "Classes/Qt/Plugins/PythonPluginsSingleton.h"
 
 #include <REPlatform/Scene/SceneEditor2.h>
 #include <REPlatform/DataNodes/SceneData.h>
@@ -246,6 +247,9 @@ void ProjectManagerModule::OpenProjectByPath(const DAVA::FilePath& incomePath)
             }
         }
     }
+
+    PythonPluginsSingleton* instance = PythonPluginsSingleton::GetInstance();
+    instance->SetOpenProjectPath(incomePath.GetAbsolutePathname());
 }
 
 void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)

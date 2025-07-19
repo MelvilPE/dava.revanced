@@ -111,8 +111,8 @@ if args['platform'] == "ios":
     else:
         buildPath = "../_build/Debug-iphoneos/"
 
-print "Build params : " + BUILD_PARAMS 
-print "Performance tests command line params : " + TEST_PARAMS
+print("Build params : " + BUILD_PARAMS)
+print("Performance tests command line params : " + TEST_PARAMS)
 
 if args['platform'] == "android":
     start_on_android = True

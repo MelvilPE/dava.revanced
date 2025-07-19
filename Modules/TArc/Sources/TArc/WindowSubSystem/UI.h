@@ -1,19 +1,19 @@
 #pragma once
 
-#include "TArc/DataProcessing/DataWrapper.h"
 #include "TArc/DataProcessing/Common.h"
+#include "TArc/DataProcessing/DataWrapper.h"
 #include "TArc/Qt/QtString.h"
 
-#include <Functional/Function.h>
-#include <Base/Result.h>
-#include <Base/FastName.h>
 #include <Base/Any.h>
+#include <Base/FastName.h>
+#include <Base/Result.h>
+#include <Functional/Function.h>
 
-#include <Qt>
-#include <QUrl>
-#include <QFlags>
 #include <QFileDialog>
+#include <QFlags>
 #include <QPointer>
+#include <QUrl>
+#include <Qt>
 
 class QWidget;
 class QAction;
@@ -47,7 +47,7 @@ extern const WindowKey mainWindowKey;
         CreateMenuPoint(MenuItems::menuEdit); // recommended
         CreateMenuPoint("Edit");              // not recommended
     /endcode
-    
+
 */
 namespace MenuItems
 {
@@ -56,7 +56,8 @@ extern const QString menuEdit;
 extern const QString menuView;
 extern const QString menuHelp;
 extern const QString menuFind;
-}
+extern const QString menuPlugins;
+} // namespace MenuItems
 
 class ActionPlacementInfo
 {
@@ -75,7 +76,7 @@ struct DockPanelInfo
 {
     DockPanelInfo();
     QString title;
-    //path where action for change dock visibility will be placed
+    // path where action for change dock visibility will be placed
     ActionPlacementInfo actionPlacementInfo;
     bool tabbed = true;
     bool ensureVisible = false; // force make panel visible in its dock area on create
@@ -277,4 +278,4 @@ struct hash<DAVA::WindowKey>
         return hasher(k.GetAppID());
     }
 };
-}
+} // namespace std

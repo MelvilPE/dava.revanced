@@ -21,22 +21,22 @@ class PlatformValues:
     qeBinaryPathname = ""
 
     def dump(self):
-        print ["Dump values: "]
-        print ["frameworkPath: ", self.frameworkPath]
-        print ["toolsetPath: ", self.toolsetPath]
-        print ["toolsetBuildPath: ", self.toolsetBuildPath]
-        print ["toolsetBinaryPath: ", self.toolsetBinaryPath]
-        print ["cmakeGenerator: ", self.cmakeGenerator]
-        print ["cmakePath: ", self.cmakePath]
-        print ["cmakeConfiguration: ", self.cmakeConfiguration]
+        print(["Dump values: "])
+        print(["frameworkPath: ", self.frameworkPath])
+        print(["toolsetPath: ", self.toolsetPath])
+        print(["toolsetBuildPath: ", self.toolsetBuildPath])
+        print(["toolsetBinaryPath: ", self.toolsetBinaryPath])
+        print(["cmakeGenerator: ", self.cmakeGenerator])
+        print(["cmakePath: ", self.cmakePath])
+        print(["cmakeConfiguration: ", self.cmakeConfiguration])
 
-        print ["reBinaryPathname: ", self.reBinaryPathname]
-        print ["qeBinaryPathname: ", self.qeBinaryPathname]
+        print(["reBinaryPathname: ", self.reBinaryPathname])
+        print(["qeBinaryPathname: ", self.qeBinaryPathname])
 
 
 def get_platform():
     platformName = platform.system()
-    print ["platformName: ", platformName]
+    print(["platformName: ", platformName])
 
     windowsNames = ["win32", "Windows"]
     if platformName == "Darwin":
@@ -75,14 +75,14 @@ def create_toolset(values = PlatformValues):
     commandLine = [values.cmakePath, "-G", values.cmakeGenerator, values.toolsetPath, "-DUNITY_BUILD=true",
                        "-B" + values.toolsetBuildPath, "-DDEPLOY=true", "-DONLY_CONTENT_TOOLS=true",
                        "-DDEPLOY_DIR=" + values.toolsetBinaryPath]
-    print "create_toolset: ", commandLine
+    print("create_toolset: ", commandLine)
     sys.stdout.flush()
     subprocess.call(commandLine)
 
 
 def build_toolset(values = PlatformValues):
     commandLine = ["cmake", "--build", values.toolsetBuildPath, "--config", values.cmakeConfiguration]
-    print "build_toolset: ", commandLine
+    print("build_toolset: ", commandLine)
     sys.stdout.flush()
     subprocess.call(commandLine)
 
@@ -101,7 +101,7 @@ if __name__ == '__main__':
     parser.add_argument('--no-test', dest='selfTest', action='store_false')
     parser.set_defaults(selfTest=False)
     args = parser.parse_args()
-    print args
+    print(args)
 
     platform = get_platform()
     values = PlatformValues()
@@ -116,7 +116,7 @@ if __name__ == '__main__':
     elif platform == "Mac":
         values = get_mac_values(values)
     else:
-        print "Error: Cannot detect platform"
+        print("Error: Cannot detect platform")
         exit()
 
     values.dump()
@@ -131,14 +131,14 @@ if __name__ == '__main__':
         build_toolset(values)
 
     if args.selfTest:
-        print "Run Tests:"
+        print("Run Tests:")
         commandLineRE = [values.reBinaryPathname, "--selftest"]
-        print commandLineRE
+        print(commandLineRE)
         sys.stdout.flush()
         subprocess.call(commandLineRE)
 
         commandLineQE = [values.reBinaryPathname, "--selftest"]
-        print commandLineQE
+        print(commandLineQE)
         sys.stdout.flush()
         subprocess.call(commandLineQE)
 

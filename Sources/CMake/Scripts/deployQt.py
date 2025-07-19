@@ -39,11 +39,11 @@ if options.platform == "MAC":
         for file in files:
             pathFileProcessed =  os.path.join(rootdir,  file  )
             os.rename( pathFileProcessed, pathFileExecute )
-            print 'Qt deploy - ', file
+            print('Qt deploy - ', file)
             sys.stdout.flush()
             process = Popen(deployUtilName + " " + options.deployArgs, shell=True, stdout=PIPE)
             for line in process.stdout:
-                print line
+                print(line)
             os.rename( pathFileExecute, pathFileProcessed )
     os.rename( pathFileExecuteTmp, pathFileExecute )
 else:
@@ -53,12 +53,12 @@ else:
         targetsList = options.targetsList.split(';')
 
     for target in targetsList:
-        print 'Qt deploy - ', target
+        print('Qt deploy - ', target)
         sys.stdout.flush()
         pathFileExecute = os.path.join( options.deployRoot, '{0}.exe'.format( target ) )
         pathFileExecute = os.path.realpath( pathFileExecute )
         deployArgs = options.deployArgs + ' {0}'.format( pathFileExecute )
         process = Popen(deployUtilName + " " + deployArgs, shell=True, stdout=PIPE)
-        print deployArgs
+        print(deployArgs)
 
 os.chdir(prevCurrentDir)

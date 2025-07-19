@@ -437,7 +437,7 @@ parser.add_option('--distrib-subdir', dest='distribsubdir',
 (options, args) = parser.parse_args()
 
 if options.downloaddir is None:
-  print "The --download-dir option is required."
+  print("The --download-dir option is required.")
   parser.print_help(sys.stderr)
   sys.exit()
 
@@ -451,7 +451,7 @@ if (options.nochromiumupdate and options.forceupdate) or \
    (options.nocefupdate and options.forceupdate) or \
    (options.nobuild and options.forcebuild) or \
    (options.nodistrib and options.forcedistrib):
-  print "Invalid combination of options."
+  print("Invalid combination of options.")
   parser.print_help(sys.stderr)
   sys.exit()
 
@@ -459,13 +459,13 @@ if (options.noreleasebuild and \
      (options.minimaldistrib or options.minimaldistribonly or \
       options.clientdistrib or options.clientdistribonly)) or \
    (options.minimaldistribonly and options.clientdistribonly):
-  print 'Invalid combination of options.'
+  print('Invalid combination of options.')
   parser.print_help(sys.stderr)
   sys.exit()
 
 if (options.clientdistrib or options.clientdistribonly) and \
    options.buildtarget.find('cefclient') == -1:
-  print "A client distribution cannot be generated if --build-target "+\
+  print("A client distribution cannot be generated if --build-target "+\)
         "excludes cefclient."
   parser.print_help(sys.stderr)
   sys.exit()
@@ -474,7 +474,7 @@ if (options.clientdistrib or options.clientdistribonly) and \
 if options.dryrun and options.dryrunplatform is not None:
   platform = options.dryrunplatform
   if not platform in ['windows', 'macosx', 'linux']:
-    print 'Invalid dry-run-platform value: %s' % (platform)
+    print('Invalid dry-run-platform value: %s' % (platform))
     sys.exit()
 elif sys.platform == 'win32':
   platform = 'windows'
@@ -483,7 +483,7 @@ elif sys.platform == 'darwin':
 elif sys.platform.startswith('linux'):
   platform = 'linux'
 else:
-  print 'Unknown operating system platform'
+  print('Unknown operating system platform')
   sys.exit()
 
 # Script extension.
@@ -493,20 +493,20 @@ else:
   script_ext = '.sh'
 
 if options.x64build and platform != 'windows' and platform != 'macosx':
-  print 'The x64 build option is only used on Windows and Mac OS X.'
+  print('The x64 build option is only used on Windows and Mac OS X.')
   sys.exit()
 
 if platform == 'windows' and not 'GYP_MSVS_VERSION' in os.environ.keys():
-  print 'You must set the GYP_MSVS_VERSION environment variable on Windows.'
+  print('You must set the GYP_MSVS_VERSION environment variable on Windows.')
   sys.exit()
 
 # CEF branch.
 if options.branch != 'trunk' and not options.branch.isdigit():
-  print 'Invalid branch value: %s' % (options.branch)
+  print('Invalid branch value: %s' % (options.branch))
 cef_branch = options.branch
 
 if cef_branch != 'trunk' and int(cef_branch) <= 1453:
-  print 'The requested branch is too old to build using this tool'
+  print('The requested branch is too old to build using this tool')
   sys.exit()
 
 # True if the requested branch is 2272 or newer.
@@ -523,7 +523,7 @@ else:
   deps_file = '.DEPS.git'
 
 if platform == 'macosx' and not options.x64build and branch_is_2272_or_newer:
-  print '32-bit Mac OS X builds are no longer supported with 2272 branch and '+\
+  print('32-bit Mac OS X builds are no longer supported with 2272 branch and '+\)
         'newer. Add --x64-build flag to generate a 64-bit build.'
   sys.exit()
 

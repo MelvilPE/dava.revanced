@@ -32,7 +32,7 @@ def loadSimpleYamlAsMap(fileName):
 arguments = sys.argv[1:]
 
 if 0 == len(arguments) or (len(arguments) < 2 or 3 < len(arguments)):
-    print "usage: ./copy_lka.py RelativePathToMapsSrc RelativePathToMapsDest [RelativePathToMapsList]"
+    print("usage: ./copy_lka.py RelativePathToMapsSrc RelativePathToMapsDest [RelativePathToMapsList]")
     exit(1)
     
 currentDir = os.getcwd()
@@ -44,7 +44,7 @@ relativePathToMapsList = '../Data/maps.yaml'
 
 if 3 == len(arguments):
     relativePathToMapsList = arguments[2]
-    print "relativePathToMapsList=" + relativePathToMapsList
+    print("relativePathToMapsList=" + relativePathToMapsList)
 
 # read and process maps from maps.yaml
 dataMap = loadSimpleYamlAsMap(relativePathToMapsList)
@@ -60,9 +60,9 @@ for (serverMap, localMap) in dataMap.iteritems():
             if not os.path.exists(lkaDestFolder):
                 os.makedirs(lkaDestFolder)
             if os.path.exists(lkaDestPath):
-                print "delete " + lkaDestPath
+                print("delete " + lkaDestPath)
                 os.remove(lkaDestPath)
-            print "copy " + lkaSrcPath + " to " + lkaDestPath
+            print("copy " + lkaSrcPath + " to " + lkaDestPath)
             shutil.copy(lkaSrcPath, lkaDestPath)
 # come back
 os.chdir(currentDir)

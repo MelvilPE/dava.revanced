@@ -29,7 +29,7 @@ def visit_directory(arg, dirname, names):
 		if (string.find(relPath, exDir) == 0):
 			#print string.find(relPath, exDir)
 			return;
-	print relPath
+	print(relPath)
 
 	(dirhead, dirtail) = os.path.split(dirname);
 	fullpath = os.path.normpath( dirname + "/");
@@ -86,7 +86,7 @@ def process_file(fullname):
 	    f.close()
 	
 	(contents, matchCount) = process_contents(contents);
-	print fullname, matchCount
+	print(fullname, matchCount)
 	
 	f = open(fullname, "wt")
 	try: 
@@ -108,7 +108,7 @@ def process_files(arg, dirname, names):
 		if (string.find(relPath, exDir) == 0):
 			#print string.find(relPath, exDir)
 			return;
-	print relPath
+	print(relPath)
 
 	(dirhead, dirtail) = os.path.split(dirname);
 	fullpath = os.path.normpath( dirname + "/");

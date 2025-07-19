@@ -26,12 +26,12 @@ class TeamCityRequest:
             return response
 
         except:
-            print "Unexpected error:", sys.exc_info()[0]
+            print("Unexpected error:", sys.exc_info()[0])
             raise
 
     def run_build( self, build_name,  branch_name = '', properties={}, triggering_options=[], agent_id='' ):
 
-        print "Launch build {} [ {} ]".format( build_name, branch_name )
+        print("Launch build {} [ {} ]".format( build_name, branch_name ))
 
         comment = '<comment> <text>auto triggering</text> </comment>'
 
@@ -59,7 +59,7 @@ class TeamCityRequest:
 
         root = ET.fromstring( response.content )
 
-        print 'Build started %s' % ( root.attrib[ 'webUrl' ] )
+        print('Build started %s' % ( root.attrib[ 'webUrl' ] ))
 
         return root.attrib
 

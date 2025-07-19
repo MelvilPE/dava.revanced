@@ -22,17 +22,17 @@ def get_input_context():
     return vars(parser.parse_args())
 
 def executeSubprocessCommand(commandParams):
-    print "subprocess.Popen " + "[%s]" % ", ".join(map(str, commandParams))
+    print("subprocess.Popen " + "[%s]" % ", ".join(map(str, commandParams)))
     p = subprocess.Popen(commandParams, stdout=subprocess.PIPE, stderr=subprocess.PIPE)#, shell=False)
     (stdout, stderr) = p.communicate()
-    print stderr
+    print(stderr)
     return stdout
 
 def get_revision_of_dirs(list_dirs):
     revisions=[]
     for direcrory in sorted(list_dirs):
         os.chdir(direcrory)
-        print os.getcwd() , list_dirs[direcrory]
+        print(os.getcwd() , list_dirs[direcrory])
         check_rev=''
         if list_dirs[direcrory] == 'svn':
             log = executeSubprocessCommand(["svn", "info"])
@@ -54,12 +54,12 @@ def write_rev_in_file(file, revisions):
             f.write(rev + '\n')
         f.close()
         sys.exit(0)
-    print 'need to start convert'
+    print('need to start convert')
     sys.exit(1)
 
 def do(context=g_default_context):
 
-    print context
+    print(context)
 
     file_name = context['file']
     gpu=context['gpu']
@@ -78,10 +78,10 @@ def do(context=g_default_context):
             write_rev_in_file(revisions_file, new_revisions)
         for i in range(len(new_revisions)):
             if str(old_revisions[i]).strip() != str(new_revisions[i]).strip():
-                print ' old rev: ' + str(old_revisions[i]) + ' new rev: ' + str(new_revisions[i])
+                print(' old rev: ' + str(old_revisions[i]) + ' new rev: ' + str(new_revisions[i]))
                 write_rev_in_file(revisions_file, new_revisions)
     else:
-        print 'file ' + file_name + ' doesn\'t exist'
+        print('file ' + file_name + ' doesn\'t exist')
         write_rev_in_file(revisions_file, new_revisions)
 
 if __name__ == '__main__':

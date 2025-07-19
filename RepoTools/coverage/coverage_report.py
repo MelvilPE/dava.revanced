@@ -203,7 +203,7 @@ class CoverageReport():
 
     def __load_json_cover_data( self ):
         if not os.path.isfile(self.coverFilePath) or not os.access(self.coverFilePath, os.R_OK):
-            print 'ERROR : file {0} is missing or is not readable'.format( self.coverFilePath )
+            print('ERROR : file {0} is missing or is not readable'.format( self.coverFilePath ))
             return
 
         coverFile               = open(self.coverFilePath).read()
@@ -227,7 +227,7 @@ class CoverageReport():
                     fileCover = FileCover( find_list[0], None )
                     self.testsCoverage.setdefault(test, []).append( fileCover )
                     self.testsCoverageFiles +=  [find_list[0]]
-        print 'TRACE OUTPUT ', self.testsCoverageFiles
+        print('TRACE OUTPUT ', self.testsCoverageFiles)
 
     def __processing_gcda_gcno_files( self ):
         
@@ -269,7 +269,7 @@ class CoverageReport():
                   '-instr-profile={0}.profdata'.format(self.executeName), 
                   file  
                 ] 
-        print param
+        print(param)
         sub_process = subprocess.Popen(param, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         subProcessContinue = True
@@ -287,7 +287,7 @@ class CoverageReport():
                 coverValue = re.findall('\d+', split_line[0])
                 if len( coverValue ) > 0 and int(coverValue[0]) == 0:
                     lineValue = re.findall('\d+', split_line[1])
-                    print '{0}:{1}: warning: bad cover: {2}'.format(file,int(lineValue[0]),test)
+                    print('{0}:{1}: warning: bad cover: {2}'.format(file,int(lineValue[0]),test))
 
             except IOError as err:
                 sys.stdout.write(err.message)

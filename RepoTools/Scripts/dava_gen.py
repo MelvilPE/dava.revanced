@@ -63,7 +63,7 @@ def parse_additional_params(additional):
         elif "ub" == param:
             g_is_unity_build = True                
         else:
-            print "Unsupported additional parameter " + "'" + param + "'" + " Use combination of " + str(g_supported_additional_parameters)
+            print("Unsupported additional parameter " + "'" + param + "'" + " Use combination of " + str(g_supported_additional_parameters))
             return False
 
     return True
@@ -135,7 +135,7 @@ def get_toolchain(input_platform, input_project_type):
 def safe_call(command):
     ret = call(command)
     if ret != 0:
-        print "Error executing command: %s" % (command)
+        print("Error executing command: %s" % (command))
         exit(1)
 
 def main():
@@ -154,7 +154,7 @@ def main():
     options = parser.parse_args()
 
     if not setup_framework_env():
-        print "Couldn't configure environment. Make sure that you run this script from dava.framework subfolder."
+        print("Couldn't configure environment. Make sure that you run this script from dava.framework subfolder.")
         exit(1)
 
     destination_platform = ""
@@ -165,7 +165,7 @@ def main():
     g_add_definitions = options.add_definitions.replace(',',' ')
 
     if options.platform_name not in g_supported_platforms:
-        print "Wrong destination OS name " + "'" + options.platform_name + "'"
+        print("Wrong destination OS name " + "'" + options.platform_name + "'")
         parser.print_help()
         exit(1);
     else:
@@ -177,7 +177,7 @@ def main():
 
     project_type = get_project_type(destination_platform, g_is_console)
     if project_type == "":
-        print "Unknown project type. Seems get_project_type() works wrong."
+        print("Unknown project type. Seems get_project_type() works wrong.")
         exit(1)
 
 
@@ -196,7 +196,7 @@ def main():
     cmake_program = get_cmake_executable()
 
     if False == cmake_program:
-        print "cmake command not found."
+        print("cmake command not found.")
         exit(1)
 
     call_string = [cmake_program, '-G', project_type, toolchain, g_cmake_file_path]
@@ -209,7 +209,7 @@ def main():
     
     if g_is_unity_build:
         call_string.append("-DUNITY_BUILD=true")
-    print call_string
+    print(call_string)
 
     safe_call(call_string)
     

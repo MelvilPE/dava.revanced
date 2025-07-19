@@ -53,7 +53,7 @@ def main():
 
     open(outPath, "w" ).close()
 
-    print 'Pack options.app_name -> ', outPath 
+    print('Pack options.app_name -> ', outPath)
 
 if __name__ == '__main__':
     main()

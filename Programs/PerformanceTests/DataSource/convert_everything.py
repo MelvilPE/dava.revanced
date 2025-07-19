@@ -30,7 +30,7 @@ def get_input_context():
 
 def VerboseCall(commands):
     subprocess.call(commands)
-    print "subprocess.call " + "[%s]" % ", ".join(map(str, commands))
+    print("subprocess.call " + "[%s]" % ", ".join(map(str, commands)))
 
 def do(context=g_default_context):
     if context['gpu'] == 'PowerVR_iOS':
@@ -38,7 +38,7 @@ def do(context=g_default_context):
     else:
         context['platform'] = 'Android'
 
-    print context
+    print(context)
     cleanUp3d = [sys.executable, 'cleanup_3d.py']
     
     #force param - remove after script refactoring
@@ -63,7 +63,7 @@ def do(context=g_default_context):
     VerboseCall(copySfx)
 
     if context['platform'] == 'Android':
-        print "create apk file system"
+        print("create apk file system")
         createFileStruct = ["python", "create_file_structure.py", "../Data", "../Data/fileSystem.yaml"]
         VerboseCall(createFileStruct)
 

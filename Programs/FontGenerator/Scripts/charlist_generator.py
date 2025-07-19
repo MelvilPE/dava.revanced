@@ -39,7 +39,7 @@ def main():
     if options.filename:
         write_to_file(options.filename, characters)
     else:
-        print "".join(characters).encode('utf-8')
+        print("".join(characters).encode('utf-8'))
 
 if __name__ == "__main__":
     main()

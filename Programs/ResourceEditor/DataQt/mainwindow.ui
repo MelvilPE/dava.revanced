@@ -214,6 +214,11 @@
     <addaction name="menuDump"/>
     <addaction name="actionToggleUseInstancing"/>
    </widget>
+   <widget class="QMenu" name="Plugins">
+    <property name="title">
+     <string>Plugins</string>
+    </property>
+   </widget>
    <addaction name="File"/>
    <addaction name="Edit"/>
    <addaction name="View"/>
@@ -222,6 +227,7 @@
    <addaction name="Tools"/>
    <addaction name="Help"/>
    <addaction name="DebugFunctions"/>
+   <addaction name="Plugins"/>
   </widget>
   <widget class="QDockWidget" name="dockParticleEditor">
    <property name="maximumSize">

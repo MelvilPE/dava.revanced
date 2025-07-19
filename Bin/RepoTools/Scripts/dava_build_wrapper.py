@@ -123,18 +123,18 @@ class LogParser():
         sys.stdout.write("Final result:\n")
 
         if self.warning:
-            print '\n\x1b[0;33mWarnings:\x1b[00m'
+            print('\n\x1b[0;33mWarnings:\x1b[00m')
             for warning_item in set(self.warning):
                 sys.stdout.write(warning_item)
         else:
-            print '\n\x1b[0;33mWarnings: 0\x1b[00m'
+            print('\n\x1b[0;33mWarnings: 0\x1b[00m')
 
         if self.error:
-            print '\n\x1b[0;31mErrors:\x1b[00m'
+            print('\n\x1b[0;31mErrors:\x1b[00m')
             for error_item in set(self.error):
                 sys.stdout.write(error_item)
         else:
-            print '\x1b[0;31mErrors: 0\x1b[00m'
+            print('\x1b[0;31mErrors: 0\x1b[00m')
 
         sys.stdout.flush()
 

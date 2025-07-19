@@ -18,7 +18,7 @@ suppress_build_warnings=False   # Do not output compiler warning messages while 
 
 def print_verbose(msg):
     if verbose:
-        print msg.rstrip()
+        print(msg.rstrip())
 
 
 def download(url, file_name):
@@ -37,7 +37,7 @@ def download(url, file_name):
     else:
         file_size = 0
 
-    print "Downloading %s (%s bytes) from %s ..." % (file_name, file_size, url)
+    print("Downloading %s (%s bytes) from %s ..." % (file_name, file_size, url))
 
     file_size_dl = 0
     block_sz = 65536
@@ -52,7 +52,7 @@ def download(url, file_name):
         if file_size > 0:
             status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
             status = status + chr(8)*(len(status)+1)
-            print status,
+            print(status,)
 
     f.close()
 
@@ -63,7 +63,7 @@ def download_if_doesnt_exist(url, file_name):
 
 
 def unzip_inplace(path):
-    print "Unarchiving %s ..." % (path)
+    print("Unarchiving %s ..." % (path))
 
     extension = os.path.splitext(path)[1]
     if extension == '.zip':
@@ -75,7 +75,7 @@ def unzip_inplace(path):
 
 
 def apply_patch(patch, working_dir = '.'):
-    print "Applying patch %s" % patch
+    print("Applying patch %s" % patch)
     proc = subprocess.Popen(["git", "apply", "--ignore-whitespace", patch], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd = working_dir)
     for line in proc.stdout:
         print_verbose(line)
@@ -85,7 +85,7 @@ def apply_patch(patch, working_dir = '.'):
 
 
 def build_vs(project, configuration, platform='Win32', target = None, toolset = None, env=None, msbuild_args=None):
-    print "Building %s for %s (%s) ..." % (project, configuration, platform)
+    print("Building %s for %s (%s) ..." % (project, configuration, platform))
     args = [build_config.get_msbuild_path_win32(), project, "/m", "/p:Configuration="+configuration, '/p:Platform=' + platform]
     if suppress_build_warnings:
         args.append('/consoleloggerparameters:ErrorsOnly')
@@ -110,7 +110,7 @@ def build_vs(project, configuration, platform='Win32', target = None, toolset = 
 
 
 def build_xcode_target(project, target, configuration, xcodebuild_args):
-    print "Building %s for %s ..." % (project, configuration)
+    print("Building %s for %s ..." % (project, configuration))
     args=["xcodebuild", "-project", project, "-target", target, "-configuration", configuration, "build"]
     if xcodebuild_args is not None:
         args.extend(xcodebuild_args)
@@ -119,12 +119,12 @@ def build_xcode_target(project, target, configuration, xcodebuild_args):
         print_verbose(line)
     proc.wait()
     if proc.returncode != 0:
-        print "Failed with return code %s" % proc.returncode
+        print("Failed with return code %s" % proc.returncode)
         raise
 
 
 def build_xcode_alltargets(project, configuration, xcodebuild_args):
-    print "Building %s for %s ..." % (project, configuration)
+    print("Building %s for %s ..." % (project, configuration))
     args=["xcodebuild", "-project", project, "-alltargets", "-configuration", configuration, "build"]
     if xcodebuild_args is not None:
         args.extend(xcodebuild_args)
@@ -133,22 +133,22 @@ def build_xcode_alltargets(project, configuration, xcodebuild_args):
         print_verbose(line)
     proc.wait()
     if proc.returncode != 0:
-        print "Failed with return code %s" % proc.returncode
+        print("Failed with return code %s" % proc.returncode)
         raise
 
 def build_make_target(output_folder_path, target):
-    print "Building target %s in %s ..." % (target, output_folder_path)
+    print("Building target %s in %s ..." % (target, output_folder_path))
     # make <target> -C <output_folder_path>
     proc = subprocess.Popen(["make", target, '-C', output_folder_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     for line in proc.stdout:
         print_verbose(line)
     proc.wait()
     if proc.returncode != 0:
-        print "Failed with return code %s" % proc.returncode
+        print("Failed with return code %s" % proc.returncode)
         raise
 
 def copy_files(from_dir, to_dir, wildcard):
-    print "Copying %s from %s to %s" % (wildcard, from_dir, to_dir)
+    print("Copying %s from %s to %s" % (wildcard, from_dir, to_dir))
 
     # First create destination dir if it does not exist, else
     # shutil.copy will copy all files into one with name 'to_dir'
@@ -165,7 +165,7 @@ def copy_files_by_name(from_dir, to_dir, filenames):
         os.makedirs(to_dir)
 
     for file in filenames:
-        print "Copying %s from %s to %s" % (file, from_dir, to_dir)
+        print("Copying %s from %s to %s" % (file, from_dir, to_dir))
 
         src = os.path.join(from_dir, file)
         dst = os.path.join(to_dir, file)
@@ -173,14 +173,14 @@ def copy_files_by_name(from_dir, to_dir, filenames):
 
 
 def clean_copy_includes(from_dir, to_dir):
-    print "Copying includes from %s to %s" % (from_dir, to_dir)
+    print("Copying includes from %s to %s" % (from_dir, to_dir))
     if os.path.exists(to_dir) and os.path.isdir(to_dir):
         clear_files(to_dir, '*.h')
     copy_files(from_dir, to_dir, '*.h')
 
 
 def clear_files(dir, wildcard):
-    print "Deleting %s in %s" % (wildcard, dir)
+    print("Deleting %s in %s" % (wildcard, dir))
     map(os.remove, glob.glob(wildcard))
 
 
@@ -213,7 +213,7 @@ def cmake_generate(output_folder_path, src_folder_path, cmake_generator, cmake_a
     cmd = [build_config.get_cmake_executable(), '-G', cmake_generator, src_folder_path]
     cmd.extend(cmake_additional_args)
 
-    print 'Running CMake: {}, working directory: {}'.format(' '.join(cmd), output_folder_path)
+    print('Running CMake: {}, working directory: {}'.format(' '.join(cmd), output_folder_path))
 
     sp = subprocess.Popen(cmd, stdout=subprocess.PIPE, cwd=output_folder_path)
     for line in sp.stdout:
@@ -276,7 +276,7 @@ def build_android_ndk(project_path, output_path, debug, ndk_additional_args = []
     if debug:
         cmd.append('NDK_DEBUG=1')
 
-    print 'Running ndk-build: {}, working directory: {}'.format(' '.join(cmd), project_path)
+    print('Running ndk-build: {}, working directory: {}'.format(' '.join(cmd), project_path))
 
     if sys.platform == 'win32':
         sp = subprocess.Popen(cmd, stdout=subprocess.PIPE, cwd=project_path, shell=True)
@@ -360,7 +360,7 @@ def download_and_extract(download_url, working_directory_path, result_folder_pat
 
 
 def run_process(args, process_cwd='.', environment=None, shell=False):
-    print 'running process: ' + ' '.join(args)
+    print('running process: ' + ' '.join(args))
     for output_line in _run_process_iter(args, process_cwd, environment, shell):
         print_verbose(output_line)
 
@@ -423,7 +423,7 @@ def get_xcode_developer_path():
     if stderr is None:
         return stdout.strip()
     else:
-        print 'Error while getting xcode developer path: ' + stderr
+        print('Error while getting xcode developer path: ' + stderr)
         return None
 
 

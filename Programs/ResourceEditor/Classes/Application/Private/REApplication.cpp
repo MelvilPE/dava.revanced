@@ -5,6 +5,7 @@
 
 #include "Classes/Project/ProjectManagerModule.h"
 #include "Classes/SceneManager/SceneManagerModule.h"
+#include "Classes/Qt/Plugins/PythonPlugins.h"
 #include "Classes/CommandLine/ConsoleHelpTool.h"
 #include "Classes/CommandLine/DumpTool.h"
 #include "Classes/CommandLine/SceneImageDump.h"
@@ -211,6 +212,7 @@ void REApplication::CreateGUIModules(DAVA::Core* tarcCore) const
     tarcCore->CreateModule<REModule>();
     tarcCore->CreateModule<ProjectManagerModule>();
     tarcCore->CreateModule<SceneManagerModule>();
+    tarcCore->CreateModule<PythonPlugins>();
 
     for (const DAVA::ReflectedType* type : DAVA::ModuleCollection::Instance()->GetGuiModules())
     {

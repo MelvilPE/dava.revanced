@@ -6,7 +6,7 @@ from email.MIMEText import MIMEText
 arguments = sys.argv[1:]
 
 if len(arguments) != 3:
-    print 'Usage: ./mail.py Recepient Subject Text'
+    print('Usage: ./mail.py Recepient Subject Text')
     exit(1)
 
 toaddr = arguments[0]

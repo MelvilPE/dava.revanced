@@ -20,9 +20,9 @@ CURRENT_VERSIONS  = str(os.popen( 'python ' + current_dir + 'file_tree_hash.py '
 LAST_VERSIONS     = str(args.cur_vers)    
 CURRENT_VERSIONS  = CURRENT_VERSIONS.rstrip(os.linesep)
 
-print 'VersionsCheck ------ ', args.dir_list
-print 'CURRENT_VERSIONS ', CURRENT_VERSIONS
-print 'LAST_VERSIONS    ', LAST_VERSIONS
+print('VersionsCheck ------ ', args.dir_list)
+print('CURRENT_VERSIONS ', CURRENT_VERSIONS)
+print('LAST_VERSIONS    ', LAST_VERSIONS)
 
 if ( CURRENT_VERSIONS != LAST_VERSIONS ) :
     cmake_program = args.cmake_command

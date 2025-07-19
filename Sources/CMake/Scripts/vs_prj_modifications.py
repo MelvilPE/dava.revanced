@@ -15,7 +15,7 @@ def load_vcx_tree( pathVcxProj ) :
     return tree, root
 
 def vs_prj_modification_dependent( args ) :
-    print 'Added dependency to [ {0} ] in project {1}'.format( args.targetDepend, args.pathVcxProj )
+    print('Added dependency to [ {0} ] in project {1}'.format( args.targetDepend, args.pathVcxProj ))
     
     tree, root = load_vcx_tree( args.pathVcxProj )
     modified_project = False
@@ -52,7 +52,7 @@ def vs_prj_modification_dependent( args ) :
 
     
 def vs_uwp_dll_deploy_fix( args ) :
-    print 'vs_uwp_dll_deploy_fix in {0}'.format( args.pathVcxProj )
+    print('vs_uwp_dll_deploy_fix in {0}'.format( args.pathVcxProj ))
     
     tree, root = load_vcx_tree( args.pathVcxProj )
     modified_project = False
@@ -84,7 +84,7 @@ def vs_uwp_dll_deploy_fix( args ) :
         
     
 def vs_prj_dpi_awarness( args ) :
-    print 'Set DPI-aware setting to [ {0} ] for {1}'.format( args.typeAwerness, args.pathVcxProj )
+    print('Set DPI-aware setting to [ {0} ] for {1}'.format( args.typeAwerness, args.pathVcxProj ))
 
     if args.typeAwerness == 'None':
         typeAwerness = 'false'

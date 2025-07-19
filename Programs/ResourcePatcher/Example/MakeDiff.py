@@ -31,7 +31,7 @@ def ExtractArchive(filePath):
         with zipfile.ZipFile(filePath) as zf:
             zf.extractall(tmpDir)
     except zipfile.ZipFile:
-        print "bad ZIP archive as base file. Location:", filePath
+        print("bad ZIP archive as base file. Location:", filePath)
     return tmpDir
 
 def GetResourceVersion(resourceFolderPath):
@@ -39,7 +39,7 @@ def GetResourceVersion(resourceFolderPath):
         with open(resourceFolderPath, 'r') as resourceVersionFile:
             return resourceVersionFile.read()
     except (OSError, IOError) as e:
-        print "Resources Version File is not opened"
+        print("Resources Version File is not opened")
         return ""
 
 def GetGameVersion(gameVersionInfoFilePath):
@@ -47,7 +47,7 @@ def GetGameVersion(gameVersionInfoFilePath):
         with open(gameVersionInfoFilePath, 'r') as gameVersionFile:
             return gameVersionFile.read()
     except (OSError, IOError) as e:
-        print "Game Version File is not opened"
+        print("Game Version File is not opened")
         return ""
 
 def MakeVersionString(gameVerStr, resVerStr):
@@ -92,7 +92,7 @@ if (None == patchFilename):
 try: #call resource patcher
     subprocess.check_call([resourcePatcherPath, "write", tmpDirBase, tmpDirNew, patchFilename])
 except subprocess.CalledProcessError as e:
-    print "patcher returns", e.returncode
+    print("patcher returns", e.returncode)
 
 #remove temporary directories
 shutil.rmtree(tmpDirBase)

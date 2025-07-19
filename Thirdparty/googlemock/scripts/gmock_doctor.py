@@ -592,11 +592,11 @@ def Diagnose(msg):
 
 
 def main():
-  print ('Google Mock Doctor v%s - '
+  print(('Google Mock Doctor v%s - ')
          'diagnoses problems in code using Google Mock.' % _VERSION)
 
   if sys.stdin.isatty():
-    print ('Please copy and paste the compiler errors here.  Press c-D when '
+    print(('Please copy and paste the compiler errors here.  Press c-D when ')
            'you are done:')
   else:
     print ('Waiting for compiler errors on stdin . . .')
@@ -605,7 +605,7 @@ def main():
   diagnoses = Diagnose(msg)
   count = len(diagnoses)
   if not count:
-    print ("""
+    print((""")
 Your compiler complained:
 8<------------------------------------------------------------
 %s
@@ -629,7 +629,7 @@ win-win for us!""" % (msg, _EMAIL))
       if count > 1:
         print ('\n#%s:' % (i,))
       print (d)
-    print ("""
+    print((""")
 How did I do?  If you think I'm wrong or unhelpful, please send your
 source code and the compiler's error messages to %s.
 Then you can be helped and I can get smarter -- I promise I won't be upset!""" %

@@ -2,28 +2,28 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
+#include "Concurrency/Mutex.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FilePath.h"
 #include "FileSystem/ResourceArchive.h"
-#include "Concurrency/Mutex.h"
 
 /**
-	\defgroup filesystem File System
+    \defgroup filesystem File System
  */
 namespace DAVA
 {
 /**
-	\ingroup filesystem
-	\brief FileSystem is a wrapper class that allow to perform all basic filesystem operations
+    \ingroup filesystem
+    \brief FileSystem is a wrapper class that allow to perform all basic filesystem operations
 
-	Class is platform dependent but it must used in all places where you want to be sure that portability is an issue
+    Class is platform dependent but it must used in all places where you want to be sure that portability is an issue
 
-	Supported platforms:
-		Windows, MacOS X, iPhone OS
+    Supported platforms:
+        Windows, MacOS X, iPhone OS
 
-	\todo add functions to enumerate files in directories to be full functional FileSystem
-	\todo refactoring of utils and ~res:/ ~doc:/ access for the project files
-	\todo add support for pack files
+    \todo add functions to enumerate files in directories to be full functional FileSystem
+    \todo refactoring of utils and ~res:/ ~doc:/ access for the project files
+    \todo add support for pack files
 */
 class FileSystemDelegate;
 class FileSystem : public Singleton<FileSystem>
@@ -33,30 +33,30 @@ public:
     virtual ~FileSystem();
 
     /**
-		\brief Function to delete file from filesystem
-		\param[in] filePath full path for the file we want to delete
-		\returns true if deletion was successful
-	 */
+        \brief Function to delete file from filesystem
+        \param[in] filePath full path for the file we want to delete
+        \returns true if deletion was successful
+     */
     virtual bool DeleteFile(const FilePath& filePath);
 
     /*
-		\brief Function to delete directory
+        \brief Function to delete directory
 
-		If isRecursive variable is false, function will succeed only in case if directory is empty.
+        If isRecursive variable is false, function will succeed only in case if directory is empty.
 
-		\param[in] path full path to the directory you want to delete
-		\param[in] isRecursive if true trying to delete all subfolders, if not just trying to delete this directory
-		\returns true if this directory was deleted
-	 */
+        \param[in] path full path to the directory you want to delete
+        \param[in] isRecursive if true trying to delete all subfolders, if not just trying to delete this directory
+        \returns true if this directory was deleted
+     */
     virtual bool DeleteDirectory(const FilePath& path, bool isRecursive = true);
 
     /*
-		\brief Deletes all files in given directory
-		if isRecursive is set function walks into all child directories and delete files there also.
-		This funciton do not delete directoris, it delete only files
-		\param[in] isRecursive if true go into child directories and delete files there also, false by default
-		\returns number of deleted files
-	*/
+        \brief Deletes all files in given directory
+        if isRecursive is set function walks into all child directories and delete files there also.
+        This funciton do not delete directoris, it delete only files
+        \param[in] isRecursive if true go into child directories and delete files there also, false by default
+        \returns number of deleted files
+    */
     virtual uint32 DeleteDirectoryFiles(const FilePath& path, bool isRecursive = false);
 
     /*
@@ -67,6 +67,14 @@ public:
     */
     virtual Vector<FilePath> EnumerateFilesInDirectory(const FilePath& path, bool isRecursive = true);
 
+    /*
+        \brief Enumerate all directories in specific directory
+        \param[in] path full path to the directory you want to enumerate
+        \param[in] isRecursive if true go into child directories and enumarate directories there also, true by default
+        \returns list of files
+    */
+    virtual Vector<FilePath> EnumerateDirectoriesInDirectory(const FilePath& path, bool isRecursive = true);
+
     enum eCreateDirectoryResult
     {
         DIRECTORY_CANT_CREATE = 0,
@@ -74,23 +82,23 @@ public:
         DIRECTORY_CREATED = 2,
     };
     /**
-		\brief Function to create directory at filePath you've requested
-		\param[in] filePath where you want to create a directory
+        \brief Function to create directory at filePath you've requested
+        \param[in] filePath where you want to create a directory
         \param[in] isRecursive create requiried
-		\returns true if directory created successfully
-	 */
+        \returns true if directory created successfully
+     */
     virtual eCreateDirectoryResult CreateDirectory(const FilePath& filePath, bool isRecursive = false);
 
     /**
-		\brief Function to retrieve current working directory
-		\returns current working directory
-	 */
+        \brief Function to retrieve current working directory
+        \returns current working directory
+     */
     virtual FilePath GetCurrentWorkingDirectory();
 
     /**
-		\brief Function to retrieve directory, which contain executable binary file
-		\returns current directory, with  executable file
-	 */
+        \brief Function to retrieve directory, which contain executable binary file
+        \returns current directory, with  executable file
+     */
     virtual FilePath GetCurrentExecutableDirectory();
 
     /**
@@ -100,10 +108,10 @@ public:
     virtual FilePath GetPluginDirectory();
 
     /**
-		\brief Function to set current working directory
-		\param[in] newWorkingDirectory new working directory to be set
-		\returns true if directory set successfully
-	 */
+        \brief Function to set current working directory
+        \param[in] newWorkingDirectory new working directory to be set
+        \returns true if directory set successfully
+     */
     virtual bool SetCurrentWorkingDirectory(const FilePath& newWorkingDirectory);
 
     /**
@@ -144,13 +152,13 @@ public:
 #endif
 
     /**
-		\brief Function check if specified path is a regular file
-	*/
+        \brief Function check if specified path is a regular file
+    */
     bool IsFile(const FilePath& pathToCheck) const;
 
     /**
-		\brief Function check if specified path is a directory
-	 */
+        \brief Function check if specified path is a directory
+     */
     bool IsDirectory(const FilePath& pathToCheck) const;
 
     /**
@@ -163,39 +171,39 @@ public:
      \param[in] filePath The name of the file to be locked/unlocked.
      \param[in] isLock true to lock file, false to unlock.
      \returns true if file was successfully locked/unlocked, false otherwise
-	 */
+     */
     virtual bool LockFile(const FilePath& filePath, bool isLock);
 
     /**
      \brief Function checks whether the file is locked.
      \param[in] filePath The name of the file to be checked for lock.
      \returns true if file is locked, false if not locked
-	 */
+     */
     virtual bool IsFileLocked(const FilePath& filePath) const;
 
     /**
-		\brief Copies an existing file to a new file.
-		\param[in] existingFile The name of an existing file.
-		\param[out] newFile The name of the new file.
-		\returns true if file was successfully copied, false otherwise
-	*/
+        \brief Copies an existing file to a new file.
+        \param[in] existingFile The name of an existing file.
+        \param[out] newFile The name of the new file.
+        \returns true if file was successfully copied, false otherwise
+    */
     virtual bool CopyFile(const FilePath& existingFile, const FilePath& newFile, bool overwriteExisting = false);
 
     /**
-		\brief Moves an existing file to a new file.
-		\param[in] existingFile The name of an existing file.
-		\param[out] newFile The name of the new file.
-		\param[in] overwriteExisting signal to overwrite existing file with name newFile.
-		\returns true if file was successfully moved, false otherwise
-	*/
+        \brief Moves an existing file to a new file.
+        \param[in] existingFile The name of an existing file.
+        \param[out] newFile The name of the new file.
+        \param[in] overwriteExisting signal to overwrite existing file with name newFile.
+        \returns true if file was successfully moved, false otherwise
+    */
     virtual bool MoveFile(const FilePath& existingFile, const FilePath& newFile, bool overwriteExisting = false);
 
     /**
-		\brief Copies directory to another existing directory.
-		\param[in] sourceDirectory The name of an existing file.
-		\param[out] destinationDirectory The name of the new file.
-		\returns true if all files were successfully copied, false otherwise.
-	*/
+        \brief Copies directory to another existing directory.
+        \param[in] sourceDirectory The name of an existing file.
+        \param[out] destinationDirectory The name of the new file.
+        \returns true if all files were successfully copied, false otherwise.
+    */
     virtual bool CopyDirectoryFiles(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting = false);
 
     /**
@@ -219,14 +227,14 @@ public:
     bool ReadFileContents(const FilePath& pathname, Vector<uint8>& buffer);
 
     /**
-		\brief Function to attach ResourceArchive to filesystem
+        \brief Function to attach ResourceArchive to filesystem
 
-		\param[in] archiveName pathname or local filename of archive we want to attach
-		\param[in] attachPath path we attach our archive
+        \param[in] archiveName pathname or local filename of archive we want to attach
+        \param[in] attachPath path we attach our archive
 
         can throw std::runtime_exception in case of error
         thread safe
-	*/
+    */
     virtual void Mount(const FilePath& archiveName, const String& attachPath);
 
     /**
@@ -246,15 +254,15 @@ public:
     virtual bool IsMounted(const FilePath& archiveName) const;
 
     /**
-	 \brief Invokes the command processor to execute a command
-	 \param[in] command contains the system command to be executed
-	 \returns platform-dependent
-	 */
+     \brief Invokes the command processor to execute a command
+     \param[in] command contains the system command to be executed
+     \returns platform-dependent
+     */
     int32 Spawn(const String& command);
 
     /**
-	 \brief Marks folder as contains no media files to exclude it from index
-	 */
+     \brief Marks folder as contains no media files to exclude it from index
+     */
     void MarkFolderAsNoMedia(const FilePath& folder);
 
     /**
@@ -284,8 +292,8 @@ public:
     bool Exists(const FilePath& filePath) const;
 
     /**
-    * \brief Search for file in android APK in assets folder
-    */
+     * \brief Search for file in android APK in assets folder
+     */
     bool ExistsInAndroidAssets(const FilePath& path) const;
 
     /**
@@ -315,11 +323,9 @@ private:
         ResourceArchiveItem() = default;
         ResourceArchiveItem(const ResourceArchiveItem&) = delete;
         ResourceArchiveItem(ResourceArchiveItem&& other) noexcept
-        : archive(std::move(other.archive))
-          ,
-          attachPath(std::move(other.attachPath))
-          ,
-          archiveFilePath(std::move(other.archiveFilePath))
+            : archive(std::move(other.archive))
+            , attachPath(std::move(other.attachPath))
+            , archiveFilePath(std::move(other.archiveFilePath))
         {
         }
 
@@ -340,4 +346,4 @@ private:
     friend class FilePath;
     Vector<FilePath> resourceFolders;
 };
-}
+} // namespace DAVA

@@ -14,7 +14,7 @@ outFile = ""
 if len(sys.argv) < 3:
   path = "../Data"
   outFile = "../Data/fileSystem.yaml"
-  print "No input path, using default settings: " + path + " " + outFile
+  print("No input path, using default settings: " + path + " " + outFile)
 else:
   path = sys.argv[1]  
   outFile = sys.argv[2]

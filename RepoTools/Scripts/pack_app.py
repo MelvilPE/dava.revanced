@@ -65,10 +65,10 @@ def main():
         os.makedirs( options.out_path )
 
     if os.path.exists( options.app_path ):
-        print 'Pack options.app_name -> ', outPath
+        print('Pack options.app_name -> ', outPath)
         zipdir( options.app_path, outPath, False, ignore_file_masks )
     else:
-       print 'No packing folder -> ', options.app_path
+       print('No packing folder -> ', options.app_path)
 
 
 if __name__ == '__main__':

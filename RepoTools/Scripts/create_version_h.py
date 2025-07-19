@@ -24,7 +24,7 @@ def main():
         branch_info = options.branch_info
         titleName += '_[ {0} ]'.format( branch_info )
 
-    print 'Title name - ', titleName
+    print('Title name - ', titleName)
     defineString = '#define APPLICATION_BUILD_VERSION "{0}"'.format( titleName )
 
 ##

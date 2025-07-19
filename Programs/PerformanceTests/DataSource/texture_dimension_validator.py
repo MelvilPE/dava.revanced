@@ -186,7 +186,7 @@ def verify(mode, dRootPath, dsRootPath):
 
 # {validate : '', data : '', dataSource : '', path : []}
 def do(context):
-    print context
+    print(context)
     global g_logger 
     g_logger = logging.getLogger("VerifyTexture")
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s %(asctime)s: %(message)s")
@@ -205,7 +205,7 @@ def do(context):
     if errNumber != 0:
         message = "Found " + str(errNumber) + " wrong texture size"
         g_logger.critical(message)
-        print "##teamcity[buildStatus status='FAILURE' text='%s']" % message
+        print("##teamcity[buildStatus status='FAILURE' text='%s']" % message)
         sys.exit(2)
 
     g_logger.info("Success!")

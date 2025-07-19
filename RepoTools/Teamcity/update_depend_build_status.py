@@ -126,7 +126,7 @@ def main():
 
             if is_requesting == True:
 
-                print 'Update: commit[ {} ] status[ {} ] configuration_name[ {} ]'.format(commit, status,  build_dependencies_status['buildTypeId'] )
+                print('Update: commit[ {} ] status[ {} ] configuration_name[ {} ]'.format(commit, status,  build_dependencies_status['buildTypeId'] ))
 
                 stash.report_build_status( status,
                                        build_configuration_id,

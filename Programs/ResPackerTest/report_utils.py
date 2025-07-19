@@ -11,16 +11,16 @@ def print_bool(val):
 	return "FAILURE"
 
 def print_result(result):
-	print "************************************************************"
-	print "*** Test results"
-	print "************************************************************"
-	print "*** Tests run %d Test Success %d Test Fails %d" % (result['tests'], result['success'], result['tests'] - result['success'])
-	print "*** Failures: Txt %d Tex %d Image %d" % (result['txt_failure'], result['tex_failure'], result['img_failure'])
-	print "************************************************************"
+	print("************************************************************")
+	print("*** Test results")
+	print("************************************************************")
+	print("*** Tests run %d Test Success %d Test Fails %d" % (result['tests'], result['success'], result['tests'] - result['success']))
+	print("*** Failures: Txt %d Tex %d Image %d" % (result['txt_failure'], result['tex_failure'], result['img_failure']))
+	print("************************************************************")
 	
-	print "   %-60s%10s%10s%10s%10s" % ("Test name", "Result", "Text", "Tex", "Image")
+	print("   %-60s%10s%10s%10s%10s" % ("Test name", "Result", "Text", "Tex", "Image"))
 	for test in result["Tests"].values():
-		print " - %-60s%10s%10s%10s%10s" % (test["Name"], print_bool(test["Success"]), print_bool(test["txt_Success"]), print_bool(test["tex_Success"]), print_bool(test["img_Success"]))
+		print(" - %-60s%10s%10s%10s%10s" % (test["Name"], print_bool(test["Success"]), print_bool(test["txt_Success"]), print_bool(test["tex_Success"]), print_bool(test["img_Success"])))
 
 def log_error(message):
 	message = message.replace("|", "||")
@@ -36,7 +36,7 @@ def log_error(message):
 	message = message.replace("[", "|[")
 	message = message.replace("]", "|]")
 
-	print "##teamcity[message text='" + message + "' errorDetails='' status='ERROR']"
+	print("##teamcity[message text='" + message + "' errorDetails='' status='ERROR']")
 		
 # HTML REPORT
 report = None

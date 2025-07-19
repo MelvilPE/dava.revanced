@@ -13,7 +13,7 @@ def main():
     try:
         args = parser.parse_args()
     except SystemExit as e:
-        print 'Error parse arguments !!! Argument were:', str(sys.argv)
+        print('Error parse arguments !!! Argument were:', str(sys.argv))
         raise
 
     output = 'out.cpp'
@@ -44,11 +44,11 @@ def main():
             outfile.write('#include "%s"\n' % module_header)
         else:
             exitCode = 1    # error of generating file
-            print "Error: Cannot find %sModule.h in /Modules/%s" % (module, module)
+            print("Error: Cannot find %sModule.h in /Modules/%s" % (module, module))
 
 
         if args.verbose:
-            print "Checking for %s = %s" % (module_fw_path, has_header)
+            print("Checking for %s = %s" % (module_fw_path, has_header))
 
     outfile.write('\n')
     outfile.write('namespace DAVA\n')
@@ -66,7 +66,7 @@ def main():
     outfile.write('} // namespace DAVA\n')
 
     if args.verbose:
-        print "Initialization code was generated for: %s" % included_modules
+        print("Initialization code was generated for: %s" % included_modules)
 
     outfile.close()
 

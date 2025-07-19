@@ -1,14 +1,14 @@
 #include "TArc/WindowSubSystem/UI.h"
+#include "TArc/Controls/ControlProxy.h"
+#include "TArc/Qt/QtString.h"
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/Private/QtEvents.h"
-#include "TArc/Qt/QtString.h"
-#include "TArc/Controls/ControlProxy.h"
 
 #include <Engine/PlatformApiQt.h>
 
-#include <QUrl>
-#include <QList>
 #include <QApplication>
+#include <QList>
+#include <QUrl>
 
 namespace DAVA
 {
@@ -21,7 +21,8 @@ const QString menuEdit("Edit");
 const QString menuView("View");
 const QString menuHelp("Help");
 const QString menuFind("Find");
-}
+const QString menuPlugins("Plugins");
+} // namespace MenuItems
 
 WindowKey::WindowKey(const String& appID_)
     : appID(appID_)

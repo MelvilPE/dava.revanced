@@ -12,7 +12,7 @@ import zipfile;
 arguments = sys.argv[1:]
 
 if 3 > len(arguments):
-	print 'Usage: ./create_performance_mail_report.py Gpu Recepients Link [Branch Revision]'
+	print('Usage: ./create_performance_mail_report.py Gpu Recepients Link [Branch Revision]')
 	exit(1)
 
 gpu = arguments[0]  
@@ -37,43 +37,43 @@ results = os.path.realpath(currentDir + "/Results/" + gpu)
 
 tests_results = {"Tests" : {}}
 
-print "*** DAVA AUTOTEST Cleen up working dirctories ***"
+print("*** DAVA AUTOTEST Cleen up working dirctories ***")
 
 if os.path.exists(currentDir + "/Artifacts/" + gpu):
-	print "Remove folder " + currentDir + "/Artifacts/" + gpu
+	print("Remove folder " + currentDir + "/Artifacts/" + gpu)
 	shutil.rmtree(currentDir + "/Artifacts/" + gpu)
 	
 if os.path.exists(output):
-	print "Remove folder " + output
+	print("Remove folder " + output)
 	shutil.rmtree(output)
 
 if os.path.exists(process):
-	print "Remove folder " + process
+	print("Remove folder " + process)
 	shutil.rmtree(process)
 	
 if not os.path.exists(data_folder):
-	print "Create folder " + data_folder
+	print("Create folder " + data_folder)
 	os.mkdir(data_folder)
 
-print "*** DAVA AUTOTEST Run convert_graphics.py script for %s ***" % gpu
+print("*** DAVA AUTOTEST Run convert_graphics.py script for %s ***" % gpu)
 os.chdir(data)
 
 params = [sys.executable, 'convert_graphics.py']
 if (len(arguments) > 0):
 	params = params + ["-gpu", arguments[0]]
 	
-print "subprocess.call " + "[%s]" % ", ".join(map(str, params))
+print("subprocess.call " + "[%s]" % ", ".join(map(str, params)))
 f = open(gpu + "_log.txt", 'w')
 subprocess.call(params, stdout=f)
 f.close()
 
 shutil.move(gpu + "_log.txt", output)
 
-print "*** DAVA AUTOTEST Check result for %s ***" % gpu
+print("*** DAVA AUTOTEST Check result for %s ***" % gpu)
 os.chdir(currentDir)
 
 os_name = "Windows"
-print "Convert DDS files:"
+print("Convert DDS files:")
 if (platform.system() == "Windows"):
 	subprocess.call(toolDir + "/ImageUnpacker.exe -folder " + output, shell=True)
 else:
@@ -86,7 +86,7 @@ for test in os.listdir(results):
 	if(os.path.isdir(os.path.realpath(results + "/" + test))):
 		i = i + 1
 		result = {}
-		print "*** Test#%d %s:" % (i, test)
+		print("*** Test#%d %s:" % (i, test))
 		
 		result['Name'] = test
 		result['Number'] = i
@@ -100,36 +100,36 @@ for test in os.listdir(results):
 		actual = os.path.realpath(output + "/" + test)
 		
 		# Check TEXT files
-		print "Check TXT files"
+		print("Check TXT files")
 		files = filter(lambda x: x[-3:] == "txt", os.listdir(expected))
 		if len(files) != 0:
-			print files
+			print(files)
 		
 		for file in files:
 			res = utils.compare_txt(expected + "/" + file, actual + "/" + file)
 			if res != None:
 				result['txt_Success'] = False
 				result['Error_msg'] = result['Error_msg'] + str(res) + "\n"
-				print res
+				print(res)
 			
 		#Check TEX files
-		print "Check TEX files"
+		print("Check TEX files")
 		files = filter(lambda x: x[-3:] == "tex", os.listdir(expected))
 		if len(files) != 0:
-			print files
+			print(files)
 		
 		for file in files:
 			res = utils.compare_tex(expected + "/" + file, actual + "/" + file)
 			if res != None:
 				result['tex_Success'] = False
 				result['Error_msg'] = result['Error_msg'] + str(res) + "\n"
-				print res
+				print(res)
 		
 		# Check IMAGE files
-		print "Check IMAGE files"
+		print("Check IMAGE files")
 		files = filter(lambda x: x[-3:] == "png", os.listdir(expected))
 		if len(files) != 0:
-			print files
+			print(files)
 		
 		for file in files:
 			res = utils.compare_img(expected + "/" + file, actual + "/" + file)
@@ -146,12 +146,12 @@ for test in os.listdir(results):
 		result['Success'] = result['tex_Success'] and result['txt_Success'] and result['img_Success']
 		
 		if result['Success']:
-			print "Test passed!"
+			print("Test passed!")
 		tests_results["Tests"][test] = result
 		
 		#Check graphics files
-		print
-		print
+		print()
+		print()
 
 # Make final results
 test_num = 0
@@ -185,11 +185,11 @@ tests_results['gpu'] = gpu
 report_utils.print_result(tests_results)
 report_utils.create_html(tests_results, currentDir + "/" + gpu + ".html")
 
-print
-print
+print()
+print()
 
 if tests_results["success"] != tests_results['tests']:
-	print "*** DAVA AUTOTEST Send letter with info about failures ***"
+	print("*** DAVA AUTOTEST Send letter with info about failures ***")
 	subject = "[AUTOTEST] Test for resource packer: Platform = %s GPU = %s" % (os_name, gpu)
 	msg = "Test: runned= %d succes= %d failed= %d <br>" % (tests_results['tests'], tests_results['success'], tests_results['tests'] - tests_results['success'])
 	msg += "Failures: Txt %d Tex %d Image %d <br>" % (tests_results['txt_failure'], tests_results['tex_failure'], tests_results['img_failure'])
@@ -198,18 +198,18 @@ if tests_results["success"] != tests_results['tests']:
 		msg += "<br>Framewok: %s %s" % (branch, revision)
 	
 	utils.call("python", "mail.py", recipients, subject, msg)
-	print
-	print
+	print()
+	print()
 	
 	
-print "*** DAVA AUTOTEST Copy results for artifact storing ***"
-print "Copy results for storing in TC %s -> %s" % (output, currentDir + "/Artifacts/" + gpu)
+print("*** DAVA AUTOTEST Copy results for artifact storing ***")
+print("Copy results for storing in TC %s -> %s" % (output, currentDir + "/Artifacts/" + gpu))
 shutil.copytree(output, currentDir + "/Artifacts/" + gpu)
 for test in os.listdir(results):
 	shutil.copytree(input + "/" + test, currentDir + "/Artifacts/" + gpu + "/" + test + "/input/")
 	
 	shutil.copytree(results + "/" + test, currentDir + "/Artifacts/" + gpu + "/" + test + "/expected_results/")
 
-print "*** DAVA AUTOTEST Zip results for artefacts ***"
+print("*** DAVA AUTOTEST Zip results for artefacts ***")
 os.chdir(currentDir + "/Artifacts/")
 utils.zip(gpu, gpu)

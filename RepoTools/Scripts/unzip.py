@@ -13,7 +13,7 @@ def zip_to_dir( archive_name, out_dir ):
             if sys.platform == "darwin":
                 for member in z.infolist():
                     os.chmod( os.path.join( out_dir, member.filename) , 0755 )
-        print 'zip_to_dir >>',  file , ' --> ', out_dir
+        print('zip_to_dir >>',  file , ' --> ', out_dir)
 
 def main():
     parser = argparse.ArgumentParser()

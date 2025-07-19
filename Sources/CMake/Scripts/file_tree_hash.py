@@ -26,4 +26,4 @@ if( args.file_mode ) :
 else :
     tree_hash.update( repr(args.item_list).encode('utf-8') )
 
-print tree_hash.hexdigest()
+print(tree_hash.hexdigest())

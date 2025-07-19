@@ -128,15 +128,15 @@ def main():
   if opts.verbose >= 1:
     ignored_files.difference_update(changed_lines)
     if ignored_files:
-      print 'Ignoring changes in the following files (wrong extension):'
+      print('Ignoring changes in the following files (wrong extension):')
       for filename in ignored_files:
-        print '   ', filename
+        print('   ', filename)
     if changed_lines:
-      print 'Running clang-format on the following files:'
+      print('Running clang-format on the following files:')
       for filename in changed_lines:
-        print '   ', filename
+        print('   ', filename)
   if not changed_lines:
-    print 'no modified files to format'
+    print('no modified files to format')
     return
   # The computed diff outputs absolute paths, so we must cd before accessing
   # those files.
@@ -146,20 +146,20 @@ def main():
                                                binary=opts.binary,
                                                style=opts.style)
   if opts.verbose >= 1:
-    print 'old tree:', old_tree
-    print 'new tree:', new_tree
+    print('old tree:', old_tree)
+    print('new tree:', new_tree)
   if old_tree == new_tree:
     if opts.verbose >= 0:
-      print 'clang-format did not modify any files'
+      print('clang-format did not modify any files')
   elif opts.diff:
     print_diff(old_tree, new_tree)
   else:
     changed_files = apply_changes(old_tree, new_tree, force=opts.force,
                                   patch_mode=opts.patch)
     if (opts.verbose >= 0 and not opts.patch) or opts.verbose >= 1:
-      print 'changed files:'
+      print('changed files:')
       for filename in changed_files:
-        print '   ', filename
+        print('   ', filename)
 
 
 def load_git_config(non_string_options=None):
@@ -434,10 +434,10 @@ def apply_changes(old_tree, new_tree, force=False, patch_mode=False):
   if not force:
     unstaged_files = run('git', 'diff-files', '--name-status', *changed_files)
     if unstaged_files:
-      print >>sys.stderr, ('The following files would be modified but '
+      print(>>sys.stderr, ('The following files would be modified but ')
                            'have unstaged changes:')
-      print >>sys.stderr, unstaged_files
-      print >>sys.stderr, 'Please commit, stage, or stash them first.'
+      print(>>sys.stderr, unstaged_files)
+      print(>>sys.stderr, 'Please commit, stage, or stash them first.')
       sys.exit(2)
   if patch_mode:
     # In patch mode, we could just as well create an index from the new tree
@@ -467,20 +467,20 @@ def run(*args, **kwargs):
   if p.returncode == 0:
     if stderr:
       if verbose:
-        print >>sys.stderr, '`%s` printed to stderr:' % ' '.join(args)
-      print >>sys.stderr, stderr.rstrip()
+        print(>>sys.stderr, '`%s` printed to stderr:' % ' '.join(args))
+      print(>>sys.stderr, stderr.rstrip())
     if strip:
       stdout = stdout.rstrip('\r\n')
     return stdout
   if verbose:
-    print >>sys.stderr, '`%s` returned %s' % (' '.join(args), p.returncode)
+    print(>>sys.stderr, '`%s` returned %s' % (' '.join(args), p.returncode))
   if stderr:
-    print >>sys.stderr, stderr.rstrip()
+    print(>>sys.stderr, stderr.rstrip())
   sys.exit(2)
 
 
 def die(message):
-  print >>sys.stderr, 'error:', message
+  print(>>sys.stderr, 'error:', message)
   sys.exit(2)
 
 

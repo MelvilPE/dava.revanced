@@ -65,7 +65,7 @@ def build_library(name, targets, skip_dependencies):
     if name in invoked_builders:
         return invoked_builders[name]
 
-    print 'Started processing library: \"{}\"'.format(name)
+    print('Started processing library: \"{}\"'.format(name))
 
     # Get builder module
     builder = import_library_builder_module(name)
@@ -75,7 +75,7 @@ def build_library(name, targets, skip_dependencies):
 
     # Check if it should be built on current platform
     if not supported_targets:
-        print ('Skipping library \"{}\" since it can\'t or shouldn\'t be built'
+        print(('Skipping library \"{}\" since it can\'t or shouldn\'t be built')
                'on current platform '
                '(build.py reported no supported targets)').format(name)
         return False
@@ -84,10 +84,10 @@ def build_library(name, targets, skip_dependencies):
     if not skip_dependencies:
         dependencies = get_dependencies_for_library(builder, targets)
         for dependency in dependencies:
-            print 'Found dependency \"{}\" for library \"{}\"'.format(
+            print('Found dependency \"{}\" for library \"{}\"'.format()
                 dependency, name)
             if build_library(dependency, targets, skip_dependencies) is False:
-                print ('Skipping library \"{}\" since its dependency (\"{}\") '
+                print(('Skipping library \"{}\" since its dependency (\"{}\") ')
                        'couldn\' be built').format(name, dependency)
                 return False
 
@@ -107,18 +107,18 @@ def build_library(name, targets, skip_dependencies):
     try:
         for target in targets:
             if target in supported_targets:
-                print ('Building library \"{}\" for target \"{}\"').format(
+                print(('Building library \"{}\" for target \"{}\"').format()
                     name, target)
                 builder.build_for_target(
                     target,
                     library_working_dir,
                     project_root_path)
             else:
-                print ('Skipping target \"{}\" since library \"{}\" '
+                print(('Skipping target \"{}\" since library \"{}\" ')
                        'does not support it '
                        'on current platform').format(target, name)
     except Exception:
-        print 'Couldn\'t build library \"{}\". Exception details:'.format(name)
+        print('Couldn\'t build library \"{}\". Exception details:'.format(name))
         traceback.print_exc()
         result = False
 
@@ -153,7 +153,7 @@ def print_info(library, targets):
     dependencies = get_dependencies_for_library(
         import_library_builder_module(library),
         targets)
-    print ('{}\nDownload url: {}\nSupported targets: {}\n'
+    print(('{}\nDownload url: {}\nSupported targets: {}\n')
            'Dependencies: {}\n').format(
                 library,
                 download_url,
@@ -222,7 +222,7 @@ if __name__ == "__main__":
     elif host_platform == 'linux':
         all_targets = ['android', 'linux']
     else:
-        print 'Unknown platform: %s. Aborting' % (host_platform)
+        print('Unknown platform: %s. Aborting' % (host_platform))
         sys.exit(1)
 
     # Setup and parse arguments
@@ -242,7 +242,7 @@ if __name__ == "__main__":
     if 'android' in targets_to_process:
         ndk_path = build_utils.get_android_ndk_path()
         if ndk_path is None or not os.path.isdir(ndk_path):
-            print ('Android target is specified, but Android NDK folder '
+            print(('Android target is specified, but Android NDK folder ')
                    'couldn\'t be found (required for CMake). '
                    'Did you forget to put it into DavaConfig.in?\nAborting')
             sys.exit()
@@ -258,25 +258,25 @@ if __name__ == "__main__":
         try:
             import_library_builder_module(lib)
         except IOError:
-            print ('Couldn\'t import builder module for library named \'{}\', '
+            print(('Couldn\'t import builder module for library named \'{}\', ')
                    'misprint?\nAborting').format(lib)
             sys.exit()
 
     # Process
 
     if args.info:
-        print 'Libraries:\n'
+        print('Libraries:\n')
         for lib in libraries_to_process:
             print_info(lib, targets_to_process)
-        print 'Total: {}'.format(len(libraries_to_process))
+        print('Total: {}'.format(len(libraries_to_process)))
     else:
         # Clean previous run (if it was invoked with --no-clean)
         if not args.no_clean:
             remove_folder(output_path)
 
         # Build
-        print 'Selected libraries: ' + str(libraries_to_process)
-        print 'Selected targets: ' + str(targets_to_process) + '\n'
+        print('Selected libraries: ' + str(libraries_to_process))
+        print('Selected targets: ' + str(targets_to_process) + '\n')
         failed = []
         start = time.time()
         for lib in libraries_to_process:
@@ -288,14 +288,14 @@ if __name__ == "__main__":
         end = time.time()
 
         if not failed:
-            print '\nFinished. Successfully built: {} library(s)'.format(
+            print('\nFinished. Successfully built: {} library(s)'.format()
                 len(invoked_builders))
         else:
-            print '\nFinished. Builders failed for these libraries: {}'.format(
+            print('\nFinished. Builders failed for these libraries: {}'.format()
                 str(failed))
 
         time_spent = end - start
-        print 'Time spent: ' + str(round(time_spent, 1)) + ' seconds'
+        print('Time spent: ' + str(round(time_spent, 1)) + ' seconds')
 
         # Clean
         if not args.no_clean:

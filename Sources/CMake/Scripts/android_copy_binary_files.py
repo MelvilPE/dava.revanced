@@ -30,5 +30,5 @@ for rootdir, dirs, files in os.walk( args.input_path ):
             if not os.path.exists(output_file_dir_name):
                 os.makedirs(output_file_dir_name)
                 
-            print 'Copy object file: ' + os.path.basename(output_file_name) + ' to ' + output_file_dir_name
+            print('Copy object file: ' + os.path.basename(output_file_name) + ' to ' + output_file_dir_name)
             shutil.copyfile(input_file_name, output_file_name)

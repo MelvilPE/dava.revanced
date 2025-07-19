@@ -70,14 +70,14 @@ _cmake_path=None
 
 def configure(host, root_path):
     global _cmake_path
-    print 'configure: host=%s, root_path=%s' % (host, root_path)
+    print('configure: host=%s, root_path=%s' % (host, root_path))
     if host=='win32':
         _cmake_path=os.path.join(root_path, _cmake_path_win32)
     elif host=='darwin':
         _cmake_path=os.path.join(root_path, _cmake_path_macos)
     elif host=='linux':
         _cmake_path=os.path.join(root_path, _cmake_path_linux)
-    print 'configure:',_cmake_path
+    print('configure:',_cmake_path)
 
 
 def get_cmake_executable():

@@ -59,7 +59,7 @@ def timing(f):
         time_ = time2 - time1
         global total
         total += time_
-        print '%s function took %0.3f s, total %0.3f s' % (f.func_name, time_, total)
+        print('%s function took %0.3f s, total %0.3f s' % (f.func_name, time_, total))
         return ret
     return wrap
 
@@ -80,7 +80,7 @@ class RangeHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_GET(self):
         """Serve a GET request."""
         f, start_range, end_range = self.send_head()
-        print "Got values of ", start_range, " and ", end_range, "(", end_range - start_range, ")", "...\n"
+        print("Got values of ", start_range, " and ", end_range, "(", end_range - start_range, ")", "...\n")
         if f:
             f.seek(start_range, 0)
             chunk = 0x1000
@@ -168,7 +168,7 @@ class RangeHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_header("Content-Length", end_range - start_range)
         self.send_header("Last-Modified", self.date_time_string(fs.st_mtime))
         self.end_headers()
-        print "Sending Bytes ",start_range, " to ", end_range, "...\n"
+        print("Sending Bytes ",start_range, " to ", end_range, "...\n")
         return (f, start_range, end_range)
 
     def list_directory(self, path):

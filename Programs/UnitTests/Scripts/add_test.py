@@ -5,7 +5,7 @@ import sys
 import shutil
 
 if len(sys.argv) != 2:
-	print """usage:
+	print("""usage:)
 add_test.py TestClassName"""
 	quit()
 
