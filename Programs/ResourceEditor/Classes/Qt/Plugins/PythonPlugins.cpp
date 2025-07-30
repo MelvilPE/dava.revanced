@@ -190,14 +190,24 @@ void PythonPlugins::CreateModuleActions(DAVA::UI* ui)
     ContextAccessor* accessor = GetAccessor();
 
     // Python Plugins
-    FilePath pluginsPath = FilePath("~res:/ResourceEditor/Plugins/");
-    if (!pluginsPath.Exists())
+    FilePath pythonPlugins("~res:/ResourceEditor/");
+    String fullPythonPlugins = pythonPlugins.GetAbsolutePathname() + "Plugins/";
+
+    if (!GetEngineContext()->fileSystem->IsDirectory(fullPythonPlugins))
     {
-        Logger::Info("[QtMainWindow::SetupPlugins] plugins directory doesn't exists at %s", pluginsPath.GetAbsolutePathname().c_str());
+        Logger::Info("[PythonPlugins::CreateModuleActions] plugins directory doesn't exists at %s", fullPythonPlugins.c_str());
+        if (!GetEngineContext()->fileSystem->CreateDirectory(fullPythonPlugins))
+        {
+            Logger::Info("[PythonPlugins::CreateModuleActions] failed to create empty plugins directory at %s", fullPythonPlugins.c_str());
+        }
+        else
+        {
+            Logger::Info("[PythonPlugins::CreateModuleActions] succeeded to create empty plugins directory at %s", fullPythonPlugins.c_str());
+        }
     }
     else
     {
-        Vector<FilePath> pluginNames = GetEngineContext()->fileSystem->EnumerateDirectoriesInDirectory(pluginsPath, false);
+        Vector<FilePath> pluginNames = GetEngineContext()->fileSystem->EnumerateDirectoriesInDirectory(fullPythonPlugins, false);
 
         for (uint32 pluginIndex = 0; pluginIndex < pluginNames.size(); pluginIndex++)
         {
