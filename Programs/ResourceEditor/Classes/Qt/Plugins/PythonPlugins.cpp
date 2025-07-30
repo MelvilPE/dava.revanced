@@ -244,7 +244,7 @@ void PythonPlugins::CreateModuleActions(DAVA::UI* ui)
                 connections.AddConnection(action, &QAction::triggered, DAVA::Bind(static_cast<void (PythonPlugins::*)(DAVA::String, DAVA::FilePath)>(&PythonPlugins::RunPluginAsync), this, pluginName, scriptPath));
 
                 ActionPlacementInfo placementInfo;
-                placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuPlugins, { InsertionParams::eInsertionMethod::AfterItem, "Help" }));
+                placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuPlugins, { InsertionParams::eInsertionMethod::AfterItem, "Show Plugins Directory" }));
                 placementInfo.AddPlacementPoint(CreateToolbarPoint("mainToolBar", { InsertionParams::eInsertionMethod::AfterItem, "Plugins" }));
 
                 ui->AddAction(mainWindowKey, placementInfo, action);
