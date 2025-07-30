@@ -38,6 +38,7 @@ private:
 
     void RunPluginAsync(DAVA::String pluginName, DAVA::FilePath scriptPath);
     void RunPlugin(DAVA::String pluginName, DAVA::FilePath scriptPath);
+    void ShowPluginsDirectory(DAVA::String fullPluginsPath);
 
 private:
     DAVA::QtConnections connections;

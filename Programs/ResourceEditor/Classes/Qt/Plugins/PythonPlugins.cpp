@@ -35,6 +35,7 @@
 
 #include <QtTools/FileDialogs/FindFileDialog.h>
 #include <QtTools/ProjectInformation/FileSystemCache.h>
+#include <QtHelpers/HelperFunctions.h>
 
 #include <Base/Any.h>
 #include <Base/FastName.h>
@@ -178,6 +179,11 @@ void PythonPlugins::RunPlugin(DAVA::String pluginName, DAVA::FilePath scriptPath
     }
 }
 
+void PythonPlugins::ShowPluginsDirectory(DAVA::String fullPluginsPath)
+{
+    QtHelpers::ShowInOSFileManager(QString(fullPluginsPath.c_str()));
+}
+
 void PythonPlugins::CreateModuleControls(DAVA::UI* ui)
 {
 
@@ -189,11 +195,15 @@ void PythonPlugins::CreateModuleActions(DAVA::UI* ui)
 
     ContextAccessor* accessor = GetAccessor();
 
-    // Python Plugins
-    FilePath pythonPlugins("~res:/ResourceEditor/");
-    String fullPythonPlugins = pythonPlugins.GetAbsolutePathname() + "Plugins/";
+    String fullPythonPlugins = FilePath("~res:/ResourceEditor/").GetAbsolutePathname() + "Plugins/";
 
-    if (!GetEngineContext()->fileSystem->IsDirectory(fullPythonPlugins))
+    bool directoryPluginsFirstInit = true;
+
+    if (GetEngineContext()->fileSystem->IsDirectory(fullPythonPlugins))
+    {
+        directoryPluginsFirstInit = false;
+    }
+    else
     {
         Logger::Info("[PythonPlugins::CreateModuleActions] plugins directory doesn't exists at %s", fullPythonPlugins.c_str());
         if (!GetEngineContext()->fileSystem->CreateDirectory(fullPythonPlugins))
@@ -205,7 +215,20 @@ void PythonPlugins::CreateModuleActions(DAVA::UI* ui)
             Logger::Info("[PythonPlugins::CreateModuleActions] succeeded to create empty plugins directory at %s", fullPythonPlugins.c_str());
         }
     }
-    else
+    
+    // Show Plugins Directory action
+    {
+        QtAction* action = new QtAction(accessor, QString("Show Plugins Directory"));
+        connections.AddConnection(action, &QAction::triggered, DAVA::Bind(static_cast<void (PythonPlugins::*)(DAVA::String)>(&PythonPlugins::ShowPluginsDirectory), this, fullPythonPlugins));
+
+        ActionPlacementInfo placementInfo;
+        placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuPlugins, { InsertionParams::eInsertionMethod::AfterItem, "Help" }));
+        placementInfo.AddPlacementPoint(CreateToolbarPoint("mainToolBar", { InsertionParams::eInsertionMethod::AfterItem, "Plugins" }));
+
+        ui->AddAction(mainWindowKey, placementInfo, action);
+    }
+
+    if (!directoryPluginsFirstInit)
     {
         Vector<FilePath> pluginNames = GetEngineContext()->fileSystem->EnumerateDirectoriesInDirectory(fullPythonPlugins, false);
 
