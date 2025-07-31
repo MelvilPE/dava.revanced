@@ -223,7 +223,6 @@ void PythonPlugins::CreateModuleActions(DAVA::UI* ui)
 
         ActionPlacementInfo placementInfo;
         placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuPlugins, { InsertionParams::eInsertionMethod::AfterItem, "Help" }));
-        placementInfo.AddPlacementPoint(CreateToolbarPoint("mainToolBar", { InsertionParams::eInsertionMethod::AfterItem, "Plugins" }));
 
         ui->AddAction(mainWindowKey, placementInfo, action);
     }
@@ -245,7 +244,6 @@ void PythonPlugins::CreateModuleActions(DAVA::UI* ui)
 
                 ActionPlacementInfo placementInfo;
                 placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuPlugins, { InsertionParams::eInsertionMethod::AfterItem, "Show Plugins Directory" }));
-                placementInfo.AddPlacementPoint(CreateToolbarPoint("mainToolBar", { InsertionParams::eInsertionMethod::AfterItem, "Plugins" }));
 
                 ui->AddAction(mainWindowKey, placementInfo, action);
             }
