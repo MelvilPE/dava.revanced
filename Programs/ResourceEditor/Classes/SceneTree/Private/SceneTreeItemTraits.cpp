@@ -339,7 +339,7 @@ bool EntityTraits::Drop(const DAVA::ReflectedMimeData* mimeData, Qt::DropAction 
             });
 
             DAVA::SelectableGroup entitiesToMove;
-            entitiesToMove.Add(objects);
+            entitiesToMove.AddWithoutSorting(objects);
 
             DAVA::GlobalSceneSettings* settings = accessor->GetGlobalContext()->GetData<DAVA::GlobalSceneSettings>();
             scene->GetSystem<DAVA::StructureSystem>()->Move(entitiesToMove, newParentEntity, insertBefore,

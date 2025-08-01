@@ -63,6 +63,15 @@ void SelectableGroup::Add(const SelectableGroup::CollectionType& newSelection)
     SortObjects();
 }
 
+void SelectableGroup::AddWithoutSorting(const SelectableGroup::CollectionType& newSelection)
+{
+    DVASSERT(IsLocked() == false);
+    for (const Selectable& object : newSelection)
+    {
+        objects.emplace_back(object.GetContainedObject());
+    }
+}
+
 void SelectableGroup::Add(const DAVA::Any& object)
 {
     DVASSERT(!IsLocked());
@@ -201,7 +210,7 @@ DAVA::AABBox3 SelectableGroup::GetTransformedBoundingBox() const
 
 void SelectableGroup::SortObjects()
 {
-    std::sort(objects.begin(), objects.end());
+    // std::sort(objects.begin(), objects.end());
 }
 
 } // namespace DAVA

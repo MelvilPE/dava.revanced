@@ -23,6 +23,7 @@ public:
     void Clear();
 
     void Add(const CollectionType& newSelection);
+    void AddWithoutSorting(const CollectionType& newSelection);
 
     // @{ This three methods have approximately n^2 * log(n) complexety. So if you have some code like this
     //  for (Object obj: objects) selectableGroup.Add(obj);
