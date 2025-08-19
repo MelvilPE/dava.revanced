@@ -57,6 +57,7 @@ public:
     // save/load
     SceneFileV2::eError LoadScene(const FilePath& path) override;
     SceneFileV2::eError SaveScene(const FilePath& pathname, bool saveForGame = false) override;
+    SceneFileV2::eError ExportSceneForWorldOfTanksBlitz(const FilePath& pathname, bool saveForGame = false);
     SceneFileV2::eError SaveScene();
     bool Export(const SceneExporter::Params& exportingParams);
 

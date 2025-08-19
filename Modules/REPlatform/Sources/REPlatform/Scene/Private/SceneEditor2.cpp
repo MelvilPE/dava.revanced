@@ -256,6 +256,74 @@ SceneFileV2::eError SceneEditor2::SaveScene(const FilePath& path, bool saveForGa
     return err;
 }
 
+SceneFileV2::eError SceneEditor2::ExportSceneForWorldOfTanksBlitz(const FilePath& path, bool saveForGame /*= false*/)
+{
+    using namespace DAVA;
+    EditorLightSystem* lightSystem = GetSystem<EditorLightSystem>();
+    RenderContextGuard guard;
+    bool cameraLightState = false;
+    if (lightSystem != nullptr)
+    {
+        cameraLightState = lightSystem->GetCameraLightEnabled();
+        lightSystem->SetCameraLightEnabled(false);
+    }
+
+    Vector<std::unique_ptr<Command>> prepareForSaveCommands;
+    prepareForSaveCommands.reserve(editorSystems.size());
+    for (EditorSceneSystem* editorSceneSystem : editorSystems)
+    {
+        std::unique_ptr<Command> cmd = editorSceneSystem->PrepareForSave(saveForGame);
+        if (cmd != nullptr)
+        {
+            prepareForSaveCommands.push_back(std::move(cmd));
+        }
+    }
+
+    std::for_each(prepareForSaveCommands.begin(), prepareForSaveCommands.end(), [](std::unique_ptr<Command>& cmd)
+                  { cmd->Redo(); });
+
+    ExtractEditorEntities();
+
+    ScopedPtr<Texture> tilemaskTexture(nullptr);
+    bool needToRestoreTilemask = false;
+
+    LandscapeEditorDrawSystem* landscapeEditorDrawSystem = GetSystem<LandscapeEditorDrawSystem>();
+    if (landscapeEditorDrawSystem)
+    { // dirty magic to work with new saving of materials and FBO landscape texture
+        tilemaskTexture = SafeRetain(landscapeEditorDrawSystem->GetTileMaskTexture());
+
+        needToRestoreTilemask = landscapeEditorDrawSystem->SaveTileMaskTexture();
+        landscapeEditorDrawSystem->ResetTileMaskTexture();
+    }
+
+    SceneFileV2::eError err = Scene::ExportSceneForWorldOfTanksBlitz(path, saveForGame);
+    if (SceneFileV2::ERROR_NO_ERROR == err)
+    {
+        curScenePath = path;
+        isLoaded = true;
+
+        // mark current position in command stack as clean
+        commandStack->SetClean();
+    }
+
+    if (needToRestoreTilemask)
+    {
+        landscapeEditorDrawSystem->SetTileMaskTexture(tilemaskTexture);
+    }
+
+    std::for_each(prepareForSaveCommands.rbegin(), prepareForSaveCommands.rend(), [](std::unique_ptr<Command>& cmd)
+                  { cmd->Undo(); });
+
+    InjectEditorEntities();
+
+    if (lightSystem != nullptr)
+    {
+        lightSystem->SetCameraLightEnabled(cameraLightState);
+    }
+
+    return err;
+}
+
 void SceneEditor2::AddSystem(SceneSystem* sceneSystem, const ComponentMask& componentFlags, uint32 processFlags, SceneSystem* insertBeforeSceneForProcess, SceneSystem* insertBeforeSceneForInput, SceneSystem* insertBeforeSceneForFixedProcess)
 {
     Scene::AddSystem(sceneSystem, componentFlags, processFlags, insertBeforeSceneForProcess, insertBeforeSceneForInput);

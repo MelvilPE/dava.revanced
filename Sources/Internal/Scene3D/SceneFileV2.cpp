@@ -143,7 +143,7 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scen
         }
     }
 
-    if (!WriteDescriptor(file, descriptor))
+    if (!WriteDescriptor(file, descriptor, &serializationContext))
     {
         SetError(ERROR_FILE_WRITE_ERROR);
         return GetError();
@@ -714,6 +714,172 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     return GetError();
 }
 
+SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath& filename, Scene* scene, eFileType fileType)
+{
+    ScopedPtr<File> file(File::Create(filename, File::CREATE | File::WRITE));
+    if (!file)
+    {
+        Logger::Error("SceneFileV2::ExportSceneForWorldOfTanksBlitz failed to create file: %s", filename.GetAbsolutePathname().c_str());
+        SetError(ERROR_FAILED_TO_CREATE_FILE);
+        return GetError();
+    }
+
+    header.signature[0] = 'S';
+    header.signature[1] = 'F';
+    header.signature[2] = 'V';
+    header.signature[3] = '2';
+
+    header.version = WORLD_OF_TANKS_BLITZ_11_8_0_VERSION;
+    header.nodeCount = scene->GetChildrenCount();
+
+    descriptor.size = sizeof(descriptor);
+    descriptor.fileType = eFileType::ModelFile;
+
+    serializationContext.SetRootNodePath(filename);
+    serializationContext.SetScenePath(FilePath(filename.GetDirectory()));
+    serializationContext.SetVersion(header.version);
+    serializationContext.SetScene(scene);
+
+    ScopedPtr<KeyedArchive> sceneArchive(new KeyedArchive());
+    Vector<VariantType> dataNodes;
+    Vector<VariantType> hierarchy;
+    Vector<VariantType> polygonGroups;
+
+    if (isSaveForGame)
+    {
+        scene->OptimizeBeforeExport();
+    }
+
+    Set<DataNode*> nodes;
+    scene->GetDataNodes(nodes);
+
+    uint32 serializableNodesCount = 0;
+    uint64 maxDataNodeID = 0;
+
+    for (auto node : nodes)
+    {
+        // TODO: now one datanode can be used in multiple scenes,
+        // but datanote->scene points only on single scene. This should be
+        // discussed and fixed in the future.
+        if (node->GetScene() == scene && node->GetNodeID() > maxDataNodeID)
+        {
+            maxDataNodeID = node->GetNodeID();
+        }
+    }
+
+    // assign datanode id-s and
+    // count serializable nodes
+    for (auto node : nodes)
+    {
+        if (IsDataNodeSerializable(node))
+        {
+            // TODO: if datanode is from another scene, it should be saved with newly
+            // generated datanode-id. Unfortunately this ID will be generated on every scene save,
+            // because we don't change scene pointer in datanode->scene.
+            // This should be discussed and fixed in the future.
+            serializableNodesCount++;
+            if (node->GetScene() != scene || node->GetNodeID() == DataNode::INVALID_ID)
+            {
+                node->SetNodeID(++maxDataNodeID);
+            }
+        }
+    }
+
+    Vector<VariantType> nestedEmitterNodes;
+    if (!GetNestedParticleEmitterNodes(scene, &nestedEmitterNodes))
+    {
+        Logger::Error("SceneFileV2::ExportSceneForWorldOfTanksBlitz failed to receive ParticleEmitterNodes from ParticleEffectComponent: %s", filename.GetAbsolutePathname().c_str());
+        SetError(ERROR_FILE_WRITE_ERROR);
+        return GetError();
+    }
+
+    for (uint32 emitterNodeIndex = 0; emitterNodeIndex < nestedEmitterNodes.size(); emitterNodeIndex++)
+    {
+        serializableNodesCount++;
+    }
+
+    // sort in ascending ID order
+    Set<DataNode*, std::function<bool(DataNode*, DataNode*)>> orderedNodes(nodes.begin(), nodes.end(),
+                                                                           [](DataNode* a, DataNode* b)
+                                                                           { return a->GetNodeID() < b->GetNodeID(); });
+
+    for (uint32 emitterNodeIndex = 0; emitterNodeIndex < nestedEmitterNodes.size(); emitterNodeIndex++)
+    {
+        dataNodes.push_back(nestedEmitterNodes[emitterNodeIndex]);
+    }
+    for (auto node : orderedNodes)
+    {
+        if (IsDataNodeSerializable(node))
+        {
+            ScopedPtr<KeyedArchive> nodeArchive(new KeyedArchive());
+            node->Save(nodeArchive, &serializationContext);
+            VariantType nodeVariant(nodeArchive.get());
+
+            /*
+            if (IsPolygonGroupDataNode(node))
+            {
+                polygonGroups.push_back(nodeVariant);
+            }
+            else
+            {
+                dataNodes.push_back(nodeVariant);
+            }
+            */
+            dataNodes.push_back(nodeVariant);
+        }
+    }
+
+    for (int ci = 0; ci < scene->GetChildrenCount(); ++ci)
+    {
+        ExportHierarchyForWorldOfTanksBlitz(&hierarchy, scene->GetChild(ci));
+    }
+
+    if (sizeof(Header) != file->Write(&header, sizeof(Header)))
+    {
+        Logger::Error("SceneFileV2::ExportSceneForWorldOfTanksBlitz failed to write header file: %s", filename.GetAbsolutePathname().c_str());
+        SetError(ERROR_FILE_WRITE_ERROR);
+        return GetError();
+    }
+
+    {
+        ScopedPtr<KeyedArchive> tagsArchive(new KeyedArchive());
+        const VersionInfo::TagsMap& tags = GetEngineContext()->versionInfo->GetCurrentVersion().tags;
+        for (VersionInfo::TagsMap::const_iterator it = tags.begin(); it != tags.end(); ++it)
+        {
+            tagsArchive->SetUInt32(it->first, it->second);
+        }
+        if (!tagsArchive->Save(file))
+        {
+            Logger::Error("SceneFileV2::ExportSceneForWorldOfTanksBlitz failed to write tags file: %s", filename.GetAbsolutePathname().c_str());
+            SetError(ERROR_FILE_WRITE_ERROR);
+            return GetError();
+        }
+    }
+
+    if (!WriteDescriptor(file, descriptor, &serializationContext))
+    {
+        SetError(ERROR_FILE_WRITE_ERROR);
+        return GetError();
+    }
+
+    sceneArchive->SetVariantVector(SceneFileV2Key::DATANODES_KEY, dataNodes);
+    sceneArchive->SetVariantVector(SceneFileV2Key::HIERARCHY_KEY, hierarchy);
+    if (!sceneArchive->Save(file))
+    {
+        Logger::Error("SceneFileV2::ExportSceneForWorldOfTanksBlitz failed to write scene archive file: %s", filename.GetAbsolutePathname().c_str());
+        SetError(ERROR_FILE_WRITE_ERROR);
+        return GetError();
+    }
+
+    if (!file->Flush())
+    {
+        SetError(ERROR_FILE_WRITE_ERROR);
+        return GetError();
+    }
+
+    return GetError();
+}
+
 void SceneFileV2::ApplyFogQuality(NMaterial* globalMaterial)
 {
     QualitySettingsSystem* qss = QualitySettingsSystem::Instance();
@@ -873,7 +1039,7 @@ SceneArchive* SceneFileV2::LoadSceneArchive(const FilePath& filename)
     return res;
 }
 
-bool SceneFileV2::WriteDescriptor(File* file, const Descriptor& descriptor)
+bool SceneFileV2::WriteDescriptor(File* file, const Descriptor& descriptor, SerializationContext* serializationContext)
 {
     if (sizeof(descriptor.size) != file->Write(&descriptor.size, sizeof(descriptor.size)))
     {
@@ -883,6 +1049,19 @@ bool SceneFileV2::WriteDescriptor(File* file, const Descriptor& descriptor)
     if (sizeof(descriptor.fileType) != file->Write(&descriptor.fileType, sizeof(descriptor.fileType)))
     {
         return false;
+    }
+
+    if (serializationContext->GetVersion() >= WORLD_OF_TANKS_BLITZ_11_8_0_VERSION)
+    {
+        if (sizeof(descriptor.geometryIdHash) != file->Write(&descriptor.geometryIdHash, sizeof(descriptor.geometryIdHash)))
+        {
+            return false;
+        }
+
+        if (sizeof(descriptor.geometryDataHash) != file->Write(&descriptor.geometryDataHash, sizeof(descriptor.geometryDataHash)))
+        {
+            return false;
+        }
     }
 
     return true;
@@ -1146,6 +1325,28 @@ bool SceneFileV2::SaveHierarchy(Entity* node, File* file, int32 level)
         SaveHierarchy(child, file, level + 1);
     }
     return true;
+}
+
+void SceneFileV2::ExportHierarchyForWorldOfTanksBlitz(Vector<VariantType>* hierarchy, Entity* node)
+{
+    ScopedPtr<KeyedArchive> nodeArchive(new KeyedArchive());
+    node->Save(nodeArchive, &serializationContext);
+
+    Vector<VariantType> childrens;
+    for (int ci = 0; ci < node->GetChildrenCount(); ++ci)
+    {
+        Entity* child = node->GetChild(ci);
+        ExportHierarchyForWorldOfTanksBlitz(&childrens, child);
+    }
+
+    if (!childrens.empty())
+    {
+        VariantType childrenVariant(childrens);
+        nodeArchive->SetVariantVector(SceneFileV2Key::HIERARCHY_KEY, childrens);
+    }
+
+    VariantType entityVariant(nodeArchive.get());
+    hierarchy->push_back(entityVariant);
 }
 
 bool SceneFileV2::GetNestedParticleEmitterNodes(Entity* entity, Vector<VariantType>* result)

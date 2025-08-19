@@ -144,6 +144,16 @@ public:
      * @note Scene must be properly initialized before calling this function
      */
     eError LoadScene(const FilePath& filename, Scene* _scene);
+
+    /**
+     * @brief Export scene data for world of tanks blitz (wargaming)
+     * @param[in] filename Path of the main file where scene should be saved
+     * @param[in] _scene Scene object to save
+     * @param[in] fileType Type of scene file to save (defaults to SceneFile)
+     * @return Error code indicating success or failure of export operation
+     */
+    eError ExportSceneForWorldOfTanksBlitz(const FilePath& filename, Scene* _scene, SceneFileV2::eFileType fileType = SceneFileV2::SceneFile);
+
     /**
      * @brief Loads scene version information from a file
      * @param[in] filename Path to the scene file
@@ -372,6 +382,17 @@ private:
     }
 
     /**
+     * @brief Checks if the DataNode is a PolygonGroup
+     *
+     * @param[in] node Pointer to the DataNode to check
+     * @return true if the node is a PolygonGroup, false otherwise
+     */
+    inline bool IsPolygonGroupDataNode(DataNode* node)
+    {
+        return (node->GetClassName() == "PolygonGroup");
+    }
+
+    /**
      * @brief Saves the hierarchy of entities to a file
      * @param node The root entity node to save
      * @param file The file to write the hierarchy to
@@ -379,6 +400,8 @@ private:
      * @return true if hierarchy was saved successfully, false otherwise
      */
     bool SaveHierarchy(Entity* node, File* file, int32 level);
+
+    void ExportHierarchyForWorldOfTanksBlitz(Vector<VariantType>* hierarchy, Entity* node);
 
     bool GetNestedParticleEmitterNodes(Entity* entity, Vector<VariantType>* result);
 
@@ -437,7 +460,7 @@ private:
      * @param[in] descriptor The descriptor data to write
      * @return true if writing was successful, false otherwise
      */
-    static bool WriteDescriptor(File* file, const Descriptor& descriptor);
+    static bool WriteDescriptor(File* file, const Descriptor& descriptor, SerializationContext* serializationContext);
     /**
      * Reads a scene descriptor from a file.
      * @param[in] file The file to read the descriptor from.
