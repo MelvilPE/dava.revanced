@@ -22,8 +22,8 @@ class SerializationContext
 public:
     struct PolygonGroupLoadInfo
     {
-        uint32 filePos = 0;
         int32 requestedFormat = EVF_VERTEX; //vertex position loading is required as all code assumes it is there
+        KeyedArchive* polygonArchive;
         bool onScene = false;
     };
 
@@ -135,9 +135,9 @@ public:
 
     void ResolveMaterialBindings();
 
-    void AddLoadedPolygonGroup(PolygonGroup* group, uint32 dataFilePos);
+    void AddLoadedPolygonGroup(PolygonGroup* group, KeyedArchive* polygonArchive);
     void AddRequestedPolygonGroupFormat(PolygonGroup* group, int32 format);
-    bool LoadPolygonGroupData(File* file);
+    bool LoadPolygonGroupData();
 
     template <template <typename, typename> class Container, class T, class A>
     void GetDataNodes(Container<T, A>& container);

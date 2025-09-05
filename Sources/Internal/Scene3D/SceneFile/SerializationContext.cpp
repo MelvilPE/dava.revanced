@@ -66,11 +66,11 @@ void SerializationContext::ResolveMaterialBindings()
     materialBindings.clear();
 }
 
-void SerializationContext::AddLoadedPolygonGroup(PolygonGroup* group, uint32 dataFilePos)
+void SerializationContext::AddLoadedPolygonGroup(PolygonGroup* group, KeyedArchive* polygonArchive)
 {
     DVASSERT(loadedPolygonGroups.find(group) == loadedPolygonGroups.end());
     PolygonGroupLoadInfo loadInfo;
-    loadInfo.filePos = dataFilePos;
+    loadInfo.polygonArchive = new KeyedArchive(*polygonArchive);
     loadedPolygonGroups[group] = loadInfo;
 }
 void SerializationContext::AddRequestedPolygonGroupFormat(PolygonGroup* group, int32 format)
@@ -81,7 +81,7 @@ void SerializationContext::AddRequestedPolygonGroupFormat(PolygonGroup* group, i
     foundGroup->second.onScene = true;
 }
 
-bool SerializationContext::LoadPolygonGroupData(File* file)
+bool SerializationContext::LoadPolygonGroupData()
 {
     bool resultLoaded = true;
     bool cutUnusedStreams = QualitySettingsSystem::Instance()->GetAllowCutUnusedVertexStreams();
@@ -89,9 +89,7 @@ bool SerializationContext::LoadPolygonGroupData(File* file)
     {
         if (it->second.onScene || !cutUnusedStreams)
         {
-            resultLoaded &= file->Seek(it->second.filePos, File::SEEK_FROM_START);
-            KeyedArchive* archive = new KeyedArchive();
-            resultLoaded &= archive->Load(file);
+            KeyedArchive* archive = it->second.polygonArchive;
             it->first->LoadPolygonData(archive, this, it->second.requestedFormat, cutUnusedStreams);
             SafeRelease(archive);
         }

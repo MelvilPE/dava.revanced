@@ -682,15 +682,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     }
 
     UpdatePolygonGroupRequestedFormatRecursively(scene);
-    bool contextLoaded = false;
-    if (descriptor.geometryIdHash != NULL && geometryFile)
-    {
-        contextLoaded = serializationContext.LoadPolygonGroupData(geometryFile);
-    }
-    else
-    {
-        contextLoaded = serializationContext.LoadPolygonGroupData(file);
-    }
+    bool contextLoaded = serializationContext.LoadPolygonGroupData();
     if (!contextLoaded)
     {
         Logger::Error("SceneFileV2::LoadScene LoadPolygonGroupData failed in file: %s", filename.GetAbsolutePathname().c_str());
@@ -985,7 +977,7 @@ bool SceneFileV2::LoadDataNodeInternal(Scene* scene, KeyedArchive* archive, uint
 
     if (name == "PolygonGroup")
     {
-        serializationContext.AddLoadedPolygonGroup(static_cast<PolygonGroup*>(node), currFilePos);
+        serializationContext.AddLoadedPolygonGroup(static_cast<PolygonGroup*>(node), archive);
     }
 
     if (name == "ParticleEmitterNode")
