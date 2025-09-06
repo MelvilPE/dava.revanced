@@ -93,10 +93,37 @@ ActionComponentEditor::ActionComponentEditor(QWidget* parent)
     actionTypes[DAVA::ActionComponent::Task::eType::MotionStop] = "Animation stop";
     actionTypes[DAVA::ActionComponent::Task::eType::StartSound] = "Sound start";
     actionTypes[DAVA::ActionComponent::Task::eType::StopSound] = "Sound stop";
+    actionTypes[DAVA::ActionComponent::Task::eType::TriggerWave] = "TriggerWave";
+    actionTypes[DAVA::ActionComponent::Task::eType::SetSwitch] = "SetSwitch";
+    actionTypes[DAVA::ActionComponent::Task::eType::ActivateState] = "ActivateState";
+    actionTypes[DAVA::ActionComponent::Task::eType::TriggerCustomEvent] = "TriggerCustomEvent";
+    actionTypes[DAVA::ActionComponent::Task::eType::TriggerUIEvent] = "TriggerUIEvent";
+    actionTypes[DAVA::ActionComponent::Task::eType::StartHighlightAnimation] = "StartHighlightAnimation";
+    actionTypes[DAVA::ActionComponent::Task::eType::StartFadeIn] = "StartFadeIn";
+    actionTypes[DAVA::ActionComponent::Task::eType::StartFadeOut] = "StartFadeOut";
+    actionTypes[DAVA::ActionComponent::Task::eType::MotionSetFrame] = "MotionSetFrame";
+    actionTypes[DAVA::ActionComponent::Task::eType::MotionPause] = "MotionPause";
+    actionTypes[DAVA::ActionComponent::Task::eType::MotionResume] = "MotionResume";
+    actionTypes[DAVA::ActionComponent::Task::eType::MotionUpdateSpeed] = "MotionUpdateSpeed";
 
     eventTypes[DAVA::ActionComponent::Event::eType::SwitchChanged] = "Switch";
     eventTypes[DAVA::ActionComponent::Event::eType::EntityAddedToScene] = "Added";
     eventTypes[DAVA::ActionComponent::Event::eType::Custom] = "User";
+    eventTypes[DAVA::ActionComponent::Event::eType::MotionFragmentFinished] = "MotionFragmentFinished";
+    eventTypes[DAVA::ActionComponent::Event::eType::MotionFragmentStarted] = "MotionFragmentStarted";
+    eventTypes[DAVA::ActionComponent::Event::eType::ParticlesStarted] = "ParticlesStarted";
+    eventTypes[DAVA::ActionComponent::Event::eType::ParticlesStopped] = "ParticlesStopped";
+    eventTypes[DAVA::ActionComponent::Event::eType::MotionSequenceStarted] = "MotionSequenceStarted";
+    eventTypes[DAVA::ActionComponent::Event::eType::MotionSequenceFinished] = "MotionSequenceFinished";
+    eventTypes[DAVA::ActionComponent::Event::eType::MotionInterrupted] = "MotionInterrupted";
+    eventTypes[DAVA::ActionComponent::Event::eType::Input] = "Input";
+    eventTypes[DAVA::ActionComponent::Event::eType::StateActivated] = "StateActivated";
+    eventTypes[DAVA::ActionComponent::Event::eType::TriggerEntered] = "TriggerEntered";
+    eventTypes[DAVA::ActionComponent::Event::eType::TriggerLeft] = "TriggerLeft";
+    eventTypes[DAVA::ActionComponent::Event::eType::MotionSetFrame] = "MotionSetFrame";
+    eventTypes[DAVA::ActionComponent::Event::eType::MotionSetSpeed] = "MotionSetSpeed";
+    eventTypes[DAVA::ActionComponent::Event::eType::MotionPaused] = "MotionPaused";
+    eventTypes[DAVA::ActionComponent::Event::eType::MotionResumed] = "MotionResumed";
 }
 
 ActionComponentEditor::~ActionComponentEditor()
@@ -275,10 +302,37 @@ ActionItemEditDelegate::ActionItemEditDelegate(QObject* parent)
     actionTypes["Animation stop"] = DAVA::ActionComponent::Task::eType::MotionStop;
     actionTypes["Sound start"] = DAVA::ActionComponent::Task::eType::StartSound;
     actionTypes["Sound stop"] = DAVA::ActionComponent::Task::eType::StopSound;
+    actionTypes["TriggerWave"] = DAVA::ActionComponent::Task::eType::TriggerWave;
+    actionTypes["SetSwitch"] = DAVA::ActionComponent::Task::eType::SetSwitch;
+    actionTypes["ActivateState"] = DAVA::ActionComponent::Task::eType::ActivateState;
+    actionTypes["TriggerCustomEvent"] = DAVA::ActionComponent::Task::eType::TriggerCustomEvent;
+    actionTypes["TriggerUIEvent"] = DAVA::ActionComponent::Task::eType::TriggerUIEvent;
+    actionTypes["StartHighlightAnimation"] = DAVA::ActionComponent::Task::eType::StartHighlightAnimation;
+    actionTypes["StartFadeIn"] = DAVA::ActionComponent::Task::eType::StartFadeIn;
+    actionTypes["StartFadeOut"] = DAVA::ActionComponent::Task::eType::StartFadeOut;
+    actionTypes["MotionSetFrame"] = DAVA::ActionComponent::Task::eType::MotionSetFrame;
+    actionTypes["MotionPause"] = DAVA::ActionComponent::Task::eType::MotionPause;
+    actionTypes["MotionResume"] = DAVA::ActionComponent::Task::eType::MotionResume;
+    actionTypes["MotionUpdateSpeed"] = DAVA::ActionComponent::Task::eType::MotionUpdateSpeed;
 
     eventTypes["Switch"] = DAVA::ActionComponent::Event::eType::SwitchChanged;
     eventTypes["Added"] = DAVA::ActionComponent::Event::eType::EntityAddedToScene;
     eventTypes["User"] = DAVA::ActionComponent::Event::eType::Custom;
+    eventTypes["MotionFragmentFinished"] = DAVA::ActionComponent::Event::eType::MotionFragmentFinished;
+    eventTypes["MotionFragmentStarted"] = DAVA::ActionComponent::Event::eType::MotionFragmentStarted;
+    eventTypes["ParticlesStarted"] = DAVA::ActionComponent::Event::eType::ParticlesStarted;
+    eventTypes["ParticlesStopped"] = DAVA::ActionComponent::Event::eType::ParticlesStopped;
+    eventTypes["MotionSequenceStarted"] = DAVA::ActionComponent::Event::eType::MotionSequenceStarted;
+    eventTypes["MotionSequenceFinished"] = DAVA::ActionComponent::Event::eType::MotionSequenceFinished;
+    eventTypes["MotionInterrupted"] = DAVA::ActionComponent::Event::eType::MotionInterrupted;
+    eventTypes["Input"] = DAVA::ActionComponent::Event::eType::Input;
+    eventTypes["StateActivated"] = DAVA::ActionComponent::Event::eType::StateActivated;
+    eventTypes["TriggerEntered"] = DAVA::ActionComponent::Event::eType::TriggerEntered;
+    eventTypes["TriggerLeft"] = DAVA::ActionComponent::Event::eType::TriggerLeft;
+    eventTypes["MotionSetFrame"] = DAVA::ActionComponent::Event::eType::MotionSetFrame;
+    eventTypes["MotionSetSpeed"] = DAVA::ActionComponent::Event::eType::MotionSetSpeed;
+    eventTypes["MotionPaused"] = DAVA::ActionComponent::Event::eType::MotionPaused;
+    eventTypes["MotionResumed"] = DAVA::ActionComponent::Event::eType::MotionResumed;
 }
 
 void ActionItemEditDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const

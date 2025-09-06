@@ -494,7 +494,15 @@ void ActionComponent::EvaluateAction(const Action& action)
         OnActionWave(action);
         break;
     default:
-        Logger::Warning("[ActionComponent::EvaluateAction] Task::eType - action not registered");
+        bool registered = (action.type >= Task::eType::None && action.type < Task::eType::Count);
+        if (!registered)
+        {
+            Logger::Warning("[ActionComponent::EvaluateAction] Task::eType - task not found not registered");
+        }
+        else
+        {
+            Logger::Warning("[ActionComponent::EvaluateAction] Task::eType - task found but not registered");
+        }
         break;
     }
 }
