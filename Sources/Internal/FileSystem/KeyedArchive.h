@@ -394,6 +394,7 @@ public:
     */
     void SetColor(const String& key, const Color& value);
 
+    void SetFilePath(const String& key, const FilePath& value);
     void SetRect(const String& key, const Rect& value);
     void SetVariantVector(const String& key, const Vector<VariantType>& value);
     void SetQuaternion(const String& key, const Quaternion& value);

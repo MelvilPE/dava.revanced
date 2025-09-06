@@ -24,6 +24,9 @@ const Type* GetTypeByVariantType(VariantType* value)
     const Type* result = nullptr;
     switch (value->GetType())
     {
+    case VariantType::TYPE_NONE:
+        DVASSERT(false && "[KeyedArchiveReflection::GetTypeByVariantType] TYPE_NONE is invalid here");
+        break;
     case VariantType::TYPE_BOOLEAN:
         result = Type::Instance<bool>();
         break;
@@ -91,6 +94,21 @@ const Type* GetTypeByVariantType(VariantType* value)
     case VariantType::TYPE_UINT32:
         result = Type::Instance<uint32>();
         break;
+    case VariantType::TYPE_RECT:
+        result = Type::Instance<Rect>();
+        break;
+    case VariantType::TYPE_VARIANT_VECTOR:
+        result = Type::Instance<Vector<VariantType>>();
+        break;
+    case VariantType::TYPE_QUATERNION:
+        result = Type::Instance<Quaternion>();
+        break;
+    case VariantType::TYPE_TRANSFORM:
+        result = Type::Instance<Transform>();
+        break;
+    case VariantType::TYPE_AABBOX2:
+        result = Type::Instance<AABBox2>();
+        break;
     default:
         break;
     }
@@ -103,6 +121,9 @@ VariantType PrepareValueForKeyedArchiveImpl(const Any& value, VariantType::eVari
     VariantType result;
     switch (resultType)
     {
+    case VariantType::TYPE_NONE:
+        DVASSERT(false && "[KeyedArchiveReflection::PrepareValueForKeyedArchiveImpl] TYPE_NONE is invalid here");
+        break;
     case VariantType::TYPE_BOOLEAN:
         if (value.CanCast<bool>())
         {
@@ -255,6 +276,36 @@ VariantType PrepareValueForKeyedArchiveImpl(const Any& value, VariantType::eVari
             DVASSERT(false);
         }
         break;
+    case VariantType::TYPE_RECT:
+        if (value.CanCast<Rect>())
+        {
+            result.SetRect(value.Cast<Rect>());
+        }
+        break;
+    case VariantType::TYPE_VARIANT_VECTOR:
+        if (value.CanCast<Vector<VariantType>>())
+        {
+            result.SetVariantVector(value.Cast<Vector<VariantType>>());
+        }
+        break;
+    case VariantType::TYPE_QUATERNION:
+        if (value.CanCast<Quaternion>())
+        {
+            result.SetQuaternion(value.Cast<Quaternion>());
+        }
+        break;
+    case VariantType::TYPE_TRANSFORM:
+        if (value.CanCast<Transform>())
+        {
+            result.SetTransform(value.Cast<Transform>());
+        }
+        break;
+    case VariantType::TYPE_AABBOX2:
+        if (value.CanCast<AABBox2>())
+        {
+            result.SetAABBox2(value.Cast<AABBox2>());
+        }
+        break;
     case VariantType::TYPE_BYTE_ARRAY:
     default:
         DVASSERT(false);
@@ -361,6 +412,21 @@ Any KeyedArchiveElementValueWrapper::GetValue(const ReflectedObject& object) con
     case VariantType::TYPE_UINT16:
         result = static_cast<uint32>(value->AsUInt16());
         break;
+    case VariantType::TYPE_RECT:
+        result = value->AsRect();
+        break;
+    case VariantType::TYPE_VARIANT_VECTOR:
+        result = value->AsVariantVector();
+        break;
+    case VariantType::TYPE_QUATERNION:
+        result = value->AsQuaternion();
+        break;
+    case VariantType::TYPE_TRANSFORM:
+        result = value->AsTransform();
+        break;
+    case VariantType::TYPE_AABBOX2:
+        result = value->AsAABBox2();
+        break;
     default:
         break;
     }
@@ -465,6 +531,21 @@ bool KeyedArchiveElementValueWrapper::SetValue(const ReflectedObject& object, co
             DVASSERT(false);
         }
         break;
+    case VariantType::TYPE_RECT:
+        v->SetRect(value.Get<Rect>());
+        break;
+    case VariantType::TYPE_VARIANT_VECTOR:
+        v->SetVariantVector(value.Get<Vector<VariantType>>());
+        break;
+    case VariantType::TYPE_QUATERNION:
+        v->SetQuaternion(value.Get<Quaternion>());
+        break;
+    case VariantType::TYPE_TRANSFORM:
+        v->SetTransform(value.Get<Transform>());
+        break;
+    case VariantType::TYPE_AABBOX2:
+        v->SetAABBox2(value.Get<AABBox2>());
+        break;
     case VariantType::TYPE_BYTE_ARRAY:
     default:
         DVASSERT(false);
@@ -521,6 +602,21 @@ ReflectedObject KeyedArchiveElementValueWrapper::GetValueObject(const ReflectedO
         break;
     case VariantType::TYPE_AABBOX3:
         result = ReflectedObject(value->aabbox3);
+        break;
+    case VariantType::TYPE_RECT:
+        result = ReflectedObject(value->rectValue);
+        break;
+    case VariantType::TYPE_VARIANT_VECTOR:
+        result = ReflectedObject(value->variantVectorValue);
+        break;
+    case VariantType::TYPE_QUATERNION:
+        result = ReflectedObject(value->quaternionValue);
+        break;
+    case VariantType::TYPE_TRANSFORM:
+        result = ReflectedObject(value->transformValue);
+        break;
+    case VariantType::TYPE_AABBOX2:
+        result = ReflectedObject(value->aabbox2Value);
         break;
     default:
         break;
@@ -609,6 +705,7 @@ bool KeyedArchiveStructureWrapper::AddField(const ReflectedObject& object, const
         String k = key.Cast<String>();
         KeyedArchive* archive = vw->GetValueObject(object).GetPtr<KeyedArchive>();
         const Type* t = value.GetType();
+
         if (t == Type::Instance<int8>())
             archive->SetInt32(k, value.Get<int8>());
         else if (t == Type::Instance<uint8>())
@@ -653,6 +750,22 @@ bool KeyedArchiveStructureWrapper::AddField(const ReflectedObject& object, const
             archive->SetArchive(k, value.Get<KeyedArchive*>());
         else if (t == Type::Instance<RefPtr<KeyedArchive>>())
             archive->SetArchive(k, value.Get<RefPtr<KeyedArchive>>().Get());
+        else if (t == Type::Instance<FastName>())
+            archive->SetFastName(k, value.Get<FastName>());
+        else if (t == Type::Instance<FilePath>())
+            archive->SetFilePath(k, value.Get<FilePath>());
+        else if (t == Type::Instance<Rect>())
+            archive->SetRect(k, value.Get<Rect>());
+        else if (t == Type::Instance<Vector<VariantType>>())
+            archive->SetVariantVector(k, value.Get<Vector<VariantType>>());
+        else if (t == Type::Instance<Quaternion>())
+            archive->SetQuaternion(k, value.Get<Quaternion>());
+        else if (t == Type::Instance<Transform>())
+            archive->SetTransform(k, value.Get<Transform>());
+        else if (t == Type::Instance<AABBox2>())
+            archive->SetAABBox2(k, value.Get<AABBox2>());
+        else
+            DVASSERT(false && "Unsupported type in AddField");
 
         return true;
     }

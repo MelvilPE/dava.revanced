@@ -574,6 +574,11 @@ void KeyedArchive::SetColor(const String& key, const Color& value)
     SetVariant(key, value, &VariantType::SetColor);
 }
 
+void KeyedArchive::SetFilePath(const String& key, const FilePath& value)
+{
+    SetVariant(key, value, &VariantType::SetFilePath);
+}
+
 void KeyedArchive::SetRect(const String& key, const Rect& value)
 {
     SetVariant(key, value, &VariantType::SetRect);
