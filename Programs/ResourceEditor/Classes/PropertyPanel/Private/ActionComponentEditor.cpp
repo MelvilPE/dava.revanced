@@ -87,16 +87,16 @@ ActionComponentEditor::ActionComponentEditor(QWidget* parent)
     editDelegate.SetComponentEditor(this);
     ui->tableActions->setItemDelegate(&editDelegate);
 
-    actionTypes[DAVA::ActionComponent::Action::TYPE_PARTICLE_EFFECT_START] = "Particle start";
-    actionTypes[DAVA::ActionComponent::Action::TYPE_PARTICLE_EFFECT_STOP] = "Particle stop";
-    actionTypes[DAVA::ActionComponent::Action::TYPE_ANIMATION_START] = "Animation start";
-    actionTypes[DAVA::ActionComponent::Action::TYPE_ANIMATION_STOP] = "Animation stop";
-    actionTypes[DAVA::ActionComponent::Action::TYPE_SOUND_START] = "Sound start";
-    actionTypes[DAVA::ActionComponent::Action::TYPE_SOUND_STOP] = "Sound stop";
+    actionTypes[DAVA::ActionComponent::Task::eType::StartParticles] = "Particle start";
+    actionTypes[DAVA::ActionComponent::Task::eType::StopParticles] = "Particle stop";
+    actionTypes[DAVA::ActionComponent::Task::eType::MotionStart] = "Animation start";
+    actionTypes[DAVA::ActionComponent::Task::eType::MotionStop] = "Animation stop";
+    actionTypes[DAVA::ActionComponent::Task::eType::StartSound] = "Sound start";
+    actionTypes[DAVA::ActionComponent::Task::eType::StopSound] = "Sound stop";
 
-    eventTypes[DAVA::ActionComponent::Action::EVENT_SWITCH_CHANGED] = "Switch";
-    eventTypes[DAVA::ActionComponent::Action::EVENT_ADDED_TO_SCENE] = "Added";
-    eventTypes[DAVA::ActionComponent::Action::EVENT_CUSTOM] = "User";
+    eventTypes[DAVA::ActionComponent::Event::eType::SwitchChanged] = "Switch";
+    eventTypes[DAVA::ActionComponent::Event::eType::EntityAddedToScene] = "Added";
+    eventTypes[DAVA::ActionComponent::Event::eType::Custom] = "User";
 }
 
 ActionComponentEditor::~ActionComponentEditor()
@@ -223,8 +223,8 @@ QWidget* ActionItemEditDelegate::createFloatEditor(QWidget* parent) const
 DAVA::ActionComponent::Action ActionComponentEditor::GetDefaultAction()
 {
     DAVA::ActionComponent::Action action;
-    action.eventType = DAVA::ActionComponent::Action::EVENT_SWITCH_CHANGED;
-    action.type = DAVA::ActionComponent::Action::TYPE_PARTICLE_EFFECT_START;
+    action.eventType = DAVA::ActionComponent::Event::eType::SwitchChanged;
+    action.type = DAVA::ActionComponent::Task::eType::StartParticles;
     action.entityName = DAVA::ActionComponent::ACTION_COMPONENT_SELF_ENTITY_NAME;
     action.delay = 0.0f;
     action.switchIndex = -1;
@@ -240,7 +240,7 @@ bool ActionComponentEditor::IsActionPresent(const DAVA::ActionComponent::Action 
         const DAVA::ActionComponent::Action& innerAction = targetComponent->Get(i);
         if ((innerAction.type == action.type) && //different type
             (innerAction.eventType == action.eventType) && //different event
-            ((action.eventType != DAVA::ActionComponent::Action::EVENT_SWITCH_CHANGED) || (innerAction.switchIndex == action.switchIndex)) && //different switch for EVENT_SWITCH_CHNGED only
+            ((action.eventType != DAVA::ActionComponent::Event::eType::SwitchChanged) || (innerAction.switchIndex == action.switchIndex)) && //different switch for EVENT_SWITCH_CHNGED only
             (innerAction.entityName == action.entityName)) //different entity
         {
             actionPresent = true;
@@ -269,16 +269,16 @@ ActionItemEditDelegate::ActionItemEditDelegate(QObject* parent)
     , targetComponent(NULL)
     , componentEditor(NULL)
 {
-    actionTypes["Particle start"] = DAVA::ActionComponent::Action::TYPE_PARTICLE_EFFECT_START;
-    actionTypes["Particle stop"] = DAVA::ActionComponent::Action::TYPE_PARTICLE_EFFECT_STOP;
-    actionTypes["Animation start"] = DAVA::ActionComponent::Action::TYPE_ANIMATION_START;
-    actionTypes["Animation stop"] = DAVA::ActionComponent::Action::TYPE_ANIMATION_STOP;
-    actionTypes["Sound start"] = DAVA::ActionComponent::Action::TYPE_SOUND_START;
-    actionTypes["Sound stop"] = DAVA::ActionComponent::Action::TYPE_SOUND_STOP;
+    actionTypes["Particle start"] = DAVA::ActionComponent::Task::eType::StartParticles;
+    actionTypes["Particle stop"] = DAVA::ActionComponent::Task::eType::StopParticles;
+    actionTypes["Animation start"] = DAVA::ActionComponent::Task::eType::MotionStart;
+    actionTypes["Animation stop"] = DAVA::ActionComponent::Task::eType::MotionStop;
+    actionTypes["Sound start"] = DAVA::ActionComponent::Task::eType::StartSound;
+    actionTypes["Sound stop"] = DAVA::ActionComponent::Task::eType::StopSound;
 
-    eventTypes["Switch"] = DAVA::ActionComponent::Action::EVENT_SWITCH_CHANGED;
-    eventTypes["Added"] = DAVA::ActionComponent::Action::EVENT_ADDED_TO_SCENE;
-    eventTypes["User"] = DAVA::ActionComponent::Action::EVENT_CUSTOM;
+    eventTypes["Switch"] = DAVA::ActionComponent::Event::eType::SwitchChanged;
+    eventTypes["Added"] = DAVA::ActionComponent::Event::eType::EntityAddedToScene;
+    eventTypes["User"] = DAVA::ActionComponent::Event::eType::Custom;
 }
 
 void ActionItemEditDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -521,7 +521,7 @@ void ActionItemEditDelegate::setModelData(QWidget* editor, QAbstractItemModel* m
     case COLUMN_EVENT_TYPE:
     {
         QComboBox* combo = static_cast<QComboBox*>(editor);
-        currentAction.eventType = (DAVA::ActionComponent::Action::eEvent)combo->itemData(combo->currentIndex()).toUInt();
+        currentAction.eventType = (DAVA::ActionComponent::Event::eType)combo->itemData(combo->currentIndex()).toUInt();
         model->setData(index, combo->currentText(), Qt::EditRole);
         break;
     }
@@ -537,7 +537,7 @@ void ActionItemEditDelegate::setModelData(QWidget* editor, QAbstractItemModel* m
     case COLUMN_ACTION_TYPE:
     {
         QComboBox* combo = static_cast<QComboBox*>(editor);
-        DAVA::ActionComponent::Action::eType t = (DAVA::ActionComponent::Action::eType)combo->itemData(combo->currentIndex()).toUInt();
+        DAVA::ActionComponent::Task::eType t = (DAVA::ActionComponent::Task::eType)combo->itemData(combo->currentIndex()).toUInt();
         currentAction.type = t;
         model->setData(index, combo->currentText(), Qt::EditRole);
 

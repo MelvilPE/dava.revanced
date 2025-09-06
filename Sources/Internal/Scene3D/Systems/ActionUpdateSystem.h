@@ -72,13 +72,13 @@ public:
      * @param eventType The type of action event to be blocked/unblocked
      * @param block If true, blocks the specified event type; if false, unblocks it
      */
-    void SetBlockEvent(ActionComponent::Action::eEvent eventType, bool block);
+    void SetBlockEvent(ActionComponent::Event::eType eventType, bool block);
     /**
      * @brief Checks if the specified event type is a blocking event
      * @param eventType The type of event to check
      * @return true if the event is blocking, false otherwise
      */
-    bool IsBlockEvent(ActionComponent::Action::eEvent eventType);
+    bool IsBlockEvent(ActionComponent::Event::eType eventType);
     /**
      * @brief Unblocks all events in the system that were previously blocked
      * 
@@ -88,7 +88,7 @@ public:
     void UnblockAllEvents();
 
 protected:
-    bool eventBlocked[ActionComponent::Action::EVENTS_COUNT];
+    bool eventBlocked[ActionComponent::Event::eType::Count];
     Vector<ActionComponent*> activeActions;
 
     /**

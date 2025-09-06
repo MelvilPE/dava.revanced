@@ -107,7 +107,7 @@ public:
     bool materialShowLightmapCanvas = false;
     bool lodEditorSceneMode = false;
     bool lodEditorRecursive = false;
-    ActionComponent::Action::eEvent runActionEventType = ActionComponent::Action::EVENT_SWITCH_CHANGED;
+    ActionComponent::Event::eType runActionEventType = ActionComponent::Event::eType::SwitchChanged;
     String beastLightmapsDefaultDir = String("lightmaps");
     String imageSplitterPath = String("");
     String imageSplitterPathSpecular = String("");

@@ -28,13 +28,13 @@ RunActionEventWidget::RunActionEventWidget(QWidget* parent)
     ui->setupUi(this);
     setObjectName("RunActionEventWidget");
 
-    ui->eventType->addItem("Switch", DAVA::ActionComponent::Action::EVENT_SWITCH_CHANGED);
-    ui->eventType->addItem("Added", DAVA::ActionComponent::Action::EVENT_ADDED_TO_SCENE);
-    ui->eventType->addItem("User", DAVA::ActionComponent::Action::EVENT_CUSTOM);
+    ui->eventType->addItem("Switch", DAVA::ActionComponent::Event::eType::SwitchChanged);
+    ui->eventType->addItem("Added", DAVA::ActionComponent::Event::eType::EntityAddedToScene);
+    ui->eventType->addItem("User", DAVA::ActionComponent::Event::eType::Custom);
 
-    editorIdMap[DAVA::ActionComponent::Action::EVENT_SWITCH_CHANGED] = 0;
-    editorIdMap[DAVA::ActionComponent::Action::EVENT_ADDED_TO_SCENE] = 1;
-    editorIdMap[DAVA::ActionComponent::Action::EVENT_CUSTOM] = 2;
+    editorIdMap[DAVA::ActionComponent::Event::eType::SwitchChanged] = 0;
+    editorIdMap[DAVA::ActionComponent::Event::eType::EntityAddedToScene] = 1;
+    editorIdMap[DAVA::ActionComponent::Event::eType::Custom] = 2;
 
     autocompleteModel = new QStringListModel(this);
     ui->name->setModel(autocompleteModel);
@@ -57,7 +57,7 @@ RunActionEventWidget::RunActionEventWidget(QWidget* parent)
     connect(SceneSignals::Instance(), &SceneSignals::Activated, this, &RunActionEventWidget::sceneActivated);
     connect(SceneSignals::Instance(), &SceneSignals::Deactivated, this, &RunActionEventWidget::sceneDeactivated);
 
-    const DAVA::ActionComponent::Action::eEvent eventType = DAVA::Deprecated::GetDataNode<DAVA::CommonInternalSettings>()->runActionEventType;
+    const DAVA::ActionComponent::Event::eType eventType = DAVA::Deprecated::GetDataNode<DAVA::CommonInternalSettings>()->runActionEventType;
     ui->eventType->setCurrentIndex(editorIdMap[eventType]);
 }
 
@@ -70,7 +70,7 @@ void RunActionEventWidget::OnTypeChanged()
     DVASSERT(editorindex < ui->stackedWidget->count());
 
     ui->stackedWidget->setCurrentIndex(editorindex);
-    DAVA::Deprecated::GetDataNode<DAVA::CommonInternalSettings>()->runActionEventType = static_cast<DAVA::ActionComponent::Action::eEvent>(eventTypeId);
+    DAVA::Deprecated::GetDataNode<DAVA::CommonInternalSettings>()->runActionEventType = static_cast<DAVA::ActionComponent::Event::eType>(eventTypeId);
 }
 
 void RunActionEventWidget::OnInvoke()
@@ -103,16 +103,16 @@ void RunActionEventWidget::OnInvoke()
             {
                 switch (eventTypeId)
                 {
-                case DAVA::ActionComponent::Action::EVENT_SWITCH_CHANGED:
+                case DAVA::ActionComponent::Event::eType::SwitchChanged:
                     if (act.switchIndex == switchIndex)
                     {
                         component->StartSwitch(switchIndex);
                     }
                     break;
-                case DAVA::ActionComponent::Action::EVENT_ADDED_TO_SCENE:
+                case DAVA::ActionComponent::Event::eType::EntityAddedToScene:
                     component->StartAdd();
                     break;
-                case DAVA::ActionComponent::Action::EVENT_CUSTOM:
+                case DAVA::ActionComponent::Event::eType::Custom:
                     if (act.userEventId == name)
                     {
                         component->StartUser(name);
@@ -157,7 +157,7 @@ void RunActionEventWidget::OnSelectionChanged(const DAVA::Any& selectionAny)
         for (DAVA::uint32 componentIdx = 0; componentIdx < nEvents; componentIdx++)
         {
             DAVA::ActionComponent::Action& act = component->Get(componentIdx);
-            if (act.eventType == DAVA::ActionComponent::Action::EVENT_CUSTOM)
+            if (act.eventType == DAVA::ActionComponent::Event::eType::Custom)
             {
                 nameSet.insert(QString(act.userEventId.c_str()));
             }

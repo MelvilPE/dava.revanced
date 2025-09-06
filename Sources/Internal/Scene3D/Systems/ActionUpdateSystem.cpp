@@ -14,19 +14,19 @@ ActionUpdateSystem::ActionUpdateSystem(Scene* scene)
     UnblockAllEvents();
 }
 
-void ActionUpdateSystem::SetBlockEvent(ActionComponent::Action::eEvent eventType, bool block)
+void ActionUpdateSystem::SetBlockEvent(ActionComponent::Event::eType eventType, bool block)
 {
     eventBlocked[eventType] = block;
 }
 
-bool ActionUpdateSystem::IsBlockEvent(ActionComponent::Action::eEvent eventType)
+bool ActionUpdateSystem::IsBlockEvent(ActionComponent::Event::eType eventType)
 {
     return eventBlocked[eventType];
 }
 
 void ActionUpdateSystem::UnblockAllEvents()
 {
-    for (int i = 0; i < ActionComponent::Action::EVENTS_COUNT; i++)
+    for (int i = 0; i < ActionComponent::Event::eType::Count; i++)
         eventBlocked[i] = false;
 }
 

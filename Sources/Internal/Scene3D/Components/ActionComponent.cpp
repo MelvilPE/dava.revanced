@@ -87,7 +87,7 @@ ActionComponent::~ActionComponent()
     }
 }
 
-ActionComponent::Action ActionComponent::MakeAction(ActionComponent::Action::eType type, const FastName& targetName, float32 delay)
+ActionComponent::Action ActionComponent::MakeAction(ActionComponent::Task::eType type, const FastName& targetName, float32 delay)
 {
     Action action;
 
@@ -98,7 +98,7 @@ ActionComponent::Action ActionComponent::MakeAction(ActionComponent::Action::eTy
     return action;
 }
 
-ActionComponent::Action ActionComponent::MakeAction(ActionComponent::Action::eType type, const FastName& targetName, float32 delay, int32 switchIndex)
+ActionComponent::Action ActionComponent::MakeAction(ActionComponent::Task::eType type, const FastName& targetName, float32 delay, int32 switchIndex)
 {
     Action action;
 
@@ -112,7 +112,7 @@ ActionComponent::Action ActionComponent::MakeAction(ActionComponent::Action::eTy
 
 void ActionComponent::StartSwitch(int32 switchIndex)
 {
-    if (entity->GetScene()->actionSystem->IsBlockEvent(Action::EVENT_SWITCH_CHANGED))
+    if (entity->GetScene()->actionSystem->IsBlockEvent(Event::eType::SwitchChanged))
         return;
 
     StopSwitch(switchIndex);
@@ -121,7 +121,7 @@ void ActionComponent::StartSwitch(int32 switchIndex)
     for (uint32 i = 0; i < count; ++i)
     {
         Action& action = actions[i].action;
-        if ((action.eventType == Action::EVENT_SWITCH_CHANGED) && (action.switchIndex == switchIndex))
+        if ((action.eventType == Event::eType::SwitchChanged) && (action.switchIndex == switchIndex))
         {
             action.actualizeDelay();
             actions[i].markedForUpdate = true;
@@ -143,7 +143,7 @@ void ActionComponent::StartSwitch(int32 switchIndex)
 
 void ActionComponent::StartAdd()
 {
-    if (entity->GetScene()->actionSystem->IsBlockEvent(Action::EVENT_ADDED_TO_SCENE))
+    if (entity->GetScene()->actionSystem->IsBlockEvent(Event::eType::EntityAddedToScene))
         return;
 
     uint32 markedCount = 0;
@@ -151,7 +151,7 @@ void ActionComponent::StartAdd()
     for (uint32 i = 0; i < count; ++i)
     {
         Action& action = actions[i].action;
-        if (action.eventType == Action::EVENT_ADDED_TO_SCENE)
+        if (action.eventType == Event::eType::EntityAddedToScene)
         {
             action.actualizeDelay();
             actions[i].markedForUpdate = true;
@@ -173,7 +173,7 @@ void ActionComponent::StartAdd()
 
 void ActionComponent::StartUser(const FastName& name)
 {
-    if (entity->GetScene()->actionSystem->IsBlockEvent(Action::EVENT_CUSTOM))
+    if (entity->GetScene()->actionSystem->IsBlockEvent(Event::eType::Custom))
         return;
 
     StopUser(name);
@@ -182,7 +182,7 @@ void ActionComponent::StartUser(const FastName& name)
     for (uint32 i = 0; i < count; ++i)
     {
         Action& action = actions[i].action;
-        if ((action.eventType == Action::EVENT_CUSTOM) && (action.userEventId == name))
+        if ((action.eventType == Event::eType::Custom) && (action.userEventId == name))
         {
             action.actualizeDelay();
             actions[i].markedForUpdate = true;
@@ -233,7 +233,7 @@ void ActionComponent::StopSwitch(int32 switchIndex)
     for (uint32 i = 0; i < count; ++i)
     {
         Action& action = actions[i].action;
-        if ((action.eventType == Action::EVENT_SWITCH_CHANGED) && (action.switchIndex == switchIndex))
+        if ((action.eventType == Event::eType::SwitchChanged) && (action.switchIndex == switchIndex))
         {
             actions[i].active = false;
             actions[i].timer = 0.0f;
@@ -263,7 +263,7 @@ void ActionComponent::StopUser(const FastName& name)
     for (uint32 i = 0; i < count; ++i)
     {
         Action& action = actions[i].action;
-        if ((action.eventType == Action::EVENT_CUSTOM) && (action.userEventId == name))
+        if ((action.eventType == Event::eType::Custom) && (action.userEventId == name))
         {
             actions[i].active = false;
             actions[i].timer = 0.0f;
@@ -292,7 +292,7 @@ void ActionComponent::Add(const ActionComponent::Action& action)
     allActionsActive = false;
 }
 
-void ActionComponent::Remove(const ActionComponent::Action::eType type, const FastName& entityName, const int switchIndex)
+void ActionComponent::Remove(const ActionComponent::Task::eType type, const FastName& entityName, const int switchIndex)
 {
     bool wasMarked = false;
     for (auto it = actions.begin(); it < actions.end(); ++it)
@@ -451,8 +451,8 @@ void ActionComponent::Deserialize(KeyedArchive* archive, SerializationContext* s
             KeyedArchive* actionArchive = archive->GetArchive(KeyedArchive::GenKeyFromIndex(i));
 
             Action action;
-            action.eventType = static_cast<Action::eEvent>(actionArchive->GetUInt32("act.event"));
-            action.type = static_cast<Action::eType>(actionArchive->GetUInt32("act.type"));
+            action.eventType = static_cast<Event::eType>(actionArchive->GetUInt32("act.event"));
+            action.type = static_cast<Task::eType>(actionArchive->GetUInt32("act.type"));
             action.userEventId = actionArchive->GetFastName("act.userEventId", FastName(""));
             action.delay = actionArchive->GetFloat("act.delay");
             action.delayVariation = actionArchive->GetFloat("act.delayVariation");
@@ -472,29 +472,29 @@ void ActionComponent::EvaluateAction(const Action& action)
 {
     switch (action.type)
     {
-    case Action::TYPE_PARTICLE_EFFECT_START:
+    case Task::eType::StartParticles:
         OnActionParticleEffectStart(action);
         break;
-    case Action::TYPE_PARTICLE_EFFECT_STOP:
+    case Task::eType::StopParticles:
         OnActionParticleEffectStop(action);
         break;
-    case Action::TYPE_ANIMATION_START:
+    case Task::eType::MotionStart:
         OnActionAnimationStart(action);
         break;
-    case Action::TYPE_ANIMATION_STOP:
+    case Task::eType::MotionStop:
         OnActionAnimationStop(action);
         break;
-    case Action::TYPE_SOUND_START:
+    case Task::eType::StartSound:
         OnActionSoundStart(action);
         break;
-    case Action::TYPE_SOUND_STOP:
+    case Task::eType::StopSound:
         OnActionSoundStop(action);
         break;
-    case Action::TYPE_WAVE:
+    case Task::eType::TriggerWave:
         OnActionWave(action);
         break;
     default:
-        DVASSERT(false);
+        Logger::Warning("[ActionComponent::EvaluateAction] Task::eType - action not registered");
         break;
     }
 }

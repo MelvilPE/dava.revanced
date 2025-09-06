@@ -15,31 +15,69 @@ class ActionComponent : public Component
 public:
     const static DAVA::FastName ACTION_COMPONENT_SELF_ENTITY_NAME;
 
-    struct Action : public InspBase
+    class Task
     {
+    public:
         enum eType
         {
-            TYPE_NONE = 0,
-            TYPE_PARTICLE_EFFECT_START,
-            TYPE_SOUND_START,
-            TYPE_WAVE,
-            TYPE_PARTICLE_EFFECT_STOP,
-            TYPE_SOUND_STOP,
-            TYPE_ANIMATION_START,
-            TYPE_ANIMATION_STOP
+            None = 0,
+            StartParticles,
+            StartSound,
+            TriggerWave,
+            StopParticles,
+            StopSound,
+            MotionStart,
+            MotionStop,
+            SetSwitch,
+            ActivateState,
+            TriggerCustomEvent,
+            TriggerUIEvent,
+            StartHighlightAnimation,
+            StartFadeIn,
+            StartFadeOut,
+            MotionSetFrame,
+            MotionPause,
+            MotionResume,
+            MotionUpdateSpeed,
+            Count,
         };
+    };
 
-        enum eEvent
+    class Event
+    {
+    public:
+        enum eType
         {
-            EVENT_SWITCH_CHANGED = 0,
-            EVENT_ADDED_TO_SCENE,
-            EVENT_CUSTOM,
-
-            EVENTS_COUNT,
+            SwitchChanged = 0,
+            EntityAddedToScene,
+            Custom,
+            MotionFragmentFinished,
+            MotionFragmentStarted,
+            ParticlesStarted,
+            ParticlesStopped,
+            MotionSequenceStarted,
+            MotionSequenceFinished,
+            MotionInterrupted,
+            Input,
+            StateActivated,
+            TriggerEntered,
+            TriggerLeft,
+            MotionSetFrame,
+            MotionSetSpeed,
+            MotionPaused,
+            MotionResumed,
+            Count
         };
+    };
 
-        eType type;
-        eEvent eventType;
+    struct Action : public InspBase
+    {
+        
+
+        
+
+        Task::eType type;
+        Event::eType eventType;
         FastName userEventId;
         int32 switchIndex;
         float32 delay;
@@ -51,8 +89,8 @@ public:
         bool stopWhenEmpty;
 
         Action()
-            : type(TYPE_NONE)
-            , eventType(EVENT_SWITCH_CHANGED)
+            : type(Task::eType::None)
+            , eventType(Event::eType::SwitchChanged)
             , userEventId("")
             , switchIndex(-1)
             , delay(0.0f)
@@ -86,7 +124,7 @@ public:
 
     void Add(const ActionComponent::Action& action);
     void Remove(const ActionComponent::Action& action);
-    void Remove(const ActionComponent::Action::eType type, const FastName& entityName, const int switchIndex);
+    void Remove(const ActionComponent::Task::eType type, const FastName& entityName, const int switchIndex);
     uint32 GetCount();
     ActionComponent::Action& Get(uint32 index);
 
@@ -96,8 +134,8 @@ public:
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
-    static ActionComponent::Action MakeAction(ActionComponent::Action::eType type, const FastName& targetName, float32 delay);
-    static ActionComponent::Action MakeAction(ActionComponent::Action::eType type, const FastName& targetName, float32 delay, int32 switchIndex);
+    static ActionComponent::Action MakeAction(ActionComponent::Task::eType type, const FastName& targetName, float32 delay);
+    static ActionComponent::Action MakeAction(ActionComponent::Task::eType type, const FastName& targetName, float32 delay, int32 switchIndex);
 
     struct ActionContainer : public InspBase
     {
