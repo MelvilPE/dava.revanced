@@ -31,6 +31,8 @@ public:
     void Load(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Save(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
+    uint64 GetParticleEmitterNodeID();
+
     DAVA_VIRTUAL_REFLECTION(ParticleEmitterNode, DataNode);
 
     String GetNodeYaml();

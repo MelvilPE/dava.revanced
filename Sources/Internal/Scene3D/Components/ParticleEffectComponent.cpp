@@ -394,13 +394,51 @@ void ParticleEffectComponent::DeserializeNestedEmitters(KeyedArchive* archive, S
 {
     nestedEmittersComponentYaml = archive->SaveToYamlString();
 
+    Vector<ParticleEmitterNode*> sceneAllEmitterNodes = serializationContext->GetParticleEmitterNodes();
+    Vector<ParticleEmitterNode*> filteredEmitterNodes;
+
+    Set<uint64> filteredEmitterNodesIds;
+
+    Vector<VariantType> emittersArch = archive->GetVariantVector("pe.emitters");
+    for (uint32 emitterArchIndex = 0; emitterArchIndex < emittersArch.size(); ++emitterArchIndex)
+    {
+        KeyedArchive* emitterArch = emittersArch[emitterArchIndex].AsKeyedArchive();
+        if (emitterArch == nullptr)
+        {
+            Logger::Warning("[ParticleEffectComponent::DeserializeNestedEmitters] something went wrong, emitterArch can't be nullptr");
+            return;
+        }
+
+        Vector<VariantType> emitterData = emitterArch->GetVariantVector("emitter.data");
+        for (uint32 emitterDataIndex = 0; emitterDataIndex < emitterData.size(); ++emitterDataIndex)
+        {
+            KeyedArchive* emitterDataArch = emitterData[emitterDataIndex].AsKeyedArchive();
+            if (emitterDataArch == nullptr)
+            {
+                Logger::Warning("[ParticleEffectComponent::DeserializeNestedEmitters] something went wrong, emitterDataArch can't be nullptr");
+                return;
+            }
+
+            uint64 emitterId = emitterDataArch->GetUInt64("emitter.id");
+            filteredEmitterNodesIds.insert(emitterId);
+        }
+    }
+
+    for (ParticleEmitterNode* node : sceneAllEmitterNodes)
+    {
+        if (filteredEmitterNodesIds.find(node->GetParticleEmitterNodeID()) != filteredEmitterNodesIds.end())
+        {
+            filteredEmitterNodes.push_back(node);
+        }
+    }
+
+    // Producing ParticleEmitterNodes output
     ScopedPtr<KeyedArchive> nodesArchive(new KeyedArchive());
 
     Vector<VariantType> nodesVariants;
-    Vector<ParticleEmitterNode*> emitterNodes = serializationContext->GetParticleEmitterNodes();
-    for (uint32 emitterNodeIndex = 0; emitterNodeIndex < emitterNodes.size(); emitterNodeIndex++)
+    for (uint32 emitterNodeIndex = 0; emitterNodeIndex < filteredEmitterNodes.size(); ++emitterNodeIndex)
     {
-        ParticleEmitterNode* emitterNode = emitterNodes[emitterNodeIndex];
+        ParticleEmitterNode* emitterNode = filteredEmitterNodes[emitterNodeIndex];
 
         ScopedPtr<KeyedArchive> nodeArchive(new KeyedArchive());
         nodeArchive->LoadFromYamlString(emitterNode->GetNodeYaml());

@@ -27,16 +27,23 @@ ParticleEmitterNode::~ParticleEmitterNode()
 {
 }
 
+void ParticleEmitterNode::Load(KeyedArchive* archive, SerializationContext* serializationContext)
+{
+    // DataNode::Load(archive, serializationContext);
+    nodeYaml = archive->SaveToYamlString();
+}
+
 void ParticleEmitterNode::Save(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     //DataNode::Save(archive, serializationContext);
     archive->LoadFromYamlString(nodeYaml);
 }
 
-void ParticleEmitterNode::Load(KeyedArchive* archive, SerializationContext* serializationContext)
+uint64 ParticleEmitterNode::GetParticleEmitterNodeID()
 {
-    //DataNode::Load(archive, serializationContext);
-    nodeYaml = archive->SaveToYamlString();
+    ScopedPtr<KeyedArchive> archive(new KeyedArchive());
+    archive->LoadFromYamlString(nodeYaml);
+    return archive->GetByteArrayAsType<uint64>("#id", 0);
 }
 
 String ParticleEmitterNode::GetNodeYaml()
