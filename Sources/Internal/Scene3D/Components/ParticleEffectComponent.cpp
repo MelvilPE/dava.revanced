@@ -27,8 +27,8 @@ DAVA_VIRTUAL_REFLECTION_IMPL(ParticleEffectComponent)
     .Field("visibleReflection", &ParticleEffectComponent::GetReflectionVisible, &ParticleEffectComponent::SetReflectionVisible)[M::DisplayName("Visible Reflection")]
     .Field("visibleRefraction", &ParticleEffectComponent::GetRefractionVisible, &ParticleEffectComponent::SetRefractionVisible)[M::DisplayName("Visible Refraction")]
     .Field("clippingVisible", &ParticleEffectComponent::GetClippingVisible, &ParticleEffectComponent::SetClippingVisible)[M::DisplayName("Clipping always visible")]
-    .Field("NestedEmittersComponentYaml", &ParticleEffectComponent::GetNestedEmittersComponentYaml, &ParticleEffectComponent::SetNestedEmittersComponentYaml)[M::DisplayName("Nested Emitters Component Yaml")]
-    .Field("NestedEmittersParticleEmitterNodesYaml", &ParticleEffectComponent::GetNestedEmittersParticleEmitterNodesYaml, &ParticleEffectComponent::SetNestedEmittersParticleEmitterNodesYaml)[M::DisplayName("Nested Emitters Particle Emitter Nodes Yaml")]
+    .Field("nestedEmittersNodesConfig", &ParticleEffectComponent::GetNestedEmittersNodesConfig, &ParticleEffectComponent::SetNestedEmittersNodesConfig)[M::DisplayName("Nested Emitters Nodes Config")]
+    .Field("nestedEmittersCompoConfig", &ParticleEffectComponent::GetNestedEmittersCompoConfig, &ParticleEffectComponent::SetNestedEmittersCompoConfig)[M::DisplayName("Nested Emitters Compo Config")]
     .End();
 }
 
@@ -290,7 +290,7 @@ void ParticleEffectComponent::Serialize(KeyedArchive* archive, SerializationCont
 {
     Component::Serialize(archive, serializationContext);
 
-    bool nestedEmitters = (nestedEmittersComponentYaml != "" && nestedEmittersParticleEmitterNodesYaml != "");
+    bool nestedEmitters = (nestedEmittersNodesConfig != "" && nestedEmittersCompoConfig != "");
     if (!nestedEmitters)
     {
         SerializeLegacyYaml(archive, serializationContext);
@@ -329,11 +329,22 @@ void ParticleEffectComponent::SerializeLegacyYaml(KeyedArchive* archive, Seriali
 
 void ParticleEffectComponent::SerializeNestedEmitters(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-    if (!archive->LoadFromYamlString(nestedEmittersComponentYaml))
+    String absolute = serializationContext->GetScenePath().GetStringValue() + nestedEmittersCompoConfig;
+
+    if (!GetEngineContext()->fileSystem->IsFile(absolute))
     {
-        Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed wrong data in nestedEmittersComponentYaml");
+        Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed nested emitters compo config doesn't exist at %s", absolute.c_str());
         return;
     }
+
+    if (!archive->LoadFromYamlFile(absolute))
+    {
+        Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed nested emitters compo config is wrong %s", absolute.c_str());
+        return;
+    }
+
+    archive->SetString("pe.nestedEmittersNodesConfig", nestedEmittersNodesConfig);
+    archive->SetString("pe.nestedEmittersCompoConfig", nestedEmittersCompoConfig);
 }
 
 void ParticleEffectComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
@@ -392,7 +403,26 @@ void ParticleEffectComponent::DeserializeLegacyYaml(KeyedArchive* archive, Seria
 
 void ParticleEffectComponent::DeserializeNestedEmitters(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-    nestedEmittersComponentYaml = archive->SaveToYamlString();
+    bool nestedEmittersConfigs = archive->IsKeyExists("pe.nestedEmittersNodesConfig") && archive->IsKeyExists("pe.nestedEmittersCompoConfig");
+    if (nestedEmittersConfigs)
+    {
+        nestedEmittersNodesConfig = archive->GetString("pe.nestedEmittersNodesConfig");
+        nestedEmittersCompoConfig = archive->GetString("pe.nestedEmittersCompoConfig");
+        return;
+    }
+
+    String directoryExtractParticles = GetDirectoryExtractParticles(serializationContext);
+
+    FileSystem* fileSystem = GetEngineContext()->fileSystem;
+    if (fileSystem->IsDirectory(directoryExtractParticles))
+    {
+        Logger::Warning("[ParticleEffectComponent::DeserializeNestedEmitters] Extracted particles directory is existing at init - dangerous");
+    }
+    if (!fileSystem->CreateDirectory(FilePath(directoryExtractParticles), true))
+    {
+        Logger::Warning("[ParticleEffectComponent::DeserializeNestedEmitters] Failed to create extracted particles directory");
+        return;
+    }
 
     Vector<ParticleEmitterNode*> sceneAllEmitterNodes = serializationContext->GetParticleEmitterNodes();
     Vector<ParticleEmitterNode*> filteredEmitterNodes;
@@ -432,7 +462,6 @@ void ParticleEffectComponent::DeserializeNestedEmitters(KeyedArchive* archive, S
         }
     }
 
-    // Producing ParticleEmitterNodes output
     ScopedPtr<KeyedArchive> nodesArchive(new KeyedArchive());
 
     Vector<VariantType> nodesVariants;
@@ -450,7 +479,35 @@ void ParticleEffectComponent::DeserializeNestedEmitters(KeyedArchive* archive, S
 
     nodesArchive->SetVariantVector("ParticleEmitterNodes", nodesVariants);
 
-    nestedEmittersParticleEmitterNodesYaml = nodesArchive->SaveToYamlString();
+    for (uint32 nodeIndex = 0; nodeIndex < sceneAllEmitterNodes.size(); nodeIndex++)
+    {
+        String nodesFileName = serializationContext->GetSceneFileName() + "_" + std::to_string(nodeIndex) + "_nodes.yaml";
+        String compoFileName = serializationContext->GetSceneFileName() + "_" + std::to_string(nodeIndex) + "_component.yaml";
+
+        FilePath nodesFilePath = FilePath(directoryExtractParticles + nodesFileName);
+        FilePath compoFilePath = FilePath(directoryExtractParticles + compoFileName);
+
+        if (fileSystem->IsFile(nodesFilePath) || fileSystem->IsFile(compoFilePath))
+        {
+            continue;
+        }
+
+        if (!nodesArchive->SaveToYamlFile(nodesFilePath))
+        {
+            Logger::Warning("[ParticleEffectComponent::DeserializeNestedEmitters] Failed to create extracted particles nodes file %s", nodesFilePath.GetAbsolutePathname().c_str());
+            return;
+        }
+
+        if (!archive->SaveToYamlFile(compoFilePath))
+        {
+            Logger::Warning("[ParticleEffectComponent::DeserializeNestedEmitters] Failed to create extracted particles component file %s", compoFilePath.GetAbsolutePathname().c_str());
+            return;
+        }
+
+        SetNestedEmittersNodesConfig(nodesFilePath.GetRelativePathname(serializationContext->GetScenePath()));
+        SetNestedEmittersCompoConfig(compoFilePath.GetRelativePathname(serializationContext->GetScenePath()));
+        break;
+    }
 }
 
 void ParticleEffectComponent::CollapseOldEffect(SerializationContext* serializationContext)
@@ -659,21 +716,38 @@ void ParticleEffectComponent::SetClippingVisible(bool visible)
 {
     effectRenderObject->SetClippingVisible(visible);
 }
-String ParticleEffectComponent::GetNestedEmittersComponentYaml() const
+String ParticleEffectComponent::GetNestedEmittersNodesConfig() const
 {
-    return nestedEmittersComponentYaml;
+    return nestedEmittersNodesConfig;
 }
-void ParticleEffectComponent::SetNestedEmittersComponentYaml(String value)
+
+void ParticleEffectComponent::SetNestedEmittersNodesConfig(String value)
 {
-    nestedEmittersComponentYaml = value;
+    nestedEmittersNodesConfig = value;
 }
-String ParticleEffectComponent::GetNestedEmittersParticleEmitterNodesYaml() const
+
+String ParticleEffectComponent::GetNestedEmittersCompoConfig() const
 {
-    return nestedEmittersParticleEmitterNodesYaml;
+    return nestedEmittersCompoConfig;
 }
-void ParticleEffectComponent::SetNestedEmittersParticleEmitterNodesYaml(String value)
+
+void ParticleEffectComponent::SetNestedEmittersCompoConfig(String value)
 {
-    nestedEmittersParticleEmitterNodesYaml = value;
+    nestedEmittersCompoConfig = value;
+}
+
+String ParticleEffectComponent::GetDirectoryExtractParticles(SerializationContext* serializationContext)
+{
+    String sceneDirectory = serializationContext->GetScenePath().GetDirectory().GetStringValue();
+    String sceneFileName = serializationContext->GetSceneFileName();
+    size_t last = sceneFileName.find_last_of('.');
+    if (last != String::npos)
+    {
+        sceneFileName = sceneFileName.substr(0, last);
+    }
+
+    String directoryExtractParticles = sceneDirectory + sceneFileName + "_ExtractedParticles/";
+    return directoryExtractParticles;
 }
 
 void ParticleEffectComponent::ReloadEmitters()

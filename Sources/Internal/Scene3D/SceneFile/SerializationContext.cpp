@@ -106,4 +106,10 @@ Vector<ParticleEmitterNode*> SerializationContext::GetParticleEmitterNodes()
 {
     return savedEmitterNodes;
 }
+
+String SerializationContext::GetSceneFileName()
+{
+    return GetSceneFilePath().GetFilename();
+}
+
 } // namespace DAVA

@@ -117,6 +117,7 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scen
 
     serializationContext.SetRootNodePath(filename);
     serializationContext.SetScenePath(FilePath(filename.GetDirectory()));
+    serializationContext.SetSceneFilePath(filename);
     serializationContext.SetVersion(header.version);
     serializationContext.SetScene(scene);
 
@@ -503,6 +504,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
 
     serializationContext.SetRootNodePath(filename);
     serializationContext.SetScenePath(filename.GetDirectory());
+    serializationContext.SetSceneFilePath(filename);
     serializationContext.SetVersion(header.version);
     serializationContext.SetScene(scene);
     serializationContext.SetDefaultMaterialQuality(NMaterialQualityName::DEFAULT_QUALITY_NAME);
@@ -1159,14 +1161,14 @@ bool SceneFileV2::GetNestedParticleEmitterNodes(Entity* entity, Vector<VariantTy
             continue;
         }
 
-        String nestedEmittersParticleEmitterNodesYaml = effect->GetNestedEmittersParticleEmitterNodesYaml();
-        if (nestedEmittersParticleEmitterNodesYaml.empty())
+        String nestedEmittersNodesConfig = serializationContext.GetScenePath().GetStringValue() + effect->GetNestedEmittersNodesConfig();
+        if (nestedEmittersNodesConfig.empty())
         {
             continue;
         }
 
         ScopedPtr<KeyedArchive> nodesArchive(new KeyedArchive());
-        if (!nodesArchive->LoadFromYamlString(nestedEmittersParticleEmitterNodesYaml))
+        if (!nodesArchive->LoadFromYamlFile(nestedEmittersNodesConfig))
         {
             Logger::Warning("[SceneFileV2::GetNestedParticleEmitterNodes] failed wrong data in nestedEmittersParticleEmitterNodesYaml");
             return false;

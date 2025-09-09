@@ -71,6 +71,16 @@ public:
         return scenePath;
     }
 
+    inline void SetSceneFilePath(const FilePath& path)
+    {
+        sceneFilePath = path;
+    }
+
+    inline const FilePath& GetSceneFilePath() const
+    {
+        return sceneFilePath;
+    }
+
     inline void SetRootNodePath(const FilePath& path)
     {
         rootNodePathName = path;
@@ -142,6 +152,8 @@ public:
     template <template <typename, typename> class Container, class T, class A>
     void GetDataNodes(Container<T, A>& container);
 
+    String GetSceneFileName();
+
     void AddSavedEmitterNode(ParticleEmitterNode* emitterNode);
     Vector<ParticleEmitterNode*> GetParticleEmitterNodes();
 
@@ -161,6 +173,7 @@ private:
     Scene* scene = nullptr;
     FilePath rootNodePathName;
     FilePath scenePath;
+    FilePath sceneFilePath;
     FastName defaultMaterialQuality;
     uint64 globalMaterialKey = 0;
     uint32 lastError = 0;
