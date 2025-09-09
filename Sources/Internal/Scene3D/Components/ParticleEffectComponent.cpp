@@ -409,6 +409,27 @@ void ParticleEffectComponent::DeserializeNestedEmitters(KeyedArchive* archive, S
         return;
     }
 
+    String sceneDirectory = serializationContext->GetScenePath().GetDirectory().GetStringValue();
+    String sceneFileName = serializationContext->GetSceneFilePath().GetFilename();
+    size_t last = sceneFileName.find_last_of('.');
+    if (last != String::npos)
+    {
+        sceneFileName = sceneFileName.substr(0, last);
+    }
+
+    String directoryExtractParticles = sceneDirectory + sceneFileName + "_ExtractedParticles/";
+
+    FileSystem* fileSystem = GetEngineContext()->fileSystem;
+    if (fileSystem->IsDirectory(FilePath(directoryExtractParticles)))
+    {
+        Logger::Warning("[ParticleEffectComponent::DeserializeNestedEmitters] Extracted particles directory is existing at init - dangerous");
+    }
+    if (!fileSystem->CreateDirectory(FilePath(directoryExtractParticles), true))
+    {
+        Logger::Warning("[ParticleEffectComponent::DeserializeNestedEmitters] Failed to create extracted particles directory");
+        return;
+    }
+
     Vector<ParticleEmitterNode*> sceneAllEmitterNodes = serializationContext->GetParticleEmitterNodes();
     Vector<ParticleEmitterNode*> filteredEmitterNodes;
 
@@ -463,26 +484,6 @@ void ParticleEffectComponent::DeserializeNestedEmitters(KeyedArchive* archive, S
     }
 
     nodesArchive->SetVariantVector("ParticleEmitterNodes", nodesVariants);
-
-    String sceneDirectory = serializationContext->GetScenePath().GetDirectory().GetStringValue();
-    String sceneFileName = serializationContext->GetSceneFilePath().GetFilename();
-    size_t last = sceneFileName.find_last_of('.');
-    if (last != String::npos)
-    {
-        sceneFileName = sceneFileName.substr(0, last);
-    }
-
-    String directoryExtractParticles = sceneDirectory + sceneFileName + "_ExtractedParticles/";
-
-    FileSystem* fileSystem = GetEngineContext()->fileSystem;
-    if (!fileSystem->IsDirectory(FilePath(directoryExtractParticles)))
-    {
-        if (!fileSystem->CreateDirectory(FilePath(directoryExtractParticles), true))
-        {
-            Logger::Warning("[ParticleEffectComponent::DeserializeNestedEmitters] failed to create extracted particles directory");
-            return;
-        }
-    }
 
     for (uint32 nodeIndex = 0; nodeIndex < sceneAllEmitterNodes.size(); nodeIndex++)
     {
