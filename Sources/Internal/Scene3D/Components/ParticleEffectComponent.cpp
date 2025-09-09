@@ -451,6 +451,54 @@ void ParticleEffectComponent::DeserializeNestedEmitters(KeyedArchive* archive, S
     nodesArchive->SetVariantVector("ParticleEmitterNodes", nodesVariants);
 
     nestedEmittersParticleEmitterNodesYaml = nodesArchive->SaveToYamlString();
+
+    String sceneDirectory = serializationContext->GetScenePath().GetDirectory().GetStringValue();
+    String sceneFileName = serializationContext->GetSceneFilePath().GetFilename();
+    size_t last = sceneFileName.find_last_of('.');
+    if (last != String::npos)
+    {
+        sceneFileName = sceneFileName.substr(0, last);
+    }
+
+    String directoryExtractParticles = sceneDirectory + sceneFileName + "_ExtractedParticles/";
+
+    FileSystem* fileSystem = GetEngineContext()->fileSystem;
+    if (!fileSystem->IsDirectory(FilePath(directoryExtractParticles)))
+    {
+        if (!fileSystem->CreateDirectory(FilePath(directoryExtractParticles), true))
+        {
+            Logger::Warning("[ParticleEffectComponent::DeserializeNestedEmitters] failed to create extracted particles directory");
+            return;
+        }
+    }
+
+    for (uint32 nodeIndex = 0; nodeIndex < sceneAllEmitterNodes.size(); nodeIndex++)
+    {
+        String nodesFileName = sceneFileName + "_" + std::to_string(nodeIndex) + "_nodes.yaml";
+        String compoFileName = sceneFileName + "_" + std::to_string(nodeIndex) + "_component.yaml";
+
+        FilePath nodesFilePath = FilePath(directoryExtractParticles + nodesFileName);
+        FilePath compoFilePath = FilePath(directoryExtractParticles + compoFileName);
+
+        if (fileSystem->IsFile(nodesFilePath) || fileSystem->IsFile(compoFilePath))
+        {
+            continue;
+        }
+
+        if (!nodesArchive->SaveToYamlFile(nodesFilePath))
+        {
+            Logger::Warning("[ParticleEffectComponent::DeserializeNestedEmitters] Failed to create extracted particles nodes file %s", nodesFilePath.GetAbsolutePathname().c_str());
+            return;
+        }
+
+        if (!archive->SaveToYamlFile(compoFilePath))
+        {
+            Logger::Warning("[ParticleEffectComponent::DeserializeNestedEmitters] Failed to create extracted particles component file %s", compoFilePath.GetAbsolutePathname().c_str());
+            return;
+        }
+
+        break;
+    }
 }
 
 void ParticleEffectComponent::CollapseOldEffect(SerializationContext* serializationContext)

@@ -117,6 +117,7 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scen
 
     serializationContext.SetRootNodePath(filename);
     serializationContext.SetScenePath(FilePath(filename.GetDirectory()));
+    serializationContext.SetSceneFilePath(filename);
     serializationContext.SetVersion(header.version);
     serializationContext.SetScene(scene);
 
@@ -503,6 +504,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
 
     serializationContext.SetRootNodePath(filename);
     serializationContext.SetScenePath(filename.GetDirectory());
+    serializationContext.SetSceneFilePath(filename);
     serializationContext.SetVersion(header.version);
     serializationContext.SetScene(scene);
     serializationContext.SetDefaultMaterialQuality(NMaterialQualityName::DEFAULT_QUALITY_NAME);
