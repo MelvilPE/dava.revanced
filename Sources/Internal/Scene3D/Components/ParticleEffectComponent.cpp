@@ -27,8 +27,8 @@ DAVA_VIRTUAL_REFLECTION_IMPL(ParticleEffectComponent)
     .Field("visibleReflection", &ParticleEffectComponent::GetReflectionVisible, &ParticleEffectComponent::SetReflectionVisible)[M::DisplayName("Visible Reflection")]
     .Field("visibleRefraction", &ParticleEffectComponent::GetRefractionVisible, &ParticleEffectComponent::SetRefractionVisible)[M::DisplayName("Visible Refraction")]
     .Field("clippingVisible", &ParticleEffectComponent::GetClippingVisible, &ParticleEffectComponent::SetClippingVisible)[M::DisplayName("Clipping always visible")]
-    .Field("NestedEmittersComponentYaml", &ParticleEffectComponent::GetNestedEmittersComponentYaml, &ParticleEffectComponent::SetNestedEmittersComponentYaml)[M::DisplayName("Nested Emitters Component Yaml")]
-    .Field("NestedEmittersParticleEmitterNodesYaml", &ParticleEffectComponent::GetNestedEmittersParticleEmitterNodesYaml, &ParticleEffectComponent::SetNestedEmittersParticleEmitterNodesYaml)[M::DisplayName("Nested Emitters Particle Emitter Nodes Yaml")]
+    .Field("nestedEmittersNodesConfig", &ParticleEffectComponent::GetNestedEmittersNodesConfig, &ParticleEffectComponent::SetNestedEmittersNodesConfig)[M::DisplayName("Nested Emitters Nodes Config")]
+    .Field("nestedEmittersCompoConfig", &ParticleEffectComponent::GetNestedEmittersCompoConfig, &ParticleEffectComponent::SetNestedEmittersCompoConfig)[M::DisplayName("Nested Emitters Compo Config")]
     .End();
 }
 
@@ -290,7 +290,7 @@ void ParticleEffectComponent::Serialize(KeyedArchive* archive, SerializationCont
 {
     Component::Serialize(archive, serializationContext);
 
-    bool nestedEmitters = (nestedEmittersComponentYaml != "" && nestedEmittersParticleEmitterNodesYaml != "");
+    bool nestedEmitters = (nestedEmittersNodesConfig != "" && nestedEmittersCompoConfig != "");
     if (!nestedEmitters)
     {
         SerializeLegacyYaml(archive, serializationContext);
@@ -329,11 +329,20 @@ void ParticleEffectComponent::SerializeLegacyYaml(KeyedArchive* archive, Seriali
 
 void ParticleEffectComponent::SerializeNestedEmitters(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-    if (!archive->LoadFromYamlString(nestedEmittersComponentYaml))
+    if (!GetEngineContext()->fileSystem->IsFile(nestedEmittersCompoConfig))
     {
-        Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed wrong data in nestedEmittersComponentYaml");
+        Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed nested emitters compo config doesn't exist at %s", nestedEmittersCompoConfig.c_str());
         return;
     }
+
+    if (!archive->LoadFromYamlFile(nestedEmittersCompoConfig))
+    {
+        Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed nested emitters compo config is wrong %s", nestedEmittersCompoConfig.c_str());
+        return;
+    }
+
+    archive->SetString("pe.nestedEmittersNodesConfig", nestedEmittersNodesConfig);
+    archive->SetString("pe.nestedEmittersCompoConfig", nestedEmittersCompoConfig);
 }
 
 void ParticleEffectComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
@@ -392,7 +401,13 @@ void ParticleEffectComponent::DeserializeLegacyYaml(KeyedArchive* archive, Seria
 
 void ParticleEffectComponent::DeserializeNestedEmitters(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-    nestedEmittersComponentYaml = archive->SaveToYamlString();
+    bool nestedEmittersConfigs = archive->IsKeyExists("pe.nestedEmittersNodesConfig") && archive->IsKeyExists("pe.nestedEmittersCompoConfig");
+    if (nestedEmittersConfigs)
+    {
+        nestedEmittersNodesConfig = archive->GetString("pe.nestedEmittersNodesConfig");
+        nestedEmittersCompoConfig = archive->GetString("pe.nestedEmittersCompoConfig");
+        return;
+    }
 
     Vector<ParticleEmitterNode*> sceneAllEmitterNodes = serializationContext->GetParticleEmitterNodes();
     Vector<ParticleEmitterNode*> filteredEmitterNodes;
@@ -432,7 +447,6 @@ void ParticleEffectComponent::DeserializeNestedEmitters(KeyedArchive* archive, S
         }
     }
 
-    // Producing ParticleEmitterNodes output
     ScopedPtr<KeyedArchive> nodesArchive(new KeyedArchive());
 
     Vector<VariantType> nodesVariants;
@@ -449,8 +463,6 @@ void ParticleEffectComponent::DeserializeNestedEmitters(KeyedArchive* archive, S
     }
 
     nodesArchive->SetVariantVector("ParticleEmitterNodes", nodesVariants);
-
-    nestedEmittersParticleEmitterNodesYaml = nodesArchive->SaveToYamlString();
 
     String sceneDirectory = serializationContext->GetScenePath().GetDirectory().GetStringValue();
     String sceneFileName = serializationContext->GetSceneFilePath().GetFilename();
@@ -497,6 +509,8 @@ void ParticleEffectComponent::DeserializeNestedEmitters(KeyedArchive* archive, S
             return;
         }
 
+        SetNestedEmittersNodesConfig(nodesFilePath.GetAbsolutePathname());
+        SetNestedEmittersCompoConfig(compoFilePath.GetAbsolutePathname());
         break;
     }
 }
@@ -707,21 +721,24 @@ void ParticleEffectComponent::SetClippingVisible(bool visible)
 {
     effectRenderObject->SetClippingVisible(visible);
 }
-String ParticleEffectComponent::GetNestedEmittersComponentYaml() const
+String ParticleEffectComponent::GetNestedEmittersNodesConfig() const
 {
-    return nestedEmittersComponentYaml;
+    return nestedEmittersNodesConfig;
 }
-void ParticleEffectComponent::SetNestedEmittersComponentYaml(String value)
+
+void ParticleEffectComponent::SetNestedEmittersNodesConfig(String value)
 {
-    nestedEmittersComponentYaml = value;
+    nestedEmittersNodesConfig = value;
 }
-String ParticleEffectComponent::GetNestedEmittersParticleEmitterNodesYaml() const
+
+String ParticleEffectComponent::GetNestedEmittersCompoConfig() const
 {
-    return nestedEmittersParticleEmitterNodesYaml;
+    return nestedEmittersCompoConfig;
 }
-void ParticleEffectComponent::SetNestedEmittersParticleEmitterNodesYaml(String value)
+
+void ParticleEffectComponent::SetNestedEmittersCompoConfig(String value)
 {
-    nestedEmittersParticleEmitterNodesYaml = value;
+    nestedEmittersCompoConfig = value;
 }
 
 void ParticleEffectComponent::ReloadEmitters()

@@ -83,10 +83,10 @@ public:
     bool GetClippingVisible() const;
     void SetClippingVisible(bool visible);
 
-    String GetNestedEmittersComponentYaml() const;
-    void SetNestedEmittersComponentYaml(String value);
-    String GetNestedEmittersParticleEmitterNodesYaml() const;
-    void SetNestedEmittersParticleEmitterNodesYaml(String value);
+    String GetNestedEmittersNodesConfig() const;
+    void SetNestedEmittersNodesConfig(String value);
+    String GetNestedEmittersCompoConfig() const;
+    void SetNestedEmittersCompoConfig(String value);
 
     float32 GetStartFromTime() const;
     void SetStartFromTime(float32 time);
@@ -128,8 +128,8 @@ private:
     bool clearOnRestart = true; // when effect is restarted repeatsCount
     bool isPaused = false;
 
-    String nestedEmittersComponentYaml = "";
-    String nestedEmittersParticleEmitterNodesYaml = "";
+    String nestedEmittersNodesConfig = "";
+    String nestedEmittersCompoConfig = "";
 
 public: //mostly editor commands
     uint32 GetEmittersCount() const;

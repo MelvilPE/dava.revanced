@@ -216,12 +216,13 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scen
     }
 
     Vector<VariantType> nestedEmitterNodes;
-    if (!GetNestedParticleEmitterNodes(scene, &nestedEmitterNodes))
-    {
-        Logger::Error("SceneFileV2::SaveScene failed to receive ParticleEmitterNodes from ParticleEffectComponent: %s", filename.GetAbsolutePathname().c_str());
-        SetError(ERROR_FILE_WRITE_ERROR);
-        return GetError();
-    }
+    
+    // if (!GetNestedParticleEmitterNodes(scene, &nestedEmitterNodes))
+    // {
+    //     Logger::Error("SceneFileV2::SaveScene failed to receive ParticleEmitterNodes from ParticleEffectComponent: %s", filename.GetAbsolutePathname().c_str());
+    //     SetError(ERROR_FILE_WRITE_ERROR);
+    //     return GetError();
+    // }
 
     for (uint32 emitterNodeIndex = 0; emitterNodeIndex < nestedEmitterNodes.size(); emitterNodeIndex++)
     {
@@ -1161,14 +1162,14 @@ bool SceneFileV2::GetNestedParticleEmitterNodes(Entity* entity, Vector<VariantTy
             continue;
         }
 
-        String nestedEmittersParticleEmitterNodesYaml = effect->GetNestedEmittersParticleEmitterNodesYaml();
-        if (nestedEmittersParticleEmitterNodesYaml.empty())
+        String nestedEmittersNodesConfig = effect->GetNestedEmittersNodesConfig();
+        if (nestedEmittersNodesConfig.empty())
         {
             continue;
         }
 
         ScopedPtr<KeyedArchive> nodesArchive(new KeyedArchive());
-        if (!nodesArchive->LoadFromYamlString(nestedEmittersParticleEmitterNodesYaml))
+        if (!nodesArchive->LoadFromYamlFile(nestedEmittersNodesConfig))
         {
             Logger::Warning("[SceneFileV2::GetNestedParticleEmitterNodes] failed wrong data in nestedEmittersParticleEmitterNodesYaml");
             return false;
