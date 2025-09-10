@@ -423,6 +423,8 @@ public:
      */
     virtual SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname, bool saveForGame = false);
 
+    virtual SceneFileV2::eError ExportSceneForWorldOfTanksBlitz(const DAVA::FilePath& pathname, bool saveForGame = false);
+
     /**
      * @brief Performs optimization of the scene before exporting
      *
