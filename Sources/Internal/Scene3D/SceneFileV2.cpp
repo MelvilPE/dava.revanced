@@ -729,6 +729,7 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
     descriptor.size = sizeof(descriptor);
     descriptor.fileType = eFileType::ModelFile;
 
+    serializationContext.SetSavedSceneMethod(SerializationContext::eSavedSceneMethod::Wargaming_WordOfTanksBlitz);
     serializationContext.SetRootNodePath(filename);
     serializationContext.SetScenePath(FilePath(filename.GetDirectory()));
     serializationContext.SetVersion(header.version);
@@ -808,17 +809,6 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
             ScopedPtr<KeyedArchive> nodeArchive(new KeyedArchive());
             node->Save(nodeArchive, &serializationContext);
             VariantType nodeVariant(nodeArchive.get());
-
-            /*
-            if (IsPolygonGroupDataNode(node))
-            {
-                polygonGroups.push_back(nodeVariant);
-            }
-            else
-            {
-                dataNodes.push_back(nodeVariant);
-            }
-            */
             dataNodes.push_back(nodeVariant);
         }
     }

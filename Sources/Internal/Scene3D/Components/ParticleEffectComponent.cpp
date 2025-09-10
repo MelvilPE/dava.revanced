@@ -329,18 +329,23 @@ void ParticleEffectComponent::SerializeLegacyYaml(KeyedArchive* archive, Seriali
 
 void ParticleEffectComponent::SerializeNestedEmitters(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-    // String nestedEmittersCompoConfigAbsolute = GetNestedEmittersCompoConfigAbsolute(serializationContext);
-    // if (!GetEngineContext()->fileSystem->IsFile(nestedEmittersCompoConfigAbsolute))
-    // {
-    //     Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed nested emitters compo config doesn't exist at %s", nestedEmittersCompoConfigAbsolute.c_str());
-    //     return;
-    // }
+    SerializationContext::eSavedSceneMethod savedSceneMethod = serializationContext->GetSavedSceneMethod();
+    if (savedSceneMethod == SerializationContext::eSavedSceneMethod::Wargaming_WordOfTanksBlitz ||
+        savedSceneMethod == SerializationContext::eSavedSceneMethod::LestaStudio_TanksBlitz)
+    {
+        String nestedEmittersCompoConfigAbsolute = GetNestedEmittersCompoConfigAbsolute(serializationContext);
+        if (!GetEngineContext()->fileSystem->IsFile(nestedEmittersCompoConfigAbsolute))
+        {
+            Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed nested emitters compo config doesn't exist at %s", nestedEmittersCompoConfigAbsolute.c_str());
+            return;
+        }
 
-    // if (!archive->LoadFromYamlFile(nestedEmittersCompoConfigAbsolute))
-    // {
-    //     Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed nested emitters compo config is wrong %s", nestedEmittersCompoConfigAbsolute.c_str());
-    //     return;
-    // }
+        if (!archive->LoadFromYamlFile(nestedEmittersCompoConfigAbsolute))
+        {
+            Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed nested emitters compo config is wrong %s", nestedEmittersCompoConfigAbsolute.c_str());
+            return;
+        }
+    }
 
     archive->SetBool("pe.nestedEmitters", true);
     archive->SetString("pe.nestedEmittersNodesConfig", nestedEmittersNodesConfig);

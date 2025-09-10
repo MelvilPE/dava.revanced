@@ -112,4 +112,14 @@ String SerializationContext::GetSceneFileName()
     return GetSceneFilePath().GetFilename();
 }
 
+SerializationContext::eSavedSceneMethod SerializationContext::GetSavedSceneMethod()
+{
+    return savedSceneMethod;
+}
+
+void SerializationContext::SetSavedSceneMethod(eSavedSceneMethod method)
+{
+    savedSceneMethod = method;
+}
+
 } // namespace DAVA

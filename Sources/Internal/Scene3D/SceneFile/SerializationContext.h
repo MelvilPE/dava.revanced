@@ -31,6 +31,13 @@ public:
     SerializationContext();
     ~SerializationContext();
 
+    enum eSavedSceneMethod
+    {
+        ThisFramework = 0,
+        Wargaming_WordOfTanksBlitz,
+        LestaStudio_TanksBlitz
+    };
+
     inline void SetVersion(uint32 curVersion)
     {
         version = curVersion;
@@ -154,6 +161,9 @@ public:
 
     String GetSceneFileName();
 
+    eSavedSceneMethod GetSavedSceneMethod();
+    void SetSavedSceneMethod(eSavedSceneMethod method);
+
     void AddSavedEmitterNode(ParticleEmitterNode* emitterNode);
     Vector<ParticleEmitterNode*> GetParticleEmitterNodes();
 
@@ -178,6 +188,8 @@ private:
     uint64 globalMaterialKey = 0;
     uint32 lastError = 0;
     uint32 version = 0;
+
+    eSavedSceneMethod savedSceneMethod = eSavedSceneMethod::ThisFramework;
 
     bool debugLogEnabled = false;
 };
