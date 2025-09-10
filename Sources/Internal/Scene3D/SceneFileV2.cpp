@@ -216,12 +216,12 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scen
     }
 
     Vector<VariantType> nestedEmitterNodes;
-    if (!GetNestedParticleEmitterNodes(scene, &nestedEmitterNodes))
-    {
-        Logger::Error("SceneFileV2::SaveScene failed to receive ParticleEmitterNodes from ParticleEffectComponent: %s", filename.GetAbsolutePathname().c_str());
-        SetError(ERROR_FILE_WRITE_ERROR);
-        return GetError();
-    }
+    // if (!GetNestedParticleEmitterNodes(scene, &nestedEmitterNodes))
+    // {
+    //     Logger::Error("SceneFileV2::SaveScene failed to receive ParticleEmitterNodes from ParticleEffectComponent: %s", filename.GetAbsolutePathname().c_str());
+    //     SetError(ERROR_FILE_WRITE_ERROR);
+    //     return GetError();
+    // }
 
     for (uint32 emitterNodeIndex = 0; emitterNodeIndex < nestedEmitterNodes.size(); emitterNodeIndex++)
     {
@@ -1161,22 +1161,23 @@ bool SceneFileV2::GetNestedParticleEmitterNodes(Entity* entity, Vector<VariantTy
             continue;
         }
 
-        String nestedEmittersNodesConfig = serializationContext.GetScenePath().GetStringValue() + effect->GetNestedEmittersNodesConfig();
-        if (nestedEmittersNodesConfig.empty())
+        String nestedEmittersNodesConfigAbsolute = effect->GetNestedEmittersNodesConfigAbsolute(&serializationContext);
+        if (nestedEmittersNodesConfigAbsolute.empty())
         {
-            continue;
+            Logger::Warning("[SceneFileV2::GetNestedParticleEmitterNodes] failed wrong nestedEmittersNodesConfigAbsolute %s", nestedEmittersNodesConfigAbsolute.c_str());
+            return false;
         }
 
         ScopedPtr<KeyedArchive> nodesArchive(new KeyedArchive());
-        if (!nodesArchive->LoadFromYamlFile(nestedEmittersNodesConfig))
+        if (!nodesArchive->LoadFromYamlFile(nestedEmittersNodesConfigAbsolute))
         {
-            Logger::Warning("[SceneFileV2::GetNestedParticleEmitterNodes] failed wrong data in nestedEmittersParticleEmitterNodesYaml");
+            Logger::Warning("[SceneFileV2::GetNestedParticleEmitterNodes] failed wrong data in nestedEmittersNodesConfigAbsolute %s", nestedEmittersNodesConfigAbsolute.c_str());
             return false;
         }
 
         if (!nodesArchive->IsKeyExists("ParticleEmitterNodes"))
         {
-            Logger::Warning("[SceneFileV2::GetNestedParticleEmitterNodes] failed missing ParticleEmitterNodes variant vector key in nestedEmittersParticleEmitterNodesYaml data");
+            Logger::Warning("[SceneFileV2::GetNestedParticleEmitterNodes] failed missing ParticleEmitterNodes variant vector key in nestedEmittersNodesConfigAbsolute %s", nestedEmittersNodesConfigAbsolute.c_str());
             return false;
         }
 

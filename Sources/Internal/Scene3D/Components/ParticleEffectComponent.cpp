@@ -329,20 +329,20 @@ void ParticleEffectComponent::SerializeLegacyYaml(KeyedArchive* archive, Seriali
 
 void ParticleEffectComponent::SerializeNestedEmitters(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-    String absolute = serializationContext->GetScenePath().GetStringValue() + nestedEmittersCompoConfig;
+    // String nestedEmittersCompoConfigAbsolute = GetNestedEmittersCompoConfigAbsolute(serializationContext);
+    // if (!GetEngineContext()->fileSystem->IsFile(nestedEmittersCompoConfigAbsolute))
+    // {
+    //     Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed nested emitters compo config doesn't exist at %s", nestedEmittersCompoConfigAbsolute.c_str());
+    //     return;
+    // }
 
-    if (!GetEngineContext()->fileSystem->IsFile(absolute))
-    {
-        Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed nested emitters compo config doesn't exist at %s", absolute.c_str());
-        return;
-    }
+    // if (!archive->LoadFromYamlFile(nestedEmittersCompoConfigAbsolute))
+    // {
+    //     Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed nested emitters compo config is wrong %s", nestedEmittersCompoConfigAbsolute.c_str());
+    //     return;
+    // }
 
-    if (!archive->LoadFromYamlFile(absolute))
-    {
-        Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed nested emitters compo config is wrong %s", absolute.c_str());
-        return;
-    }
-
+    archive->SetBool("pe.nestedEmitters", true);
     archive->SetString("pe.nestedEmittersNodesConfig", nestedEmittersNodesConfig);
     archive->SetString("pe.nestedEmittersCompoConfig", nestedEmittersCompoConfig);
 }
@@ -416,11 +416,11 @@ void ParticleEffectComponent::DeserializeNestedEmitters(KeyedArchive* archive, S
     FileSystem* fileSystem = GetEngineContext()->fileSystem;
     if (fileSystem->IsDirectory(directoryExtractParticles))
     {
-        Logger::Warning("[ParticleEffectComponent::DeserializeNestedEmitters] Extracted particles directory is existing at init - dangerous");
+        Logger::Warning("[ParticleEffectComponent::DeserializeNestedEmitters] Extracted particles directory is existing at init - dangerous %s", directoryExtractParticles.c_str());
     }
     if (!fileSystem->CreateDirectory(FilePath(directoryExtractParticles), true))
     {
-        Logger::Warning("[ParticleEffectComponent::DeserializeNestedEmitters] Failed to create extracted particles directory");
+        Logger::Warning("[ParticleEffectComponent::DeserializeNestedEmitters] Failed to create extracted particles directory %s", directoryExtractParticles.c_str());
         return;
     }
 
@@ -720,15 +720,24 @@ String ParticleEffectComponent::GetNestedEmittersNodesConfig() const
 {
     return nestedEmittersNodesConfig;
 }
-
 void ParticleEffectComponent::SetNestedEmittersNodesConfig(String value)
 {
     nestedEmittersNodesConfig = value;
 }
-
 String ParticleEffectComponent::GetNestedEmittersCompoConfig() const
 {
     return nestedEmittersCompoConfig;
+}
+String ParticleEffectComponent::GetNestedEmittersNodesConfigAbsolute(SerializationContext* serializationContext) const
+{
+    
+    String absolute = serializationContext->GetScenePath().GetStringValue() + nestedEmittersNodesConfig;
+    return absolute;
+}
+String ParticleEffectComponent::GetNestedEmittersCompoConfigAbsolute(SerializationContext* serializationContext) const
+{
+    String absolute = serializationContext->GetScenePath().GetStringValue() + nestedEmittersCompoConfig;
+    return absolute;
 }
 
 void ParticleEffectComponent::SetNestedEmittersCompoConfig(String value)
