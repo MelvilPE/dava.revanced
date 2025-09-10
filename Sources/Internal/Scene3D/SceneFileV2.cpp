@@ -216,13 +216,12 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scen
     }
 
     Vector<VariantType> nestedEmitterNodes;
-    
-    // if (!GetNestedParticleEmitterNodes(scene, &nestedEmitterNodes))
-    // {
-    //     Logger::Error("SceneFileV2::SaveScene failed to receive ParticleEmitterNodes from ParticleEffectComponent: %s", filename.GetAbsolutePathname().c_str());
-    //     SetError(ERROR_FILE_WRITE_ERROR);
-    //     return GetError();
-    // }
+    if (!GetNestedParticleEmitterNodes(scene, &nestedEmitterNodes))
+    {
+        Logger::Error("SceneFileV2::SaveScene failed to receive ParticleEmitterNodes from ParticleEffectComponent: %s", filename.GetAbsolutePathname().c_str());
+        SetError(ERROR_FILE_WRITE_ERROR);
+        return GetError();
+    }
 
     for (uint32 emitterNodeIndex = 0; emitterNodeIndex < nestedEmitterNodes.size(); emitterNodeIndex++)
     {
@@ -1162,7 +1161,7 @@ bool SceneFileV2::GetNestedParticleEmitterNodes(Entity* entity, Vector<VariantTy
             continue;
         }
 
-        String nestedEmittersNodesConfig = effect->GetNestedEmittersNodesConfig();
+        String nestedEmittersNodesConfig = serializationContext.GetScenePath().GetStringValue() + effect->GetNestedEmittersNodesConfig();
         if (nestedEmittersNodesConfig.empty())
         {
             continue;

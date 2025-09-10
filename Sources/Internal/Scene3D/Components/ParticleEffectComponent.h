@@ -87,6 +87,7 @@ public:
     void SetNestedEmittersNodesConfig(String value);
     String GetNestedEmittersCompoConfig() const;
     void SetNestedEmittersCompoConfig(String value);
+    String GetDirectoryExtractParticles(SerializationContext* serializationContext);
 
     float32 GetStartFromTime() const;
     void SetStartFromTime(float32 time);

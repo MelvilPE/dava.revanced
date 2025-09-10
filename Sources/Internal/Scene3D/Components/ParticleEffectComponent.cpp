@@ -329,15 +329,17 @@ void ParticleEffectComponent::SerializeLegacyYaml(KeyedArchive* archive, Seriali
 
 void ParticleEffectComponent::SerializeNestedEmitters(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-    if (!GetEngineContext()->fileSystem->IsFile(nestedEmittersCompoConfig))
+    String absolute = serializationContext->GetScenePath().GetStringValue() + nestedEmittersCompoConfig;
+
+    if (!GetEngineContext()->fileSystem->IsFile(absolute))
     {
-        Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed nested emitters compo config doesn't exist at %s", nestedEmittersCompoConfig.c_str());
+        Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed nested emitters compo config doesn't exist at %s", absolute.c_str());
         return;
     }
 
-    if (!archive->LoadFromYamlFile(nestedEmittersCompoConfig))
+    if (!archive->LoadFromYamlFile(absolute))
     {
-        Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed nested emitters compo config is wrong %s", nestedEmittersCompoConfig.c_str());
+        Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed nested emitters compo config is wrong %s", absolute.c_str());
         return;
     }
 
@@ -409,18 +411,10 @@ void ParticleEffectComponent::DeserializeNestedEmitters(KeyedArchive* archive, S
         return;
     }
 
-    String sceneDirectory = serializationContext->GetScenePath().GetDirectory().GetStringValue();
-    String sceneFileName = serializationContext->GetSceneFilePath().GetFilename();
-    size_t last = sceneFileName.find_last_of('.');
-    if (last != String::npos)
-    {
-        sceneFileName = sceneFileName.substr(0, last);
-    }
-
-    String directoryExtractParticles = sceneDirectory + sceneFileName + "_ExtractedParticles/";
+    String directoryExtractParticles = GetDirectoryExtractParticles(serializationContext);
 
     FileSystem* fileSystem = GetEngineContext()->fileSystem;
-    if (fileSystem->IsDirectory(FilePath(directoryExtractParticles)))
+    if (fileSystem->IsDirectory(directoryExtractParticles))
     {
         Logger::Warning("[ParticleEffectComponent::DeserializeNestedEmitters] Extracted particles directory is existing at init - dangerous");
     }
@@ -487,8 +481,8 @@ void ParticleEffectComponent::DeserializeNestedEmitters(KeyedArchive* archive, S
 
     for (uint32 nodeIndex = 0; nodeIndex < sceneAllEmitterNodes.size(); nodeIndex++)
     {
-        String nodesFileName = sceneFileName + "_" + std::to_string(nodeIndex) + "_nodes.yaml";
-        String compoFileName = sceneFileName + "_" + std::to_string(nodeIndex) + "_component.yaml";
+        String nodesFileName = serializationContext->GetSceneFileName() + "_" + std::to_string(nodeIndex) + "_nodes.yaml";
+        String compoFileName = serializationContext->GetSceneFileName() + "_" + std::to_string(nodeIndex) + "_component.yaml";
 
         FilePath nodesFilePath = FilePath(directoryExtractParticles + nodesFileName);
         FilePath compoFilePath = FilePath(directoryExtractParticles + compoFileName);
@@ -510,8 +504,8 @@ void ParticleEffectComponent::DeserializeNestedEmitters(KeyedArchive* archive, S
             return;
         }
 
-        SetNestedEmittersNodesConfig(nodesFilePath.GetAbsolutePathname());
-        SetNestedEmittersCompoConfig(compoFilePath.GetAbsolutePathname());
+        SetNestedEmittersNodesConfig(nodesFilePath.GetRelativePathname(serializationContext->GetScenePath()));
+        SetNestedEmittersCompoConfig(compoFilePath.GetRelativePathname(serializationContext->GetScenePath()));
         break;
     }
 }
@@ -740,6 +734,20 @@ String ParticleEffectComponent::GetNestedEmittersCompoConfig() const
 void ParticleEffectComponent::SetNestedEmittersCompoConfig(String value)
 {
     nestedEmittersCompoConfig = value;
+}
+
+String ParticleEffectComponent::GetDirectoryExtractParticles(SerializationContext* serializationContext)
+{
+    String sceneDirectory = serializationContext->GetScenePath().GetDirectory().GetStringValue();
+    String sceneFileName = serializationContext->GetSceneFileName();
+    size_t last = sceneFileName.find_last_of('.');
+    if (last != String::npos)
+    {
+        sceneFileName = sceneFileName.substr(0, last);
+    }
+
+    String directoryExtractParticles = sceneDirectory + sceneFileName + "_ExtractedParticles/";
+    return directoryExtractParticles;
 }
 
 void ParticleEffectComponent::ReloadEmitters()

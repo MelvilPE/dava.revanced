@@ -152,6 +152,8 @@ public:
     template <template <typename, typename> class Container, class T, class A>
     void GetDataNodes(Container<T, A>& container);
 
+    String GetSceneFileName();
+
     void AddSavedEmitterNode(ParticleEmitterNode* emitterNode);
     Vector<ParticleEmitterNode*> GetParticleEmitterNodes();
 
