@@ -282,7 +282,7 @@ public:
     SceneArchive* LoadSceneArchive(const FilePath& filename); // purely load data
 
     String GetSceneComponents();
-    String GetSceneComponentsSets();
+    String GetSceneComponentSets();
 
 private:
     /**
@@ -477,7 +477,7 @@ private:
     eError lastError;
 
     String sceneComponents = "";
-    String sceneComponentsSets = "";
+    String sceneComponentSets = "";
 
     SerializationContext serializationContext;
 };
@@ -488,7 +488,7 @@ public:
     static const String DATANODES_KEY;
     static const String HIERARCHY_KEY;
     static const String SCENE_COMPONENTS_KEY;
-    static const String SCENE_COMPONENTS_SETS_KEY;
+    static const String SCENE_COMPONENT_SETS_KEY;
 };
 
 }; // namespace DAVA

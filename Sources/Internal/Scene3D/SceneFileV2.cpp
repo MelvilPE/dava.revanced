@@ -613,10 +613,10 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
             KeyedArchive* sceneComponentsArch = sceneArchive->GetArchive(SceneFileV2Key::SCENE_COMPONENTS_KEY);
             sceneComponents = sceneComponentsArch->SaveToYamlString();
         }
-        if (sceneArchive->IsKeyExists(SceneFileV2Key::SCENE_COMPONENTS_SETS_KEY))
+        if (sceneArchive->IsKeyExists(SceneFileV2Key::SCENE_COMPONENT_SETS_KEY))
         {
-            KeyedArchive* sceneComponentsSetsArch = sceneArchive->GetArchive(SceneFileV2Key::SCENE_COMPONENTS_SETS_KEY);
-            sceneComponentsSets = sceneComponentsSetsArch->SaveToYamlString();
+            KeyedArchive* sceneComponentSetsArch = sceneArchive->GetArchive(SceneFileV2Key::SCENE_COMPONENT_SETS_KEY);
+            sceneComponentSets = sceneComponentSetsArch->SaveToYamlString();
         }
 
         Vector<VariantType> dataNodes = sceneArchive->GetVariantVector(SceneFileV2Key::DATANODES_KEY);
@@ -857,8 +857,38 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
         return GetError();
     }
 
+    sceneComponents = scene->GetSceneComponents();
+    sceneComponentSets = scene->GetSceneComponentSets();
+
     sceneArchive->SetVariantVector(SceneFileV2Key::DATANODES_KEY, dataNodes);
     sceneArchive->SetVariantVector(SceneFileV2Key::HIERARCHY_KEY, hierarchy);
+
+    if (!sceneComponents.empty())
+    {
+        ScopedPtr<KeyedArchive> sceneComponentsArch(new KeyedArchive());
+        if (!sceneComponentsArch->LoadFromYamlString(sceneComponents))
+        {
+            Logger::Error("SceneFileV2::ExportSceneForWorldOfTanksBlitz failed to receive sceneComponents, data probably wrong: %s", filename.GetAbsolutePathname().c_str());
+            SetError(ERROR_FILE_WRITE_ERROR);
+            return GetError();
+        }
+
+        sceneArchive->SetArchive(SceneFileV2Key::SCENE_COMPONENTS_KEY, sceneComponentsArch);
+    }
+
+    if (!sceneComponentSets.empty())
+    {
+        ScopedPtr<KeyedArchive> sceneComponentSetsArch(new KeyedArchive());
+        if (!sceneComponentSetsArch->LoadFromYamlString(sceneComponentSets))
+        {
+            Logger::Error("SceneFileV2::ExportSceneForWorldOfTanksBlitz failed to receive sceneComponentSets, data probably wrong: %s", filename.GetAbsolutePathname().c_str());
+            SetError(ERROR_FILE_WRITE_ERROR);
+            return GetError();
+        }
+
+        sceneArchive->SetArchive(SceneFileV2Key::SCENE_COMPONENT_SETS_KEY, sceneComponentSetsArch);
+    }
+
     if (!sceneArchive->Save(file))
     {
         Logger::Error("SceneFileV2::ExportSceneForWorldOfTanksBlitz failed to write scene archive file: %s", filename.GetAbsolutePathname().c_str());
@@ -1039,9 +1069,9 @@ String SceneFileV2::GetSceneComponents()
     return sceneComponents;
 }
 
-String SceneFileV2::GetSceneComponentsSets()
+String SceneFileV2::GetSceneComponentSets()
 {
-    return sceneComponentsSets;
+    return sceneComponentSets;
 }
 
 bool SceneFileV2::WriteDescriptor(File* file, const Descriptor& descriptor, SerializationContext* serializationContext)
@@ -1926,5 +1956,5 @@ SceneArchive::SceneArchiveHierarchyNode::~SceneArchiveHierarchyNode()
 const String SceneFileV2Key::DATANODES_KEY = "#dataNodes";
 const String SceneFileV2Key::HIERARCHY_KEY = "#hierarchy";
 const String SceneFileV2Key::SCENE_COMPONENTS_KEY = "#sceneComponents";
-const String SceneFileV2Key::SCENE_COMPONENTS_SETS_KEY = "#sceneComponentsSets";
+const String SceneFileV2Key::SCENE_COMPONENT_SETS_KEY = "#sceneComponentSets";
 }; // namespace DAVA

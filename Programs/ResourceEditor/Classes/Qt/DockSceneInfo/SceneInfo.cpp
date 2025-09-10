@@ -117,7 +117,7 @@ void SceneInfo::InitializeInfo()
     InitializeSpeedTreeInfoSelection();
     InitializeLayersSection();
     InitializeSceneComponentsSection();
-    InitializeSceneComponentsSetsSection();
+    InitializeSceneComponentSetsSection();
     InitializeVegetationInfoSection();
 }
 
@@ -393,9 +393,6 @@ void SceneInfo::CollectSceneData()
 
         CollectParticlesData();
         particleTexturesSize = CalculateTextureSize(particleTextures);
-
-        sceneComponents = activeScene->GetSceneComponents();
-        sceneComponentsSets = activeScene->GetSceneComponents();
     }
 }
 
@@ -410,9 +407,6 @@ void SceneInfo::ClearData()
     particleTexturesSize = 0;
     emittersCount = 0;
     spritesCount = 0;
-
-    sceneComponents = "";
-    sceneComponentsSets = "";
 
     speedTreesInfo.clear();
 }
@@ -642,7 +636,7 @@ void SceneInfo::RefreshAllData()
     RefreshLayersSection();
 
     RefreshSceneComponentsSection();
-    RefreshSceneComponentsSetsSection();
+    RefreshSceneComponentSetsSection();
 
     RestoreTreeState();
 }
@@ -929,13 +923,13 @@ void SceneInfo::InitializeSceneComponentsSection()
 void SceneInfo::RefreshSceneComponentsSection()
 {
     QtPropertyData* header = GetInfoHeader("sceneComponents");
-    QString summary = QString("Size: %1 characters").arg(sceneComponents.size());
+    QString summary = QString("Size: %1 characters").arg(activeScene->GetSceneComponents().size());
     SetChild("sceneComponents", summary, header);
 }
 
-void SceneInfo::InitializeSceneComponentsSetsSection()
+void SceneInfo::InitializeSceneComponentSetsSection()
 {
-    QtPropertyData* header = CreateInfoHeader("sceneComponentsSets");
+    QtPropertyData* header = CreateInfoHeader("sceneComponentSets");
 
     QtPropertyToolButton* button = header->AddButton(QtPropertyToolButton::ACTIVE_ALWAYS);
     button->setMinimumWidth(150);
@@ -945,14 +939,14 @@ void SceneInfo::InitializeSceneComponentsSetsSection()
     QObject::connect(button, &QToolButton::clicked, [this]()
                      { EditSceneComponentsSets(); });
 
-    AddChild("sceneComponentsSets", header);
+    AddChild("sceneComponentSets", header);
 }
 
-void SceneInfo::RefreshSceneComponentsSetsSection()
+void SceneInfo::RefreshSceneComponentSetsSection()
 {
-    QtPropertyData* header = GetInfoHeader("sceneComponentsSets");
-    QString summary = QString("Size: %1 characters").arg(sceneComponentsSets.size());
-    SetChild("sceneComponentsSets", summary, header);
+    QtPropertyData* header = GetInfoHeader("sceneComponentSets");
+    QString summary = QString("Size: %1 characters").arg(activeScene->GetSceneComponentSets().size());
+    SetChild("sceneComponentSets", summary, header);
 }
 
 void SceneInfo::EditSceneComponents()
@@ -962,7 +956,7 @@ void SceneInfo::EditSceneComponents()
     QVBoxLayout* layout = new QVBoxLayout(&dialog);
 
     QPlainTextEdit* editor = new QPlainTextEdit(&dialog);
-    editor->setPlainText(QString::fromStdString(sceneComponents));
+    editor->setPlainText(QString::fromStdString(activeScene->GetSceneComponents()));
     layout->addWidget(editor);
 
     QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
@@ -973,7 +967,7 @@ void SceneInfo::EditSceneComponents()
 
     if (dialog.exec() == QDialog::Accepted)
     {
-        sceneComponents = editor->toPlainText().toStdString();
+        activeScene->SetSceneComponents(editor->toPlainText().toStdString());
         RefreshSceneComponentsSection();
     }
 }
@@ -981,11 +975,11 @@ void SceneInfo::EditSceneComponents()
 void SceneInfo::EditSceneComponentsSets()
 {
     QDialog dialog;
-    dialog.setWindowTitle("Edit sceneComponentsSets");
+    dialog.setWindowTitle("Edit sceneComponentSets");
     QVBoxLayout* layout = new QVBoxLayout(&dialog);
 
     QPlainTextEdit* editor = new QPlainTextEdit(&dialog);
-    editor->setPlainText(QString::fromStdString(sceneComponentsSets));
+    editor->setPlainText(QString::fromStdString(activeScene->GetSceneComponentSets()));
     layout->addWidget(editor);
 
     QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
@@ -996,8 +990,8 @@ void SceneInfo::EditSceneComponentsSets()
 
     if (dialog.exec() == QDialog::Accepted)
     {
-        sceneComponentsSets = editor->toPlainText().toStdString();
-        RefreshSceneComponentsSetsSection();
+        activeScene->SetSceneComponentSets(editor->toPlainText().toStdString());
+        RefreshSceneComponentSetsSection();
     }
 }
 
