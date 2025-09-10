@@ -111,7 +111,8 @@ void SceneInfo::InitializeInfo()
     InitializeLODSectionForSelection();
     InitializeSpeedTreeInfoSelection();
     InitializeLayersSection();
-
+    InitializeSceneComponentsSection();
+    InitializeSceneComponentsSetsSection();
     InitializeVegetationInfoSection();
 }
 
@@ -387,6 +388,9 @@ void SceneInfo::CollectSceneData()
 
         CollectParticlesData();
         particleTexturesSize = CalculateTextureSize(particleTextures);
+
+        sceneComponents = activeScene->GetSceneComponents();
+        sceneComponentsSets = activeScene->GetSceneComponents();
     }
 }
 
@@ -401,6 +405,9 @@ void SceneInfo::ClearData()
     particleTexturesSize = 0;
     emittersCount = 0;
     spritesCount = 0;
+
+    sceneComponents = "";
+    sceneComponentsSets = "";
 
     speedTreesInfo.clear();
 }
@@ -628,6 +635,9 @@ void SceneInfo::RefreshAllData()
     RefreshVegetationInfoSection();
 
     RefreshLayersSection();
+
+    RefreshSceneComponentsSection();
+    RefreshSceneComponentsSetsSection();
 
     RestoreTreeState();
 }
@@ -893,6 +903,30 @@ void SceneInfo::InitializeVegetationInfoSection()
     AddChild("Quadtree leaf count in LOD #2", "Number of quad tree leafs covering visible vegetation surface for LOD #2", header);
 
     AddChild("RenderBatch count", "Number of renderbatches used to render visible vegetation", header);
+}
+
+void SceneInfo::InitializeSceneComponentsSection()
+{
+    QtPropertyData* header = CreateInfoHeader("sceneComponents");
+    AddChild("sceneComponents", header);
+}
+
+void SceneInfo::RefreshSceneComponentsSection()
+{
+    QtPropertyData* header = GetInfoHeader("sceneComponents");
+    SetChild("sceneComponents", QString::fromStdString(sceneComponents), header);
+}
+
+void SceneInfo::InitializeSceneComponentsSetsSection()
+{
+    QtPropertyData* header = CreateInfoHeader("sceneComponentsSets");
+    AddChild("sceneComponentsSets", header);
+}
+
+void SceneInfo::RefreshSceneComponentsSetsSection()
+{
+    QtPropertyData* header = GetInfoHeader("sceneComponentsSets");
+    SetChild("sceneComponentsSets", QString::fromStdString(sceneComponentsSets), header);
 }
 
 void SceneInfo::RefreshVegetationInfoSection()

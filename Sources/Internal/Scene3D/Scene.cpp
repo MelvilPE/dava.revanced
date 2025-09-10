@@ -238,6 +238,16 @@ void Scene::SetMainRenderTarget(rhi::HTexture color, rhi::HTexture depthStencil,
     renderSystem->SetMainRenderTarget(color, depthStencil, colorLoadAction, clearColor);
 }
 
+String Scene::GetSceneComponents()
+{
+    return sceneComponents;
+}
+
+String Scene::GetSceneComponentsSets()
+{
+    return sceneComponentsSets;
+}
+
 rhi::RenderPassConfig& Scene::GetMainPassConfig()
 {
     return renderSystem->GetMainPassConfig();
@@ -827,6 +837,9 @@ SceneFileV2::eError Scene::LoadScene(const DAVA::FilePath& pathname)
         ScopedPtr<SceneFileV2> file(new SceneFileV2());
         file->EnableDebugLog(false);
         ret = file->LoadScene(pathname, this);
+
+        sceneComponents = file->GetSceneComponents();
+        sceneComponentsSets = file->GetSceneComponentsSets();
     }
 
     return ret;

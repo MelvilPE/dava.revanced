@@ -608,6 +608,17 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
             }
         }
 
+        if (sceneArchive->IsKeyExists(SceneFileV2Key::SCENE_COMPONENTS_KEY))
+        {
+            KeyedArchive* sceneComponentsArch = sceneArchive->GetArchive(SceneFileV2Key::SCENE_COMPONENTS_KEY);
+            sceneComponents = sceneComponentsArch->SaveToYamlString();
+        }
+        if (sceneArchive->IsKeyExists(SceneFileV2Key::SCENE_COMPONENTS_SETS_KEY))
+        {
+            KeyedArchive* sceneComponentsSetsArch = sceneArchive->GetArchive(SceneFileV2Key::SCENE_COMPONENTS_SETS_KEY);
+            sceneComponentsSets = sceneComponentsSetsArch->SaveToYamlString();
+        }
+
         Vector<VariantType> dataNodes = sceneArchive->GetVariantVector(SceneFileV2Key::DATANODES_KEY);
         uint32 dataNodeCount = static_cast<uint32>(dataNodes.size());
         for (uint32 dataNodeIndex = 0; dataNodeIndex < dataNodeCount; ++dataNodeIndex)
@@ -1021,6 +1032,16 @@ SceneArchive* SceneFileV2::LoadSceneArchive(const FilePath& filename)
         return nullptr;
     }
     return res;
+}
+
+String SceneFileV2::GetSceneComponents()
+{
+    return sceneComponents;
+}
+
+String SceneFileV2::GetSceneComponentsSets()
+{
+    return sceneComponentsSets;
 }
 
 bool SceneFileV2::WriteDescriptor(File* file, const Descriptor& descriptor, SerializationContext* serializationContext)
@@ -1904,4 +1925,6 @@ SceneArchive::SceneArchiveHierarchyNode::~SceneArchiveHierarchyNode()
 
 const String SceneFileV2Key::DATANODES_KEY = "#dataNodes";
 const String SceneFileV2Key::HIERARCHY_KEY = "#hierarchy";
+const String SceneFileV2Key::SCENE_COMPONENTS_KEY = "#sceneComponents";
+const String SceneFileV2Key::SCENE_COMPONENTS_SETS_KEY = "#sceneComponentsSets";
 }; // namespace DAVA

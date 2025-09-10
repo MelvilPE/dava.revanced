@@ -68,6 +68,9 @@ private:
 
     void InitializeLayersSection();
 
+    void InitializeSceneComponentsSection();
+    void InitializeSceneComponentsSetsSection();
+
     void RefreshSceneGeneralInfo();
     void Refresh3DDrawInfo();
     void RefreshLODInfoInFrame();
@@ -77,6 +80,9 @@ private:
     void RefreshVegetationInfoSection();
 
     void RefreshLayersSection();
+
+    void RefreshSceneComponentsSection();
+    void RefreshSceneComponentsSetsSection();
 
     void RefreshAllData();
 
@@ -126,6 +132,9 @@ protected:
 
     DAVA::uint32 emittersCount = 0;
     DAVA::uint32 spritesCount = 0;
+
+    DAVA::String sceneComponents = "";
+    DAVA::String sceneComponentsSets = "";
 
     DAVA::Vector<DAVA::RenderObject*> visibilityArray;
     DAVA::Set<DAVA::RenderObject*> selectedRenderObjects;

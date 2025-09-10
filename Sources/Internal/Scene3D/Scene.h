@@ -506,6 +506,9 @@ public:
      */
     void SetMainRenderTarget(rhi::HTexture color, rhi::HTexture depthStencil, rhi::LoadAction colorLoadAction, const Color& clearColor);
 
+    String GetSceneComponents();
+    String GetSceneComponentsSets();
+
 public: // deprecated methods
     DAVA_DEPRECATED(rhi::RenderPassConfig& GetMainPassConfig());
 
@@ -541,6 +544,9 @@ protected:
 
     Camera* mainCamera;
     Camera* drawCamera;
+
+    String sceneComponents = "";
+    String sceneComponentsSets = "";
 
     struct FixedUpdate
     {
