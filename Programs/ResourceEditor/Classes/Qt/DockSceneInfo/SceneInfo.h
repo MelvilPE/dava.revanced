@@ -92,6 +92,9 @@ private:
     void SaveTreeState();
     void RestoreTreeState();
 
+    void EditSceneComponents();
+    void EditSceneComponentsSets();
+
     QtPropertyData* CreateInfoHeader(const QString& key);
     QtPropertyData* GetInfoHeader(const QString& key);
 

@@ -34,6 +34,11 @@
 #include <Render/2D/Sprite.h>
 #include <Base/BaseTypes.h>
 
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QPlainTextEdit>
+#include <QPushButton>
+#include <QDialogButtonBox>
 #include <QHeaderView>
 #include <QTimer>
 #include <QPalette>
@@ -908,25 +913,92 @@ void SceneInfo::InitializeVegetationInfoSection()
 void SceneInfo::InitializeSceneComponentsSection()
 {
     QtPropertyData* header = CreateInfoHeader("sceneComponents");
+
+    QtPropertyToolButton* button = header->AddButton(QtPropertyToolButton::ACTIVE_ALWAYS);
+    button->setMinimumWidth(150);
+    button->setText("Show/Edit Full Data");
+    button->setAutoRaise(false);
+
+    QObject::connect(button, &QToolButton::clicked, [this]()
+                     { EditSceneComponents(); });
+
     AddChild("sceneComponents", header);
 }
+
 
 void SceneInfo::RefreshSceneComponentsSection()
 {
     QtPropertyData* header = GetInfoHeader("sceneComponents");
-    SetChild("sceneComponents", QString::fromStdString(sceneComponents), header);
+    QString summary = QString("Size: %1 characters").arg(sceneComponents.size());
+    SetChild("sceneComponents", summary, header);
 }
 
 void SceneInfo::InitializeSceneComponentsSetsSection()
 {
     QtPropertyData* header = CreateInfoHeader("sceneComponentsSets");
+
+    QtPropertyToolButton* button = header->AddButton(QtPropertyToolButton::ACTIVE_ALWAYS);
+    button->setMinimumWidth(150);
+    button->setText("Show/Edit Full Data");
+    button->setAutoRaise(false);
+
+    QObject::connect(button, &QToolButton::clicked, [this]()
+                     { EditSceneComponentsSets(); });
+
     AddChild("sceneComponentsSets", header);
 }
 
 void SceneInfo::RefreshSceneComponentsSetsSection()
 {
     QtPropertyData* header = GetInfoHeader("sceneComponentsSets");
-    SetChild("sceneComponentsSets", QString::fromStdString(sceneComponentsSets), header);
+    QString summary = QString("Size: %1 characters").arg(sceneComponentsSets.size());
+    SetChild("sceneComponentsSets", summary, header);
+}
+
+void SceneInfo::EditSceneComponents()
+{
+    QDialog dialog;
+    dialog.setWindowTitle("Edit sceneComponents");
+    QVBoxLayout* layout = new QVBoxLayout(&dialog);
+
+    QPlainTextEdit* editor = new QPlainTextEdit(&dialog);
+    editor->setPlainText(QString::fromStdString(sceneComponents));
+    layout->addWidget(editor);
+
+    QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    layout->addWidget(buttonBox);
+
+    QObject::connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    QObject::connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        sceneComponents = editor->toPlainText().toStdString();
+        RefreshSceneComponentsSection();
+    }
+}
+
+void SceneInfo::EditSceneComponentsSets()
+{
+    QDialog dialog;
+    dialog.setWindowTitle("Edit sceneComponentsSets");
+    QVBoxLayout* layout = new QVBoxLayout(&dialog);
+
+    QPlainTextEdit* editor = new QPlainTextEdit(&dialog);
+    editor->setPlainText(QString::fromStdString(sceneComponentsSets));
+    layout->addWidget(editor);
+
+    QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    layout->addWidget(buttonBox);
+
+    QObject::connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    QObject::connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        sceneComponentsSets = editor->toPlainText().toStdString();
+        RefreshSceneComponentsSetsSection();
+    }
 }
 
 void SceneInfo::RefreshVegetationInfoSection()
