@@ -730,7 +730,6 @@ String ParticleEffectComponent::GetNestedEmittersCompoConfig() const
 }
 String ParticleEffectComponent::GetNestedEmittersNodesConfigAbsolute(SerializationContext* serializationContext) const
 {
-    
     String absolute = serializationContext->GetScenePath().GetStringValue() + nestedEmittersNodesConfig;
     return absolute;
 }
