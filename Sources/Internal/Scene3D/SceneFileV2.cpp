@@ -1182,9 +1182,17 @@ bool SceneFileV2::LoadDataNode(Scene* scene, File* file)
 bool SceneFileV2::LoadDataNodeInternal(Scene* scene, KeyedArchive* archive, uint32 currFilePos)
 {
     String name = archive->GetString("##name");
+
+    if (name == "SceneRenderConfig")
+    {
+        Logger::Warning("[SceneFileV2::LoadDataNodeInternal] SceneRenderConfig is present in scene but skipped");
+        return true;
+    }
+
     DataNode* node = dynamic_cast<DataNode*>(ObjectFactory::Instance()->New<BaseObject>(name));
     if (!node)
     {
+        Logger::Warning("[SceneFileV2::LoadDataNodeInternal] DataNode found but not registered: %s", name.c_str());
         return false;
     }
 
