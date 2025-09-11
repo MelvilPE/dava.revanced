@@ -57,12 +57,12 @@ void CustomPropertiesComponent::Serialize(KeyedArchive* archive, SerializationCo
             properties->SetString("editor.referenceToOwner", newPath);
         }
 
-        archive->SetByteArrayFromArchive("cpc.properties", properties);
-
         if (savedPath.length())
         {
             properties->SetString("editor.referenceToOwner", savedPath);
         }
+
+        archive->SetArchive("cpc.properties.archive", properties);
     }
 }
 
@@ -70,11 +70,20 @@ void CustomPropertiesComponent::Deserialize(KeyedArchive* archive, Serialization
 {
     properties->DeleteAllKeys();
 
-    if (NULL != archive && archive->IsKeyExists("cpc.properties"))
+    if (NULL != archive)
     {
-        KeyedArchive* props = archive->GetArchiveFromByteArray("cpc.properties");
-        LoadFromArchive(*props, serializationContext);
-        props->Release();
+        if (archive->IsKeyExists("cpc.properties"))
+        {
+            KeyedArchive* props = archive->GetArchiveFromByteArray("cpc.properties");
+            LoadFromArchive(*props, serializationContext);
+            props->Release();
+        }
+        
+        if (archive->IsKeyExists("cpc.properties.archive"))
+        {
+            KeyedArchive* props = archive->GetArchive("cpc.properties.archive");
+            LoadFromArchive(*props, serializationContext);
+        }
     }
 
     Component::Deserialize(archive, serializationContext);
