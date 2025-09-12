@@ -859,9 +859,7 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
 
     sceneComponents = scene->GetSceneComponents();
     sceneComponentSets = scene->GetSceneComponentSets();
-
-    sceneArchive->SetVariantVector(SceneFileV2Key::DATANODES_KEY, dataNodes);
-    sceneArchive->SetVariantVector(SceneFileV2Key::HIERARCHY_KEY, hierarchy);
+    sceneRenderConfig = scene->GetSceneRenderConfig();
 
     if (!sceneComponents.empty())
     {
@@ -888,6 +886,24 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
 
         sceneArchive->SetArchive(SceneFileV2Key::SCENE_COMPONENT_SETS_KEY, sceneComponentSetsArch);
     }
+
+    if (!sceneRenderConfig.empty())
+    {
+        ScopedPtr<KeyedArchive> sceneRenderConfigArch(new KeyedArchive());
+        if (!sceneRenderConfigArch->LoadFromYamlString(sceneRenderConfig))
+        {
+            Logger::Error("SceneFileV2::ExportSceneForWorldOfTanksBlitz failed to receive sceneRenderConfig, data probably wrong: %s", filename.GetAbsolutePathname().c_str());
+            SetError(ERROR_FILE_WRITE_ERROR);
+            return GetError();
+        }
+
+        VariantType sceneRenderConfigVariant;
+        sceneRenderConfigVariant.SetKeyedArchive(sceneRenderConfigArch);
+        dataNodes.push_back(sceneRenderConfigVariant);
+    }
+
+    sceneArchive->SetVariantVector(SceneFileV2Key::DATANODES_KEY, dataNodes);
+    sceneArchive->SetVariantVector(SceneFileV2Key::HIERARCHY_KEY, hierarchy);
 
     if (!sceneArchive->Save(file))
     {
@@ -1074,6 +1090,11 @@ String SceneFileV2::GetSceneComponentSets()
     return sceneComponentSets;
 }
 
+String SceneFileV2::GetSceneRenderConfig()
+{
+    return sceneRenderConfig;
+}
+
 bool SceneFileV2::WriteDescriptor(File* file, const Descriptor& descriptor, SerializationContext* serializationContext)
 {
     if (sizeof(descriptor.size) != file->Write(&descriptor.size, sizeof(descriptor.size)))
@@ -1185,7 +1206,7 @@ bool SceneFileV2::LoadDataNodeInternal(Scene* scene, KeyedArchive* archive, uint
 
     if (name == "SceneRenderConfig")
     {
-        Logger::Warning("[SceneFileV2::LoadDataNodeInternal] SceneRenderConfig is present in scene but skipped");
+        sceneRenderConfig = archive->SaveToYamlString();
         return true;
     }
 

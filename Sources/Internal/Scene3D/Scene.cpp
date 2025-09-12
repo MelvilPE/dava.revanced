@@ -248,6 +248,11 @@ String Scene::GetSceneComponentSets()
     return sceneComponentSets;
 }
 
+String Scene::GetSceneRenderConfig()
+{
+    return sceneRenderConfig;
+}
+
 void Scene::SetSceneComponents(String value)
 {
     sceneComponents = value;
@@ -256,6 +261,11 @@ void Scene::SetSceneComponents(String value)
 void Scene::SetSceneComponentSets(String value)
 {
     sceneComponentSets = value;
+}
+
+void Scene::SetSceneRenderConfig(String value)
+{
+    sceneRenderConfig = value;
 }
 
 rhi::RenderPassConfig& Scene::GetMainPassConfig()
@@ -850,6 +860,7 @@ SceneFileV2::eError Scene::LoadScene(const DAVA::FilePath& pathname)
 
         sceneComponents = file->GetSceneComponents();
         sceneComponentSets = file->GetSceneComponentSets();
+        sceneRenderConfig = file->GetSceneRenderConfig();
     }
 
     return ret;

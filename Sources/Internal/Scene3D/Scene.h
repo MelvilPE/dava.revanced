@@ -508,8 +508,10 @@ public:
 
     String GetSceneComponents();
     String GetSceneComponentSets();
+    String GetSceneRenderConfig();
     void SetSceneComponents(String value);
     void SetSceneComponentSets(String value);
+    void SetSceneRenderConfig(String value);
 
 public: // deprecated methods
     DAVA_DEPRECATED(rhi::RenderPassConfig& GetMainPassConfig());
@@ -549,6 +551,7 @@ protected:
 
     String sceneComponents = "";
     String sceneComponentSets = "";
+    String sceneRenderConfig = "";
 
     struct FixedUpdate
     {

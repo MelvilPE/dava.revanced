@@ -118,6 +118,7 @@ void SceneInfo::InitializeInfo()
     InitializeLayersSection();
     InitializeSceneComponentsSection();
     InitializeSceneComponentSetsSection();
+    InitializeSceneRenderConfigSection();
     InitializeVegetationInfoSection();
 }
 
@@ -637,6 +638,7 @@ void SceneInfo::RefreshAllData()
 
     RefreshSceneComponentsSection();
     RefreshSceneComponentSetsSection();
+    RefreshSceneRenderConfigSection();
 
     RestoreTreeState();
 }
@@ -949,6 +951,28 @@ void SceneInfo::RefreshSceneComponentSetsSection()
     SetChild("sceneComponentSets", summary, header);
 }
 
+void SceneInfo::InitializeSceneRenderConfigSection()
+{
+    QtPropertyData* header = CreateInfoHeader("SceneRenderConfig");
+
+    QtPropertyToolButton* button = header->AddButton(QtPropertyToolButton::ACTIVE_ALWAYS);
+    button->setMinimumWidth(150);
+    button->setText("Show/Edit Full Data");
+    button->setAutoRaise(false);
+
+    QObject::connect(button, &QToolButton::clicked, [this]()
+                     { EditSceneRenderConfig(); });
+
+    AddChild("SceneRenderConfig", header);
+}
+
+void SceneInfo::RefreshSceneRenderConfigSection()
+{
+    QtPropertyData* header = GetInfoHeader("SceneRenderConfig");
+    QString summary = QString("Size: %1 characters").arg(activeScene->GetSceneRenderConfig().size());
+    SetChild("SceneRenderConfig", summary, header);
+}
+
 void SceneInfo::EditSceneComponents()
 {
     QDialog dialog;
@@ -992,6 +1016,29 @@ void SceneInfo::EditSceneComponentsSets()
     {
         activeScene->SetSceneComponentSets(editor->toPlainText().toStdString());
         RefreshSceneComponentSetsSection();
+    }
+}
+
+void SceneInfo::EditSceneRenderConfig()
+{
+    QDialog dialog;
+    dialog.setWindowTitle("Edit SceneRenderConfig");
+    QVBoxLayout* layout = new QVBoxLayout(&dialog);
+
+    QPlainTextEdit* editor = new QPlainTextEdit(&dialog);
+    editor->setPlainText(QString::fromStdString(activeScene->GetSceneRenderConfig()));
+    layout->addWidget(editor);
+
+    QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    layout->addWidget(buttonBox);
+
+    QObject::connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    QObject::connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        activeScene->SetSceneRenderConfig(editor->toPlainText().toStdString());
+        RefreshSceneRenderConfigSection();
     }
 }
 

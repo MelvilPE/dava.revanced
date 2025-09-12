@@ -283,6 +283,7 @@ public:
 
     String GetSceneComponents();
     String GetSceneComponentSets();
+    String GetSceneRenderConfig();
 
 private:
     /**
@@ -478,6 +479,7 @@ private:
 
     String sceneComponents = "";
     String sceneComponentSets = "";
+    String sceneRenderConfig = "";
 
     SerializationContext serializationContext;
 };
