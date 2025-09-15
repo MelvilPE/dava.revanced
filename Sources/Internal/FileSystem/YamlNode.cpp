@@ -556,6 +556,10 @@ VariantType YamlNode::AsVariantType() const
             }
             retValue.SetVariantVector(resultVariants);
         }
+        else
+        {
+            DVASSERT(false && "[YamlNode::AsVariantType] Unhandled type found");
+        }
     }
 
     return retValue;
