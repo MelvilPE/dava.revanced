@@ -35,9 +35,9 @@ SerializationContext::~SerializationContext()
         SafeRelease(it->second);
     }
 
-    for (uint32 nodeIndex = 0; nodeIndex < savedEmitterNodes.size(); nodeIndex++)
+    for (uint32 nodeIndex = 0; nodeIndex < particleEmitterNodes.size(); nodeIndex++)
     {
-        SafeRelease(savedEmitterNodes[nodeIndex]);
+        SafeRelease(particleEmitterNodes[nodeIndex]);
     }
 
     DVASSERT(materialBindings.size() == 0 && "Serialization context destroyed without resolving material bindings!");
@@ -97,14 +97,14 @@ bool SerializationContext::LoadPolygonGroupData()
     return resultLoaded;
 }
 
-void SerializationContext::AddSavedEmitterNode(ParticleEmitterNode* emitterNode)
+void SerializationContext::AddParticleEmitterNode(ParticleEmitterNode* emitterNode)
 {
-    savedEmitterNodes.push_back(emitterNode);
+    particleEmitterNodes.push_back(emitterNode);
 }
 
 Vector<ParticleEmitterNode*> SerializationContext::GetParticleEmitterNodes()
 {
-    return savedEmitterNodes;
+    return particleEmitterNodes;
 }
 
 String SerializationContext::GetSceneFileName()

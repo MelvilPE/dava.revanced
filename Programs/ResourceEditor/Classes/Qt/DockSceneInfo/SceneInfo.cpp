@@ -119,6 +119,7 @@ void SceneInfo::InitializeInfo()
     InitializeSceneComponentsSection();
     InitializeSceneComponentSetsSection();
     InitializeSceneRenderConfigSection();
+    InitializeParticleEmitterNodesSection();
     InitializeVegetationInfoSection();
 }
 
@@ -639,6 +640,7 @@ void SceneInfo::RefreshAllData()
     RefreshSceneComponentsSection();
     RefreshSceneComponentSetsSection();
     RefreshSceneRenderConfigSection();
+    RefreshParticleEmitterNodesSection();
 
     RestoreTreeState();
 }
@@ -966,11 +968,33 @@ void SceneInfo::InitializeSceneRenderConfigSection()
     AddChild("SceneRenderConfig", header);
 }
 
+void SceneInfo::InitializeParticleEmitterNodesSection()
+{
+    QtPropertyData* header = CreateInfoHeader("ParticleEmitterNodes");
+
+    QtPropertyToolButton* button = header->AddButton(QtPropertyToolButton::ACTIVE_ALWAYS);
+    button->setMinimumWidth(150);
+    button->setText("Show/Edit Full Data");
+    button->setAutoRaise(false);
+
+    QObject::connect(button, &QToolButton::clicked, [this]()
+                     { EditParticleEmitterNodes(); });
+
+    AddChild("ParticleEmitterNodes", header);
+}
+
 void SceneInfo::RefreshSceneRenderConfigSection()
 {
     QtPropertyData* header = GetInfoHeader("SceneRenderConfig");
     QString summary = QString("Size: %1 characters").arg(activeScene->GetSceneRenderConfig().size());
     SetChild("SceneRenderConfig", summary, header);
+}
+
+void SceneInfo::RefreshParticleEmitterNodesSection()
+{
+    QtPropertyData* header = GetInfoHeader("ParticleEmitterNodes");
+    QString summary = QString("Size: %1 characters").arg(activeScene->GetParticleEmitterNodes().size());
+    SetChild("ParticleEmitterNodes", summary, header);
 }
 
 void SceneInfo::EditSceneComponents()
@@ -1039,6 +1063,29 @@ void SceneInfo::EditSceneRenderConfig()
     {
         activeScene->SetSceneRenderConfig(editor->toPlainText().toStdString());
         RefreshSceneRenderConfigSection();
+    }
+}
+
+void SceneInfo::EditParticleEmitterNodes()
+{
+    QDialog dialog;
+    dialog.setWindowTitle("Edit ParticleEmitterNodes");
+    QVBoxLayout* layout = new QVBoxLayout(&dialog);
+
+    QPlainTextEdit* editor = new QPlainTextEdit(&dialog);
+    editor->setPlainText(QString::fromStdString(activeScene->GetParticleEmitterNodes()));
+    layout->addWidget(editor);
+
+    QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    layout->addWidget(buttonBox);
+
+    QObject::connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    QObject::connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        activeScene->SetParticleEmitterNodes(editor->toPlainText().toStdString());
+        RefreshParticleEmitterNodesSection();
     }
 }
 

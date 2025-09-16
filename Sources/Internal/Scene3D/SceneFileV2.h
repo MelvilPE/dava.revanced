@@ -284,6 +284,9 @@ public:
     String GetSceneComponents();
     String GetSceneComponentSets();
     String GetSceneRenderConfig();
+    String GetParticleEmitterNodes();
+
+    void SetupParticleEmitterNodes();
 
 private:
     /**
@@ -407,7 +410,7 @@ private:
 
     void ExportHierarchyForWorldOfTanksBlitz(Vector<VariantType>* hierarchy, Entity* node);
 
-    bool GetNestedParticleEmitterNodes(Entity* entity, Vector<VariantType>* result);
+    bool PrepareAndGetParticleEmitterNodes(Vector<VariantType>& prepared);
 
     bool LoadHierarchy(Scene* scene, Entity* node, File* file, int32 level);
 
@@ -480,6 +483,7 @@ private:
     String sceneComponents = "";
     String sceneComponentSets = "";
     String sceneRenderConfig = "";
+    String particleEmitterNodes = "";
 
     SerializationContext serializationContext;
 };

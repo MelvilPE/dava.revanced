@@ -164,7 +164,7 @@ public:
     eSavedSceneMethod GetSavedSceneMethod();
     void SetSavedSceneMethod(eSavedSceneMethod method);
 
-    void AddSavedEmitterNode(ParticleEmitterNode* emitterNode);
+    void AddParticleEmitterNode(ParticleEmitterNode* emitterNode);
     Vector<ParticleEmitterNode*> GetParticleEmitterNodes();
 
 private:
@@ -178,7 +178,7 @@ private:
     Map<uint64, NMaterial*> importedMaterials;
     Vector<MaterialBinding> materialBindings;
     Map<PolygonGroup*, PolygonGroupLoadInfo> loadedPolygonGroups;
-    Vector<ParticleEmitterNode*> savedEmitterNodes;
+    Vector<ParticleEmitterNode*> particleEmitterNodes;
 
     Scene* scene = nullptr;
     FilePath rootNodePathName;

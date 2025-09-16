@@ -434,7 +434,6 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
 
     FilePath geometryPath(filename);
     geometryPath.ReplaceExtension(".scg");
-    ScopedPtr<File> geometryFile(File::Create(geometryPath, File::OPEN | File::READ));
 
     const bool headerValid = ReadHeader(header, file);
 
@@ -632,6 +631,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
 
         if (descriptor.geometryIdHash != NULL)
         {
+            ScopedPtr<File> geometryFile(File::Create(geometryPath, File::OPEN | File::READ));
             if (!geometryFile)
             {
                 Logger::Error("SceneFileV2::LoadScene failed to open geometry file: %s", geometryPath.GetAbsolutePathname().c_str());
@@ -692,6 +692,8 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         }
     }
 
+    SetupParticleEmitterNodes();
+
     UpdatePolygonGroupRequestedFormatRecursively(scene);
     bool contextLoaded = serializationContext.LoadPolygonGroupData();
     if (!contextLoaded)
@@ -741,6 +743,11 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
     serializationContext.SetVersion(header.version);
     serializationContext.SetScene(scene);
 
+    sceneComponents = scene->GetSceneComponents();
+    sceneComponentSets = scene->GetSceneComponentSets();
+    sceneRenderConfig = scene->GetSceneRenderConfig();
+    particleEmitterNodes = scene->GetParticleEmitterNodes();
+
     ScopedPtr<KeyedArchive> sceneArchive(new KeyedArchive());
     Vector<VariantType> dataNodes;
     Vector<VariantType> hierarchy;
@@ -787,7 +794,7 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
     }
 
     Vector<VariantType> nestedEmitterNodes;
-    if (!GetNestedParticleEmitterNodes(scene, &nestedEmitterNodes))
+    if (!PrepareAndGetParticleEmitterNodes(nestedEmitterNodes))
     {
         Logger::Error("SceneFileV2::ExportSceneForWorldOfTanksBlitz failed to receive ParticleEmitterNodes from ParticleEffectComponent: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_FILE_WRITE_ERROR);
@@ -851,10 +858,6 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
         SetError(ERROR_FILE_WRITE_ERROR);
         return GetError();
     }
-
-    sceneComponents = scene->GetSceneComponents();
-    sceneComponentSets = scene->GetSceneComponentSets();
-    sceneRenderConfig = scene->GetSceneRenderConfig();
 
     if (!sceneComponents.empty())
     {
@@ -1090,6 +1093,31 @@ String SceneFileV2::GetSceneRenderConfig()
     return sceneRenderConfig;
 }
 
+String SceneFileV2::GetParticleEmitterNodes()
+{
+    return particleEmitterNodes;
+}
+
+void SceneFileV2::SetupParticleEmitterNodes()
+{
+    Vector<ParticleEmitterNode*> sceneAllEmitterNodes = serializationContext.GetParticleEmitterNodes();
+
+    ScopedPtr<KeyedArchive> listNodes(new KeyedArchive());
+
+    Vector<VariantType> variantsList;
+    for (auto sceneEmitterNode : sceneAllEmitterNodes)
+    {
+        ScopedPtr<KeyedArchive> nodeArchive(new KeyedArchive());
+        nodeArchive->LoadFromYamlString(sceneEmitterNode->GetNodeYaml());
+        VariantType variantArch(nodeArchive.get());
+        variantsList.push_back(variantArch);
+    }
+
+    listNodes->SetVariantVector("ParticleEmitterNodes", variantsList);
+
+    particleEmitterNodes = listNodes->SaveToYamlString();
+}
+
 bool SceneFileV2::PrepareAndWriteDescriptor(File* file, Descriptor& descriptor, SerializationContext* serializationContext)
 {
     descriptor.size = sizeof(descriptor.fileType);
@@ -1229,7 +1257,7 @@ bool SceneFileV2::LoadDataNodeInternal(Scene* scene, KeyedArchive* archive, uint
 
     if (name == "ParticleEmitterNode")
     {
-        serializationContext.AddSavedEmitterNode(static_cast<ParticleEmitterNode*>(node));
+        serializationContext.AddParticleEmitterNode(static_cast<ParticleEmitterNode*>(node));
         return true;
     }
 
@@ -1409,53 +1437,20 @@ void SceneFileV2::ExportHierarchyForWorldOfTanksBlitz(Vector<VariantType>* hiera
     hierarchy->push_back(entityVariant);
 }
 
-bool SceneFileV2::GetNestedParticleEmitterNodes(Entity* entity, Vector<VariantType>* result)
+bool SceneFileV2::PrepareAndGetParticleEmitterNodes(Vector<VariantType>& prepared)
 {
-    for (int childrenIndex = 0; childrenIndex < entity->GetChildrenCount(); ++childrenIndex)
+    if (particleEmitterNodes.empty())
     {
-        Entity* child = entity->GetChild(childrenIndex);
-        if (!GetNestedParticleEmitterNodes(child, result))
-        {
-            return false;
-        }
-
-        ScopedPtr<KeyedArchive> archive(new KeyedArchive());
-        child->Save(archive, &serializationContext);
-
-        ParticleEffectComponent* effect = child->GetComponent<ParticleEffectComponent>();
-        if (!effect)
-        {
-            continue;
-        }
-
-        String nestedEmittersNodesConfigAbsolute = effect->GetNestedEmittersNodesConfigAbsolute(&serializationContext);
-        if (nestedEmittersNodesConfigAbsolute.empty())
-        {
-            Logger::Warning("[SceneFileV2::GetNestedParticleEmitterNodes] failed wrong nestedEmittersNodesConfigAbsolute %s", nestedEmittersNodesConfigAbsolute.c_str());
-            return false;
-        }
-
-        ScopedPtr<KeyedArchive> nodesArchive(new KeyedArchive());
-        if (!nodesArchive->LoadFromYamlFile(nestedEmittersNodesConfigAbsolute))
-        {
-            Logger::Warning("[SceneFileV2::GetNestedParticleEmitterNodes] failed wrong data in nestedEmittersNodesConfigAbsolute %s", nestedEmittersNodesConfigAbsolute.c_str());
-            return false;
-        }
-
-        if (!nodesArchive->IsKeyExists("ParticleEmitterNodes"))
-        {
-            Logger::Warning("[SceneFileV2::GetNestedParticleEmitterNodes] failed missing ParticleEmitterNodes variant vector key in nestedEmittersNodesConfigAbsolute %s", nestedEmittersNodesConfigAbsolute.c_str());
-            return false;
-        }
-
-        Vector<VariantType> nodesVariants = nodesArchive->GetVariantVector("ParticleEmitterNodes");
-        for (uint32 variantIndex = 0; variantIndex < nodesVariants.size(); variantIndex++)
-        {
-            VariantType variant = nodesVariants[variantIndex];
-            result->push_back(variant);
-        }
+        return true;
     }
 
+    ScopedPtr<KeyedArchive> listNodes(new KeyedArchive());
+    if (!listNodes->LoadFromYamlString(particleEmitterNodes))
+    {
+        return false;
+    }
+
+    prepared = listNodes->GetVariantVector("ParticleEmitterNodes");
     return true;
 }
 

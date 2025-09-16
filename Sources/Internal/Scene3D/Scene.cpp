@@ -253,6 +253,11 @@ String Scene::GetSceneRenderConfig()
     return sceneRenderConfig;
 }
 
+String Scene::GetParticleEmitterNodes()
+{
+    return particleEmitterNodes;
+}
+
 void Scene::SetSceneComponents(String value)
 {
     sceneComponents = value;
@@ -266,6 +271,11 @@ void Scene::SetSceneComponentSets(String value)
 void Scene::SetSceneRenderConfig(String value)
 {
     sceneRenderConfig = value;
+}
+
+void Scene::SetParticleEmitterNodes(String value)
+{
+    particleEmitterNodes = value;
 }
 
 rhi::RenderPassConfig& Scene::GetMainPassConfig()
@@ -861,6 +871,7 @@ SceneFileV2::eError Scene::LoadScene(const DAVA::FilePath& pathname)
         sceneComponents = file->GetSceneComponents();
         sceneComponentSets = file->GetSceneComponentSets();
         sceneRenderConfig = file->GetSceneRenderConfig();
+        particleEmitterNodes = file->GetParticleEmitterNodes();
     }
 
     return ret;

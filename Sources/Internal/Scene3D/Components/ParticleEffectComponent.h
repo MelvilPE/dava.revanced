@@ -83,15 +83,8 @@ public:
     bool GetClippingVisible() const;
     void SetClippingVisible(bool visible);
 
-    String GetNestedEmittersNodesConfig() const;
-    void SetNestedEmittersNodesConfig(String value);
-    String GetNestedEmittersCompoConfig() const;
-    void SetNestedEmittersCompoConfig(String value);
-
-    // Utilities
-    String GetDirectoryExtractParticles(SerializationContext* serializationContext);
-    String GetNestedEmittersNodesConfigAbsolute(SerializationContext* serializationContext) const;
-    String GetNestedEmittersCompoConfigAbsolute(SerializationContext* serializationContext) const;
+    String GetNestedEmittersComponent();
+    void SetNestedEmittersComponent(String value);
 
     float32 GetStartFromTime() const;
     void SetStartFromTime(float32 time);
@@ -133,8 +126,7 @@ private:
     bool clearOnRestart = true; // when effect is restarted repeatsCount
     bool isPaused = false;
 
-    String nestedEmittersNodesConfig = "";
-    String nestedEmittersCompoConfig = "";
+    String nestedEmittersComponent = "";
 
 public: //mostly editor commands
     uint32 GetEmittersCount() const;

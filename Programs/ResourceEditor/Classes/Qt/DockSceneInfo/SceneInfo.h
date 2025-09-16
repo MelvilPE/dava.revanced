@@ -71,6 +71,7 @@ private:
     void InitializeSceneComponentsSection();
     void InitializeSceneComponentSetsSection();
     void InitializeSceneRenderConfigSection();
+    void InitializeParticleEmitterNodesSection();
 
     void RefreshSceneGeneralInfo();
     void Refresh3DDrawInfo();
@@ -85,6 +86,7 @@ private:
     void RefreshSceneComponentsSection();
     void RefreshSceneComponentSetsSection();
     void RefreshSceneRenderConfigSection();
+    void RefreshParticleEmitterNodesSection();
 
     void RefreshAllData();
 
@@ -97,6 +99,7 @@ private:
     void EditSceneComponents();
     void EditSceneComponentsSets();
     void EditSceneRenderConfig();
+    void EditParticleEmitterNodes();
 
     QtPropertyData* CreateInfoHeader(const QString& key);
     QtPropertyData* GetInfoHeader(const QString& key);

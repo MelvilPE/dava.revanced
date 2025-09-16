@@ -86,7 +86,7 @@ void VisibilityCheckSystem::RegisterEntity(Entity* entity)
 {
     auto visibilityComponent = entity->GetComponent<VisibilityCheckComponent>();
     auto renderComponent = GetRenderComponent(entity);
-    if ((renderComponent != nullptr) || (visibilityComponent != nullptr))
+    if (renderComponent != nullptr && visibilityComponent != nullptr)
     {
         AddEntity(entity);
     }
@@ -96,7 +96,7 @@ void VisibilityCheckSystem::UnregisterEntity(Entity* entity)
 {
     auto visibilityComponent = entity->GetComponent<VisibilityCheckComponent>();
     auto renderComponent = GetRenderComponent(entity);
-    if ((renderComponent != nullptr) || (visibilityComponent != nullptr))
+    if (renderComponent != nullptr && visibilityComponent != nullptr)
     {
         RemoveEntity(entity);
     }

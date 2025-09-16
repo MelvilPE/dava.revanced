@@ -509,9 +509,11 @@ public:
     String GetSceneComponents();
     String GetSceneComponentSets();
     String GetSceneRenderConfig();
+    String GetParticleEmitterNodes();
     void SetSceneComponents(String value);
     void SetSceneComponentSets(String value);
     void SetSceneRenderConfig(String value);
+    void SetParticleEmitterNodes(String value);
 
 public: // deprecated methods
     DAVA_DEPRECATED(rhi::RenderPassConfig& GetMainPassConfig());
@@ -552,6 +554,7 @@ protected:
     String sceneComponents = "";
     String sceneComponentSets = "";
     String sceneRenderConfig = "";
+    String particleEmitterNodes = "";
 
     struct FixedUpdate
     {
