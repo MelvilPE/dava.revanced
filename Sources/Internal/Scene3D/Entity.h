@@ -254,6 +254,9 @@ public:
     void SetVisible(const bool& isVisible);
     bool GetVisible();
 
+    void SetVisibility(uint32 visibilityInit);
+    uint32 GetVisibility();
+
     enum EntityFlags
     {
         NODE_VISIBLE = 1 << 1, // is node and subnodes should draw
@@ -404,6 +407,8 @@ protected:
     uint32 flags = NODE_VISIBLE;
     uint32 id = 0;
     uint32 sceneId = 0;
+
+    uint32 visibility = 0;
 
     /**
     \brief Function to set scene for node and it's children.

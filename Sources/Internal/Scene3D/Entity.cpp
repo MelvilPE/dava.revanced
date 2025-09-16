@@ -47,6 +47,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(Entity)
     .Field(EntityNameFieldName.c_str(), &Entity::GetName, static_cast<void (Entity::*)(const FastName&)>(&Entity::SetName))
     .Field("Flags", &Entity::flags)[M::FlagsT<Entity::EntityFlags>(), M::DeveloperModeOnly()]
     .Field("Visible", &Entity::GetVisible, &Entity::SetVisible)[M::ValueDescription(&VisibleValueDescription)]
+    .Field("Visibility", &Entity::GetVisibility, &Entity::SetVisibility)[M::DisplayName("Visibility")]
     .Field(componentFieldString, &Entity::components)
     .End();
 }
@@ -475,6 +476,7 @@ void Entity::Save(KeyedArchive* archive, SerializationContext* serializationCont
     archive->SetString("name", String(name.c_str()));
     archive->SetUInt32("id", id);
     archive->SetUInt32("flags", flags);
+    archive->SetUInt64("visibility", static_cast<uint64>(visibility));
 
     KeyedArchive* compsArch = new KeyedArchive();
     uint32 savedIndex = 0;
@@ -526,6 +528,11 @@ void Entity::Load(KeyedArchive* archive, SerializationContext* serializationCont
 
     flags = archive->GetUInt32("flags", NODE_VISIBLE);
     flags &= ~TRANSFORM_DIRTY;
+
+    if (archive->IsKeyExists("visibility"))
+    {
+        visibility = static_cast<uint32>(archive->GetUInt64("visibility"));
+    }
 
     KeyedArchive* compsArch = archive->GetArchive("components");
 
@@ -772,6 +779,16 @@ void Entity::SetVisible(const bool& isVisible)
     {
         GetChild(i)->SetVisible(isVisible);
     }
+}
+
+void Entity::SetVisibility(uint32 visibilityInit)
+{
+    visibility = visibilityInit;
+}
+
+uint32 Entity::GetVisibility()
+{
+    return visibility;
 }
 
 Entity* Entity::GetEntityByID(uint32 id)

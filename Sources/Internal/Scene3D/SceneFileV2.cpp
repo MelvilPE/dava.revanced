@@ -815,7 +815,7 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
     }
     for (auto node : orderedNodes)
     {
-        if (IsDataNodeSerializable(node))
+        if (IsDataNodeSerializable(node)) // && !IsPolygonGroupDataNode(node)
         {
             ScopedPtr<KeyedArchive> nodeArchive(new KeyedArchive());
             node->Save(nodeArchive, &serializationContext);
