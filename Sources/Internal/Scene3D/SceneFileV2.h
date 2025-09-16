@@ -459,19 +459,19 @@ private:
     void ApplyFogQuality(DAVA::NMaterial* material);
 
     /**
-     * @brief Writes the descriptor data to a file
+     * @brief Prepare and writes the descriptor data to a file
      * @param[in] file Pointer to the file where descriptor will be written
      * @param[in] descriptor The descriptor data to write
      * @return true if writing was successful, false otherwise
      */
-    static bool WriteDescriptor(File* file, const Descriptor& descriptor, SerializationContext* serializationContext);
+    static bool PrepareAndWriteDescriptor(File* file, Descriptor& descriptor, SerializationContext* serializationContext);
     /**
      * Reads a scene descriptor from a file.
      * @param[in] file The file to read the descriptor from.
      * @param[out] descriptor The descriptor object where the read data will be stored.
      * @return Returns true if the descriptor was successfully read, false otherwise.
      */
-    static bool ReadDescriptor(File* file, /*out*/ Descriptor& descriptor);
+    static bool ReadDescriptor(File* file, Descriptor& descriptor);
 
     bool isDebugLogEnabled;
     bool isSaveForGame;

@@ -112,9 +112,7 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scen
         header.nodeCount++;
     }
 
-    descriptor.size = sizeof(descriptor.fileType); // + sizeof(descriptor.additionalField1) + sizeof(descriptor.additionalField1) +....
-    descriptor.fileType = fileType;
-
+    serializationContext.SetSavedSceneMethod(SerializationContext::eSavedSceneMethod::ThisFramework);
     serializationContext.SetRootNodePath(filename);
     serializationContext.SetScenePath(FilePath(filename.GetDirectory()));
     serializationContext.SetSceneFilePath(filename);
@@ -144,7 +142,7 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scen
         }
     }
 
-    if (!WriteDescriptor(file, descriptor, &serializationContext))
+    if (!PrepareAndWriteDescriptor(file, descriptor, &serializationContext))
     {
         SetError(ERROR_FILE_WRITE_ERROR);
         return GetError();
@@ -737,9 +735,6 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
     header.version = WORLD_OF_TANKS_BLITZ_11_8_0_VERSION;
     header.nodeCount = scene->GetChildrenCount();
 
-    descriptor.size = sizeof(descriptor);
-    descriptor.fileType = eFileType::ModelFile;
-
     serializationContext.SetSavedSceneMethod(SerializationContext::eSavedSceneMethod::Wargaming_WordOfTanksBlitz);
     serializationContext.SetRootNodePath(filename);
     serializationContext.SetScenePath(FilePath(filename.GetDirectory()));
@@ -851,7 +846,7 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
         }
     }
 
-    if (!WriteDescriptor(file, descriptor, &serializationContext))
+    if (!PrepareAndWriteDescriptor(file, descriptor, &serializationContext))
     {
         SetError(ERROR_FILE_WRITE_ERROR);
         return GetError();
@@ -1095,8 +1090,20 @@ String SceneFileV2::GetSceneRenderConfig()
     return sceneRenderConfig;
 }
 
-bool SceneFileV2::WriteDescriptor(File* file, const Descriptor& descriptor, SerializationContext* serializationContext)
+bool SceneFileV2::PrepareAndWriteDescriptor(File* file, Descriptor& descriptor, SerializationContext* serializationContext)
 {
+    descriptor.size = sizeof(descriptor.fileType);
+
+    if (serializationContext->GetSavedSceneMethod() == SerializationContext::eSavedSceneMethod::ThisFramework)
+    {
+        descriptor.fileType = eFileType::SceneFile;
+    }
+    else
+    {
+        descriptor.fileType = eFileType::ModelFile;
+        descriptor.size = sizeof(descriptor.fileType) + sizeof(descriptor.geometryIdHash) + sizeof(descriptor.geometryDataHash);
+    }
+
     if (sizeof(descriptor.size) != file->Write(&descriptor.size, sizeof(descriptor.size)))
     {
         return false;
@@ -1107,7 +1114,7 @@ bool SceneFileV2::WriteDescriptor(File* file, const Descriptor& descriptor, Seri
         return false;
     }
 
-    if (serializationContext->GetVersion() >= WORLD_OF_TANKS_BLITZ_11_8_0_VERSION)
+    if (serializationContext->GetSavedSceneMethod() != SerializationContext::eSavedSceneMethod::ThisFramework)
     {
         if (sizeof(descriptor.geometryIdHash) != file->Write(&descriptor.geometryIdHash, sizeof(descriptor.geometryIdHash)))
         {
@@ -1123,43 +1130,32 @@ bool SceneFileV2::WriteDescriptor(File* file, const Descriptor& descriptor, Seri
     return true;
 }
 
-bool SceneFileV2::ReadDescriptor(File* file, /*out*/ Descriptor& descriptor)
+bool SceneFileV2::ReadDescriptor(File* file, Descriptor& descriptor)
 {
-    uint32 result = 0;
-    result = file->Read(&descriptor.size, sizeof(descriptor.size));
-    if (result != sizeof(descriptor.size))
+    if (sizeof(descriptor.size) != file->Read(&descriptor.size, sizeof(descriptor.size)))
     {
         return false;
     }
 
-    result = file->Read(&descriptor.fileType, sizeof(descriptor.fileType));
-    if (result != sizeof(descriptor.fileType))
+    if (sizeof(descriptor.fileType) != file->Read(&descriptor.fileType, sizeof(descriptor.fileType)))
     {
         return false;
     }
 
-    if (descriptor.size > sizeof(descriptor.size) + sizeof(descriptor.fileType))
+    if (descriptor.size > sizeof(descriptor.fileType))
     {
-        result = file->Read(&descriptor.geometryIdHash, sizeof(descriptor.geometryIdHash));
-        if (result != sizeof(descriptor.geometryIdHash))
+        if (sizeof(descriptor.geometryIdHash) != file->Read(&descriptor.geometryIdHash, sizeof(descriptor.geometryIdHash)))
         {
             return false;
         }
-    }
 
-    if (descriptor.size > sizeof(descriptor.size) + sizeof(descriptor.fileType) + sizeof(descriptor.geometryIdHash))
-    {
-        result = file->Read(&descriptor.geometryDataHash, sizeof(descriptor.geometryDataHash));
-        if (result != sizeof(descriptor.geometryDataHash))
+        if (descriptor.size > sizeof(descriptor.fileType) + sizeof(descriptor.geometryIdHash))
         {
-            return false;
+            if (sizeof(descriptor.geometryDataHash) != file->Read(&descriptor.geometryDataHash, sizeof(descriptor.geometryDataHash)))
+            {
+                return false;
+            }
         }
-    }
-
-    if (descriptor.size > sizeof(descriptor.size) + sizeof(descriptor.fileType) + sizeof(descriptor.geometryIdHash) + sizeof(descriptor.geometryDataHash))
-    {
-        Logger::Warning("SceneFileV2::ReadDescriptor: file descriptor size is larger than expected!");
-        return false;
     }
 
     return true;
