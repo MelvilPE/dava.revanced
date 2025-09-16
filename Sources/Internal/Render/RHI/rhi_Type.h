@@ -255,10 +255,23 @@ public:
     static const uint32 InvalidUID = 0;
 
 private:
+    /*
     enum
     {
         MaxElemCount = 8,
         MaxStreamCount = 2
+    };
+
+    enum rhi::VertexLayout::<unnamed_enum_MaxElemCount> : __int32
+    {
+      MaxElemCount = 0x10,
+      MaxStreamCount = 0x2,
+    };
+    */
+    enum
+    {
+        MaxElemCount = 0x10,
+        MaxStreamCount = 0x2,
     };
 
     struct
