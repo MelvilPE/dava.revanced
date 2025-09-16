@@ -152,8 +152,7 @@ void StaticOcclusionDataComponent::Deserialize(KeyedArchive* archive, Serializat
 
         auto numElements = data.blockCount * data.objectCount / 32;
         uint32 dataSize = static_cast<uint32>(sizeof(uint32) * numElements);
-        DVASSERT(dataSize == archive->GetByteArraySize("sodc.data"));
-        data.SetData(reinterpret_cast<const uint32*>(archive->GetByteArray("sodc.data")), dataSize);
+        data.SetData(reinterpret_cast<const uint32*>(archive->GetByteArray("sodc.data")), archive->GetByteArraySize("sodc.data"));
 
         if (archive->IsKeyExists("sodc.cellHeightOffset"))
         {
