@@ -88,18 +88,6 @@ protected:
 
 class SceneFileV2 : public BaseObject
 {
-private:
-    struct Header
-    {
-        Header()
-            : version(0)
-            , nodeCount(0) {};
-
-        char signature[4];
-        int32 version;
-        int32 nodeCount;
-    };
-
 protected:
     virtual ~SceneFileV2();
 
@@ -120,6 +108,25 @@ public:
         ModelFile = 1
     };
 
+    struct Header
+    {
+        Header()
+            : version(0)
+            , nodeCount(0) {};
+
+        std::array<char, 4> signature;
+        int32 version;
+        int32 nodeCount;
+    };
+
+    struct Descriptor
+    {
+        uint32 size = 0;
+        uint32 fileType = 0;
+        uint64 geometryIdHash = 0;
+        uint64 geometryDataHash = 0;
+    };
+
     /**
      * @brief Default constructor for the SceneFileV2 class.
      *
@@ -127,6 +134,55 @@ public:
      * This class is responsible for handling scene file operations in version 2 format.
      */
     SceneFileV2();
+
+    /**
+     * @brief Reads the header information from a scene file
+     * @param[out] header Reference to a Header structure where the read data will be stored
+     * @param[in] file Pointer to the File object to read from
+     * @return true if header was successfully read, false otherwise
+     */
+    static bool ReadHeader(Header& header, File* file);
+    /**
+     * @brief Reads the header information from a geometry file
+     * @param[out] header Reference to a Header structure where the read data will be stored
+     * @param[in] file Pointer to the File object to read from
+     * @return true if header was successfully read, false otherwise
+     */
+    static bool ReadGeometryFileHeader(Header& header, File* file);
+    /**
+     * @brief Reads version tags from a scene file
+     * @param[out] version Reference to SceneVersion structure where version info will be stored
+     * @param[in] file Pointer to the file to read from
+     * @return true if version tags were successfully read, false otherwise
+     */
+    static bool ReadVersionTags(VersionInfo::SceneVersion& version, File* file);
+    /**
+     * Reads a scene descriptor from a file.
+     * @param[in] file The file to read the descriptor from.
+     * @param[out] descriptor The descriptor object where the read data will be stored.
+     * @return Returns true if the descriptor was successfully read, false otherwise.
+     */
+    static bool ReadDescriptor(File* file, Descriptor& descriptor);
+    /**
+     * @brief Writes the header data to a file
+     * @param[in] file Pointer to the file where header will be written
+     * @param[in] header The header data to write
+     * @return true if writing was successful, false otherwise
+     */
+    static bool WriteHeader(File* file, Header& header);
+    /**
+     * @brief Writes the version tags data to a file
+     * @param[in] file Pointer to the file where version tags will be written
+     * @return true if writing was successful, false otherwise
+     */
+    static bool WriteVersionTags(File* file);
+    /**
+     * @brief Writes the descriptor data to a file
+     * @param[in] file Pointer to the file where descriptor will be written
+     * @param[in] descriptor The descriptor data to write
+     * @return true if writing was successful, false otherwise
+     */
+    static bool WriteDescriptor(File* file, Descriptor& descriptor);
 
     /**
      * @brief Saves scene data to a file
@@ -290,27 +346,6 @@ public:
 
 private:
     /**
-     * @brief Reads the header information from a scene file
-     * @param[out] header Reference to a Header structure where the read data will be stored
-     * @param[in] file Pointer to the File object to read from
-     * @return true if header was successfully read, false otherwise
-     */
-    static bool ReadHeader(Header& header, File* file);
-    /**
-     * @brief Reads the header information from a geometry file
-     * @param[out] header Reference to a Header structure where the read data will be stored
-     * @param[in] file Pointer to the File object to read from
-     * @return true if header was successfully read, false otherwise
-     */
-    static bool ReadGeometryFileHeader(Header& header, File* file);
-    /**
-     * @brief Reads version tags from a scene file
-     * @param[out] version Reference to SceneVersion structure where version info will be stored
-     * @param[in] file Pointer to the file to read from
-     * @return true if version tags were successfully read, false otherwise
-     */
-    static bool ReadVersionTags(VersionInfo::SceneVersion& version, File* file);
-    /**
      * @brief Adds the specified data node to the node mapping.
      *
      * @param[in] node Pointer to the DataNode to be added to the map.
@@ -320,13 +355,6 @@ private:
 
     Header header;
 
-    struct Descriptor
-    {
-        uint32 size = 0;
-        uint32 fileType = 0;
-        uint64 geometryIdHash = 0;
-        uint64 geometryDataHash = 0;
-    };
     Descriptor descriptor;
 
     // Vector<StaticMesh*> staticMeshes;
@@ -460,21 +488,6 @@ private:
      * current quality settings. The material must be a valid NMaterial instance.
      */
     void ApplyFogQuality(DAVA::NMaterial* material);
-
-    /**
-     * @brief Prepare and writes the descriptor data to a file
-     * @param[in] file Pointer to the file where descriptor will be written
-     * @param[in] descriptor The descriptor data to write
-     * @return true if writing was successful, false otherwise
-     */
-    static bool PrepareAndWriteDescriptor(File* file, Descriptor& descriptor, SerializationContext* serializationContext);
-    /**
-     * Reads a scene descriptor from a file.
-     * @param[in] file The file to read the descriptor from.
-     * @param[out] descriptor The descriptor object where the read data will be stored.
-     * @return Returns true if the descriptor was successfully read, false otherwise.
-     */
-    static bool ReadDescriptor(File* file, Descriptor& descriptor);
 
     bool isDebugLogEnabled;
     bool isSaveForGame;

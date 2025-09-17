@@ -1,0 +1,18 @@
+<RCC>
+    <qresource>
+        <file alias="icon.png">icon.png</file>
+        <file alias="drakula.xml">CodeEditor/styles/drakula.xml</file>
+        <file alias="cxx.cpp">CodeEditor/code_samples/cxx.cpp</file>
+        <file alias="shader.glsl">CodeEditor/code_samples/shader.glsl</file>
+        <file alias="xml.xml">CodeEditor/code_samples/xml.xml</file>
+        <file alias="json.json">CodeEditor/code_samples/json.json</file>
+        <file alias="lua.lua">CodeEditor/code_samples/lua.lua</file>
+        <file alias="python.py">CodeEditor/code_samples/python.py</file>
+
+        <file alias="default.xml">CodeEditor/Languages/default.xml</file>
+        <file alias="glsl.xml">CodeEditor/Languages/glsl.xml</file>
+        <file alias="cpp.xml">CodeEditor/Languages/cpp.xml</file>
+        <file alias="lua.xml">CodeEditor/Languages/lua.xml</file>
+        <file alias="python.xml">CodeEditor/Languages/python.xml</file>
+    </qresource>
+</RCC>

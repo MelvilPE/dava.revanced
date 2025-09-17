@@ -142,8 +142,9 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scen
         }
     }
 
-    if (!PrepareAndWriteDescriptor(file, descriptor, &serializationContext))
+    if (!WriteDescriptor(file, descriptor))
     {
+        Logger::Error("SceneFileV2::SaveScene failed to write descriptor file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_FILE_WRITE_ERROR);
         return GetError();
     }
@@ -853,8 +854,9 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
         }
     }
 
-    if (!PrepareAndWriteDescriptor(file, descriptor, &serializationContext))
+    if (!WriteDescriptor(file, descriptor))
     {
+        Logger::Error("SceneFileV2::ExportSceneForWorldOfTanksBlitz failed to write descriptor file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_FILE_WRITE_ERROR);
         return GetError();
     }
@@ -1118,41 +1120,37 @@ void SceneFileV2::SetupParticleEmitterNodes()
     particleEmitterNodes = listNodes->SaveToYamlString();
 }
 
-bool SceneFileV2::PrepareAndWriteDescriptor(File* file, Descriptor& descriptor, SerializationContext* serializationContext)
+bool SceneFileV2::WriteHeader(File* file, Header& header)
 {
-    descriptor.size = sizeof(descriptor.fileType);
-
-    if (serializationContext->GetSavedSceneMethod() == SerializationContext::eSavedSceneMethod::ThisFramework)
-    {
-        descriptor.fileType = eFileType::SceneFile;
-    }
-    else
-    {
-        descriptor.fileType = eFileType::ModelFile;
-        descriptor.size = sizeof(descriptor.fileType) + sizeof(descriptor.geometryIdHash) + sizeof(descriptor.geometryDataHash);
-    }
-
-    if (sizeof(descriptor.size) != file->Write(&descriptor.size, sizeof(descriptor.size)))
+    if (sizeof(header) != file->Write(&header, sizeof(header)))
     {
         return false;
     }
 
-    if (sizeof(descriptor.fileType) != file->Write(&descriptor.fileType, sizeof(descriptor.fileType)))
+    return true;
+}
+
+bool SceneFileV2::WriteVersionTags(File* file)
+{
+    ScopedPtr<KeyedArchive> tagsArchive(new KeyedArchive());
+    const VersionInfo::TagsMap& tags = GetEngineContext()->versionInfo->GetCurrentVersion().tags;
+    for (VersionInfo::TagsMap::const_iterator it = tags.begin(); it != tags.end(); ++it)
+    {
+        tagsArchive->SetUInt32(it->first, it->second);
+    }
+    if (!tagsArchive->Save(file))
     {
         return false;
     }
 
-    if (serializationContext->GetSavedSceneMethod() != SerializationContext::eSavedSceneMethod::ThisFramework)
-    {
-        if (sizeof(descriptor.geometryIdHash) != file->Write(&descriptor.geometryIdHash, sizeof(descriptor.geometryIdHash)))
-        {
-            return false;
-        }
+    return true;
+}
 
-        if (sizeof(descriptor.geometryDataHash) != file->Write(&descriptor.geometryDataHash, sizeof(descriptor.geometryDataHash)))
-        {
-            return false;
-        }
+bool SceneFileV2::WriteDescriptor(File* file, Descriptor& descriptor)
+{
+    if (sizeof(descriptor) != file->Write(&descriptor, sizeof(descriptor)))
+    {
+        return false;
     }
 
     return true;
