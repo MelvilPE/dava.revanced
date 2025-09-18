@@ -112,6 +112,9 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scen
         header.nodeCount++;
     }
 
+    descriptor.size = sizeof(descriptor.fileType) + sizeof(descriptor.geometryIdHash) + sizeof(descriptor.geometryDataHash);
+    descriptor.fileType = fileType;
+
     serializationContext.SetSavedSceneMethod(SerializationContext::eSavedSceneMethod::ThisFramework);
     serializationContext.SetRootNodePath(filename);
     serializationContext.SetScenePath(FilePath(filename.GetDirectory()));
@@ -737,6 +740,9 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
 
     header.version = WORLD_OF_TANKS_BLITZ_11_8_0_VERSION;
     header.nodeCount = scene->GetChildrenCount();
+
+    descriptor.size = sizeof(descriptor.fileType) + sizeof(descriptor.geometryIdHash) + sizeof(descriptor.geometryDataHash);
+    descriptor.fileType = ModelFile;
 
     serializationContext.SetSavedSceneMethod(SerializationContext::eSavedSceneMethod::Wargaming_WordOfTanksBlitz);
     serializationContext.SetRootNodePath(filename);
