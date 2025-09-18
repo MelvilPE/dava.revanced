@@ -136,7 +136,7 @@ DAVA_TARC_TESTCLASS(LibraryModuleTests)
             }
         }
 
-        TEST_VERIFY(scene->SaveScene(scenePathname, false) == SceneFileV2::eError::ERROR_NO_ERROR);
+        TEST_VERIFY(scene->SaveScene(scenePathname) == SceneFileV2::eError::ERROR_NO_ERROR);
     }
 
     void TestScene()

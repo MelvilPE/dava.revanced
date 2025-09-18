@@ -877,8 +877,10 @@ SceneFileV2::eError Scene::LoadScene(const DAVA::FilePath& pathname)
     return ret;
 }
 
-SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath& pathname, bool saveForGame /*= false*/)
+SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath& pathname)
 {
+    // this->OptimizeBeforeExport();
+    
     std::function<void(Entity*)> resolveId = [&](Entity* entity)
     {
         if (0 == entity->id)
@@ -890,25 +892,7 @@ SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath& pathname, bool saveFo
 
     ScopedPtr<SceneFileV2> file(new SceneFileV2());
     file->EnableDebugLog(false);
-    file->EnableSaveForGame(saveForGame);
     return file->SaveScene(pathname, this);
-}
-
-SceneFileV2::eError Scene::ExportSceneForWorldOfTanksBlitz(const DAVA::FilePath& pathname, bool saveForGame /*= false*/)
-{
-    std::function<void(Entity*)> resolveId = [&](Entity* entity)
-    {
-        if (0 == entity->id)
-            entity->id = ++maxEntityIDCounter;
-        for (auto child : entity->children) resolveId(child);
-    };
-
-    resolveId(this);
-
-    ScopedPtr<SceneFileV2> file(new SceneFileV2());
-    file->EnableDebugLog(false);
-    file->EnableSaveForGame(saveForGame);
-    return file->ExportSceneForWorldOfTanksBlitz(pathname, this);
 }
 
 void Scene::OptimizeBeforeExport()

@@ -126,7 +126,7 @@ void StaticOcclusionTool::BeforeDestroyedInternal()
     if (scene)
     {
         scene->SetCurrentCamera(nullptr);
-        scene->SaveScene(scenePathname, true);
+        scene->SaveScene(scenePathname);
         staticOcclusionBuildSystem = nullptr;
         scene.reset();
     }

@@ -102,7 +102,7 @@ void CreateR2OCustomProperty(Entity* entity, FilePath pathname)
     ScopedPtr<Scene> referenceScene(new Scene);
     ScopedPtr<Entity> referenceEntity(entity->Clone());
     referenceScene->AddNode(referenceEntity);
-    referenceScene->SaveScene(pathname, false);
+    referenceScene->SaveScene(pathname);
 
     CustomPropertiesComponent* cp = new CustomPropertiesComponent();
     cp->GetArchive()->SetString("editor.referenceToOwner", pathname.GetAbsolutePathname());
@@ -239,7 +239,7 @@ Entity* CreateVegetationEntity(const FilePath& scenePathname)
 
         scene->AddNode(vegetationGeometry);
         scene->Update(0.1f);
-        scene->SaveScene(customGeometryPathname, false);
+        scene->SaveScene(customGeometryPathname);
     }
 
     Entity* entity = new Entity();
@@ -730,7 +730,7 @@ SceneBuilder::SceneBuilder(const FilePath& scenePathname_, const FilePath& proje
 SceneBuilder::~SceneBuilder()
 {
     scene->Update(0.1f);
-    scene->SaveScene(scenePathname, false);
+    scene->SaveScene(scenePathname);
 }
 
 Entity* SceneBuilder::AddCamera(R2OMode mode)

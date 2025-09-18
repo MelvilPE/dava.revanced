@@ -370,7 +370,7 @@ void SceneImporter::RestoreParams()
         Set<FastName> loadedMaterials;
         SceneImporterDetails::RestoreSceneParamsImpl(scene.get(), scenePathname.GetDirectory(), params.get(), loadedMaterials);
 
-        result = scene->SaveScene(scenePathname, false);
+        result = scene->SaveScene(scenePathname);
     }
 
     if (result != SceneFileV2::ERROR_NO_ERROR)

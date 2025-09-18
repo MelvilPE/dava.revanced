@@ -980,7 +980,7 @@ bool SceneExporter::ExportScene(Scene* scene, const FilePath& scenePathname, con
 
     // save scene to new place
     FilePath tempSceneName = FilePath::CreateWithNewExtension(scenePathname, ".exported.sc2");
-    scene->SaveScene(tempSceneName, exportingParams.optimizeOnExport);
+    scene->SaveScene(tempSceneName);
 
     FileSystem* fileSystem = GetEngineContext()->fileSystem;
     bool moved = fileSystem->MoveFile(tempSceneName, outScenePathname, true);

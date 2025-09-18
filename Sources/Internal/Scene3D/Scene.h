@@ -414,16 +414,12 @@ public:
      * @brief Saves the current scene to a file.
      * 
      * @param pathname Path where the scene will be saved
-     * @param saveForGame Optional flag indicating whether to save the scene in game-ready format (default: false)
      * 
      * @return SceneFileV2::eError Error code indicating the result of the save operation
      * 
      * @details This method serializes the current scene state into a file at the specified location.
-     * When saveForGame is true, the scene is optimized for game runtime usage.
      */
-    virtual SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname, bool saveForGame = false);
-
-    virtual SceneFileV2::eError ExportSceneForWorldOfTanksBlitz(const DAVA::FilePath& pathname, bool saveForGame = false);
+    virtual SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname);
 
     /**
      * @brief Performs optimization of the scene before exporting

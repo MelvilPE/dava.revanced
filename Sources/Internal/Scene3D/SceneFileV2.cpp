@@ -62,11 +62,6 @@ SceneFileV2::~SceneFileV2()
 {
 }
 
-void SceneFileV2::EnableSaveForGame(bool _isSaveForGame)
-{
-    isSaveForGame = _isSaveForGame;
-}
-
 void SceneFileV2::EnableDebugLog(bool _isDebugLogEnabled)
 {
     isDebugLogEnabled = _isDebugLogEnabled;
@@ -86,241 +81,6 @@ void SceneFileV2::SetError(eError error)
 SceneFileV2::eError SceneFileV2::GetError() const
 {
     return lastError;
-}
-
-SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scene, eFileType fileType)
-{
-    ScopedPtr<File> file(File::Create(filename, File::CREATE | File::WRITE));
-    if (!file)
-    {
-        Logger::Error("SceneFileV2::SaveScene failed to create file: %s", filename.GetAbsolutePathname().c_str());
-        SetError(ERROR_FAILED_TO_CREATE_FILE);
-        return GetError();
-    }
-
-    // save header
-    header.signature[0] = 'S';
-    header.signature[1] = 'F';
-    header.signature[2] = 'V';
-    header.signature[3] = '2';
-
-    header.version = SCENE_FILE_SAVED_VERSION;
-    header.nodeCount = scene->GetChildrenCount();
-
-    if (scene->GetGlobalMaterial())
-    {
-        header.nodeCount++;
-    }
-
-    descriptor.size = sizeof(descriptor.fileType) + sizeof(descriptor.geometryIdHash) + sizeof(descriptor.geometryDataHash);
-    descriptor.fileType = fileType;
-
-    serializationContext.SetSavedSceneMethod(SerializationContext::eSavedSceneMethod::ThisFramework);
-    serializationContext.SetRootNodePath(filename);
-    serializationContext.SetScenePath(FilePath(filename.GetDirectory()));
-    serializationContext.SetSceneFilePath(filename);
-    serializationContext.SetVersion(header.version);
-    serializationContext.SetScene(scene);
-
-    if (sizeof(Header) != file->Write(&header, sizeof(Header)))
-    {
-        Logger::Error("SceneFileV2::SaveScene failed to write header file: %s", filename.GetAbsolutePathname().c_str());
-        SetError(ERROR_FILE_WRITE_ERROR);
-        return GetError();
-    }
-
-    // save version tags
-    {
-        ScopedPtr<KeyedArchive> tagsArchive(new KeyedArchive());
-        const VersionInfo::TagsMap& tags = GetEngineContext()->versionInfo->GetCurrentVersion().tags;
-        for (VersionInfo::TagsMap::const_iterator it = tags.begin(); it != tags.end(); ++it)
-        {
-            tagsArchive->SetUInt32(it->first, it->second);
-        }
-        if (!tagsArchive->Save(file))
-        {
-            Logger::Error("SceneFileV2::SaveScene failed to write tags file: %s", filename.GetAbsolutePathname().c_str());
-            SetError(ERROR_FILE_WRITE_ERROR);
-            return GetError();
-        }
-    }
-
-    if (!WriteDescriptor(file, descriptor))
-    {
-        Logger::Error("SceneFileV2::SaveScene failed to write descriptor file: %s", filename.GetAbsolutePathname().c_str());
-        SetError(ERROR_FILE_WRITE_ERROR);
-        return GetError();
-    }
-
-    // save data objects
-    if (isDebugLogEnabled)
-    {
-        Logger::FrameworkDebug("+ save data objects");
-        Logger::FrameworkDebug("- save file path: %s", filename.GetDirectory().GetAbsolutePathname().c_str());
-    }
-
-    if (isSaveForGame)
-    {
-        scene->OptimizeBeforeExport();
-    }
-
-    Set<DataNode*> nodes;
-    scene->GetDataNodes(nodes);
-
-    uint32 serializableNodesCount = 0;
-    uint64 maxDataNodeID = 0;
-
-    // compute maxid for datanodes
-    for (auto node : nodes)
-    {
-        // TODO: now one datanode can be used in multiple scenes,
-        // but datanote->scene points only on single scene. This should be
-        // discussed and fixed in the future.
-        if (node->GetScene() == scene && node->GetNodeID() > maxDataNodeID)
-        {
-            maxDataNodeID = node->GetNodeID();
-        }
-    }
-
-    // assign datanode id-s and
-    // count serializable nodes
-    for (auto node : nodes)
-    {
-        if (IsDataNodeSerializable(node))
-        {
-            // TODO: if datanode is from another scene, it should be saved with newly
-            // generated datanode-id. Unfortunately this ID will be generated on every scene save,
-            // because we don't change scene pointer in datanode->scene.
-            // This should be discussed and fixed in the future.
-            serializableNodesCount++;
-            if (node->GetScene() != scene || node->GetNodeID() == DataNode::INVALID_ID)
-            {
-                node->SetNodeID(++maxDataNodeID);
-            }
-        }
-    }
-
-    // do we need to save globalmaterial?
-    NMaterial* globalMaterial = scene->GetGlobalMaterial();
-    if (nullptr != globalMaterial)
-    {
-        if (nodes.count(globalMaterial) > 0)
-        {
-            // remove global material from set,
-            // as it should be saved exclusively
-            // on the top of data nodes
-            nodes.erase(globalMaterial);
-        }
-        else
-        {
-            serializableNodesCount++;
-        }
-    }
-
-    Vector<VariantType> nestedEmitterNodes;
-    // if (!GetNestedParticleEmitterNodes(scene, &nestedEmitterNodes))
-    // {
-    //     Logger::Error("SceneFileV2::SaveScene failed to receive ParticleEmitterNodes from ParticleEffectComponent: %s", filename.GetAbsolutePathname().c_str());
-    //     SetError(ERROR_FILE_WRITE_ERROR);
-    //     return GetError();
-    // }
-
-    for (uint32 emitterNodeIndex = 0; emitterNodeIndex < nestedEmitterNodes.size(); emitterNodeIndex++)
-    {
-        serializableNodesCount++;
-    }
-
-    // save datanodes count
-    if (sizeof(uint32) != file->Write(&serializableNodesCount, sizeof(uint32)))
-    {
-        Logger::Error("SceneFileV2::SaveScene failed to write datanodes count file: %s", filename.GetAbsolutePathname().c_str());
-        SetError(ERROR_FILE_WRITE_ERROR);
-        return GetError();
-    }
-
-    // save global material on top of datanodes
-    if (nullptr != globalMaterial)
-    {
-        if (globalMaterial->GetNodeID() == DataNode::INVALID_ID)
-        {
-            globalMaterial->SetNodeID(++maxDataNodeID);
-        }
-        if (!SaveDataNode(globalMaterial, file))
-        {
-            Logger::Error("SceneFileV2::SaveScene failed to write global materials file: %s", filename.GetAbsolutePathname().c_str());
-            SetError(ERROR_FILE_WRITE_ERROR);
-            return GetError();
-        }
-    }
-
-    // sort in ascending ID order
-    Set<DataNode*, std::function<bool(DataNode*, DataNode*)>> orderedNodes(nodes.begin(), nodes.end(),
-                                                                           [](DataNode* a, DataNode* b)
-                                                                           { return a->GetNodeID() < b->GetNodeID(); });
-
-    for (uint32 emitterNodeIndex = 0; emitterNodeIndex < nestedEmitterNodes.size(); emitterNodeIndex++)
-    {
-        KeyedArchive* arch = nestedEmitterNodes[emitterNodeIndex].AsKeyedArchive();
-        if (!arch->Save(file))
-        {
-            Logger::Error("SceneFileV2::SaveScene failed to write ParticleEmitterNodes file: %s", filename.GetAbsolutePathname().c_str());
-            SetError(ERROR_FILE_WRITE_ERROR);
-            return GetError();
-        }
-    }
-
-    // save the rest of datanodes
-    for (auto node : orderedNodes)
-    {
-        if (IsDataNodeSerializable(node))
-        {
-            if (!SaveDataNode(node, file))
-            {
-                Logger::Error("SceneFileV2::SaveScene failed to write datanode file: %s", filename.GetAbsolutePathname().c_str());
-                SetError(ERROR_FILE_WRITE_ERROR);
-                return GetError();
-            }
-        }
-    }
-
-    // save global material settings
-    if (nullptr != globalMaterial)
-    {
-        ScopedPtr<KeyedArchive> archive(new KeyedArchive());
-        const uint64 globalMaterialId = scene->GetGlobalMaterial()->GetNodeID();
-
-        archive->SetString("##name", "GlobalMaterial");
-        archive->SetUInt64("globalMaterialId", globalMaterialId);
-        if (!archive->Save(file))
-        {
-            Logger::Error("SceneFileV2::SaveScene failed to write global material settings file: %s", filename.GetAbsolutePathname().c_str());
-            SetError(ERROR_FILE_WRITE_ERROR);
-            return GetError();
-        }
-    }
-
-    // save hierarchy
-    if (isDebugLogEnabled)
-    {
-        Logger::FrameworkDebug("+ save hierarchy");
-    }
-
-    for (int ci = 0; ci < scene->GetChildrenCount(); ++ci)
-    {
-        if (!SaveHierarchy(scene->GetChild(ci), file, 1))
-        {
-            Logger::Error("SceneFileV2::SaveScene failed to save hierarchy file: %s", filename.GetAbsolutePathname().c_str());
-            return GetError();
-        }
-    }
-
-    if (!file->Flush())
-    {
-        SetError(ERROR_FILE_WRITE_ERROR);
-        return GetError();
-    }
-
-    return GetError();
 }
 
 bool SceneFileV2::ReadHeader(SceneFileV2::Header& _header, File* file)
@@ -723,22 +483,18 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     return GetError();
 }
 
-SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath& filename, Scene* scene, eFileType fileType)
+SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scene)
 {
     ScopedPtr<File> file(File::Create(filename, File::CREATE | File::WRITE));
     if (!file)
     {
-        Logger::Error("SceneFileV2::ExportSceneForWorldOfTanksBlitz failed to create file: %s", filename.GetAbsolutePathname().c_str());
+        Logger::Error("SceneFileV2::SaveScene failed to create file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_FAILED_TO_CREATE_FILE);
         return GetError();
     }
 
-    header.signature[0] = 'S';
-    header.signature[1] = 'F';
-    header.signature[2] = 'V';
-    header.signature[3] = '2';
-
-    header.version = WORLD_OF_TANKS_BLITZ_11_8_0_VERSION;
+    header.signature = { 'S', 'F', 'V', '2' };
+    header.version = SCENE_FILE_SAVED_VERSION;
     header.nodeCount = scene->GetChildrenCount();
 
     descriptor.size = sizeof(descriptor.fileType) + sizeof(descriptor.geometryIdHash) + sizeof(descriptor.geometryDataHash);
@@ -756,13 +512,15 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
     particleEmitterNodes = scene->GetParticleEmitterNodes();
 
     ScopedPtr<KeyedArchive> sceneArchive(new KeyedArchive());
+
     Vector<VariantType> dataNodes;
     Vector<VariantType> hierarchy;
     Vector<VariantType> polygonGroups;
+    Vector<VariantType> nestedEmitterNodes;
 
     if (isSaveForGame)
     {
-        scene->OptimizeBeforeExport();
+        
     }
 
     Set<DataNode*> nodes;
@@ -773,25 +531,16 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
 
     for (auto node : nodes)
     {
-        // TODO: now one datanode can be used in multiple scenes,
-        // but datanote->scene points only on single scene. This should be
-        // discussed and fixed in the future.
         if (node->GetScene() == scene && node->GetNodeID() > maxDataNodeID)
         {
             maxDataNodeID = node->GetNodeID();
         }
     }
 
-    // assign datanode id-s and
-    // count serializable nodes
     for (auto node : nodes)
     {
         if (IsDataNodeSerializable(node))
         {
-            // TODO: if datanode is from another scene, it should be saved with newly
-            // generated datanode-id. Unfortunately this ID will be generated on every scene save,
-            // because we don't change scene pointer in datanode->scene.
-            // This should be discussed and fixed in the future.
             serializableNodesCount++;
             if (node->GetScene() != scene || node->GetNodeID() == DataNode::INVALID_ID)
             {
@@ -800,10 +549,9 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
         }
     }
 
-    Vector<VariantType> nestedEmitterNodes;
     if (!PrepareAndGetParticleEmitterNodes(nestedEmitterNodes))
     {
-        Logger::Error("SceneFileV2::ExportSceneForWorldOfTanksBlitz failed to receive ParticleEmitterNodes from ParticleEffectComponent: %s", filename.GetAbsolutePathname().c_str());
+        Logger::Error("SceneFileV2::SaveScene failed to receive ParticleEmitterNodes from ParticleEffectComponent: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_FILE_WRITE_ERROR);
         return GetError();
     }
@@ -813,7 +561,6 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
         serializableNodesCount++;
     }
 
-    // sort in ascending ID order
     Set<DataNode*, std::function<bool(DataNode*, DataNode*)>> orderedNodes(nodes.begin(), nodes.end(),
                                                                            [](DataNode* a, DataNode* b)
                                                                            { return a->GetNodeID() < b->GetNodeID(); });
@@ -824,7 +571,7 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
     }
     for (auto node : orderedNodes)
     {
-        if (IsDataNodeSerializable(node)) // && !IsPolygonGroupDataNode(node)
+        if (IsDataNodeSerializable(node))
         {
             ScopedPtr<KeyedArchive> nodeArchive(new KeyedArchive());
             node->Save(nodeArchive, &serializationContext);
@@ -835,34 +582,26 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
 
     for (int ci = 0; ci < scene->GetChildrenCount(); ++ci)
     {
-        ExportHierarchyForWorldOfTanksBlitz(&hierarchy, scene->GetChild(ci));
+        PrepareAndGetHierarchy(&hierarchy, scene->GetChild(ci));
     }
 
-    if (sizeof(Header) != file->Write(&header, sizeof(Header)))
+    if (!WriteHeader(file, header))
     {
-        Logger::Error("SceneFileV2::ExportSceneForWorldOfTanksBlitz failed to write header file: %s", filename.GetAbsolutePathname().c_str());
+        Logger::Error("SceneFileV2::SaveScene failed to write header file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_FILE_WRITE_ERROR);
         return GetError();
     }
 
+    if (!WriteVersionTags(file))
     {
-        ScopedPtr<KeyedArchive> tagsArchive(new KeyedArchive());
-        const VersionInfo::TagsMap& tags = GetEngineContext()->versionInfo->GetCurrentVersion().tags;
-        for (VersionInfo::TagsMap::const_iterator it = tags.begin(); it != tags.end(); ++it)
-        {
-            tagsArchive->SetUInt32(it->first, it->second);
-        }
-        if (!tagsArchive->Save(file))
-        {
-            Logger::Error("SceneFileV2::ExportSceneForWorldOfTanksBlitz failed to write tags file: %s", filename.GetAbsolutePathname().c_str());
-            SetError(ERROR_FILE_WRITE_ERROR);
-            return GetError();
-        }
+        Logger::Error("SceneFileV2::SaveScene failed to write tags file: %s", filename.GetAbsolutePathname().c_str());
+        SetError(ERROR_FILE_WRITE_ERROR);
+        return GetError();
     }
 
     if (!WriteDescriptor(file, descriptor))
     {
-        Logger::Error("SceneFileV2::ExportSceneForWorldOfTanksBlitz failed to write descriptor file: %s", filename.GetAbsolutePathname().c_str());
+        Logger::Error("SceneFileV2::SaveScene failed to write descriptor file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_FILE_WRITE_ERROR);
         return GetError();
     }
@@ -872,7 +611,7 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
         ScopedPtr<KeyedArchive> sceneComponentsArch(new KeyedArchive());
         if (!sceneComponentsArch->LoadFromYamlString(sceneComponents))
         {
-            Logger::Error("SceneFileV2::ExportSceneForWorldOfTanksBlitz failed to receive sceneComponents, data probably wrong: %s", filename.GetAbsolutePathname().c_str());
+            Logger::Error("SceneFileV2::SaveScene failed to receive sceneComponents, data probably wrong: %s", filename.GetAbsolutePathname().c_str());
             SetError(ERROR_FILE_WRITE_ERROR);
             return GetError();
         }
@@ -885,7 +624,7 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
         ScopedPtr<KeyedArchive> sceneComponentSetsArch(new KeyedArchive());
         if (!sceneComponentSetsArch->LoadFromYamlString(sceneComponentSets))
         {
-            Logger::Error("SceneFileV2::ExportSceneForWorldOfTanksBlitz failed to receive sceneComponentSets, data probably wrong: %s", filename.GetAbsolutePathname().c_str());
+            Logger::Error("SceneFileV2::SaveScene failed to receive sceneComponentSets, data probably wrong: %s", filename.GetAbsolutePathname().c_str());
             SetError(ERROR_FILE_WRITE_ERROR);
             return GetError();
         }
@@ -898,7 +637,7 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
         ScopedPtr<KeyedArchive> sceneRenderConfigArch(new KeyedArchive());
         if (!sceneRenderConfigArch->LoadFromYamlString(sceneRenderConfig))
         {
-            Logger::Error("SceneFileV2::ExportSceneForWorldOfTanksBlitz failed to receive sceneRenderConfig, data probably wrong: %s", filename.GetAbsolutePathname().c_str());
+            Logger::Error("SceneFileV2::SaveScene failed to receive sceneRenderConfig, data probably wrong: %s", filename.GetAbsolutePathname().c_str());
             SetError(ERROR_FILE_WRITE_ERROR);
             return GetError();
         }
@@ -913,13 +652,14 @@ SceneFileV2::eError SceneFileV2::ExportSceneForWorldOfTanksBlitz(const FilePath&
 
     if (!sceneArchive->Save(file))
     {
-        Logger::Error("SceneFileV2::ExportSceneForWorldOfTanksBlitz failed to write scene archive file: %s", filename.GetAbsolutePathname().c_str());
+        Logger::Error("SceneFileV2::SaveScene failed to write scene archive file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_FILE_WRITE_ERROR);
         return GetError();
     }
 
     if (!file->Flush())
     {
+        Logger::Error("SceneFileV2::SaveScene failed to fliush file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_FILE_WRITE_ERROR);
         return GetError();
     }
@@ -1419,7 +1159,7 @@ bool SceneFileV2::SaveHierarchy(Entity* node, File* file, int32 level)
     return true;
 }
 
-void SceneFileV2::ExportHierarchyForWorldOfTanksBlitz(Vector<VariantType>* hierarchy, Entity* node)
+void SceneFileV2::PrepareAndGetHierarchy(Vector<VariantType>* hierarchy, Entity* node)
 {
     ScopedPtr<KeyedArchive> nodeArchive(new KeyedArchive());
     node->Save(nodeArchive, &serializationContext);
@@ -1428,7 +1168,7 @@ void SceneFileV2::ExportHierarchyForWorldOfTanksBlitz(Vector<VariantType>* hiera
     for (int ci = 0; ci < node->GetChildrenCount(); ++ci)
     {
         Entity* child = node->GetChild(ci);
-        ExportHierarchyForWorldOfTanksBlitz(&childrens, child);
+        PrepareAndGetHierarchy(&childrens, child);
     }
 
     if (!childrens.empty())

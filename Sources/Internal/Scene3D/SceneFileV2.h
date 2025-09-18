@@ -188,10 +188,9 @@ public:
      * @brief Saves scene data to a file
      * @param[in] filename Path to file where scene should be saved
      * @param[in] _scene Scene object to save
-     * @param[in] fileType Type of scene file to save (defaults to SceneFile)
      * @return Error code indicating success or failure of save operation
      */
-    eError SaveScene(const FilePath& filename, Scene* _scene, SceneFileV2::eFileType fileType = SceneFileV2::SceneFile);
+    eError SaveScene(const FilePath& filename, Scene* _scene);
     /**
      * @brief Loads scene data from a file into the specified Scene object
      * @param filename Path to the scene file to be loaded
@@ -200,15 +199,6 @@ public:
      * @note Scene must be properly initialized before calling this function
      */
     eError LoadScene(const FilePath& filename, Scene* _scene);
-
-    /**
-     * @brief Export scene data for world of tanks blitz (wargaming)
-     * @param[in] filename Path of the main file where scene should be saved
-     * @param[in] _scene Scene object to save
-     * @param[in] fileType Type of scene file to save (defaults to SceneFile)
-     * @return Error code indicating success or failure of export operation
-     */
-    eError ExportSceneForWorldOfTanksBlitz(const FilePath& filename, Scene* _scene, SceneFileV2::eFileType fileType = SceneFileV2::SceneFile);
 
     /**
      * @brief Loads scene version information from a file
@@ -229,14 +219,6 @@ public:
      * @return true if debug logging is enabled, false otherwise.
      */
     bool DebugLogEnabled();
-    /**
-     * @brief Sets whether scene should be saved for game
-     * @param[in] _isSaveForGame If true, scene will be saved with game-specific settings
-     *
-     * Controls the scene saving mode to optimize for game-specific requirements.
-     * When enabled, certain scene data might be preprocessed or optimized for runtime performance.
-     */
-    void EnableSaveForGame(bool _isSaveForGame);
 
     // Material * GetMaterial(int32 index);
     // StaticMesh * GetStaticMesh(int32 index);
@@ -436,7 +418,7 @@ private:
      */
     bool SaveHierarchy(Entity* node, File* file, int32 level);
 
-    void ExportHierarchyForWorldOfTanksBlitz(Vector<VariantType>* hierarchy, Entity* node);
+    void PrepareAndGetHierarchy(Vector<VariantType>* hierarchy, Entity* node);
 
     bool PrepareAndGetParticleEmitterNodes(Vector<VariantType>& prepared);
 
