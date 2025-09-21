@@ -339,10 +339,12 @@ void ParticleEffectComponent::SerializeNestedEmitters(KeyedArchive* archive, Ser
             return;
         }
 
+        String debug1 = nestedEmittersComponent;
+
         Vector<VariantType> emitters = archive->GetVariantVector("pe.emitters");
-        for (auto& emitter : emitters)
+        for (uint64 emitterIndex = 0; emitterIndex < emitters.size(); ++emitterIndex)
         {
-            KeyedArchive* emitterArch = emitter.AsKeyedArchive();
+            KeyedArchive* emitterArch = emitters[emitterIndex].AsKeyedArchive();
             if (emitterArch == nullptr)
             {
                 Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] emitter is not a valid archive");
@@ -350,9 +352,9 @@ void ParticleEffectComponent::SerializeNestedEmitters(KeyedArchive* archive, Ser
             }
 
             Vector<VariantType> emitterDatas = emitterArch->GetVariantVector("emitter.data");
-            for (auto& emitterData : emitterDatas)
+            for (uint64 emitterDataIndex = 0; emitterDataIndex < emitterDatas.size(); ++emitterDataIndex)
             {
-                KeyedArchive* emitterDataArch = emitterData.AsKeyedArchive();
+                KeyedArchive* emitterDataArch = emitterDatas[emitterDataIndex].AsKeyedArchive();
                 if (emitterDataArch == nullptr)
                 {
                     Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] emitter.data entry is not a valid archive");
@@ -369,7 +371,13 @@ void ParticleEffectComponent::SerializeNestedEmitters(KeyedArchive* archive, Ser
                 uint64 newId = serializationContext->GetUpdatedEmitterNodeId(oldId);
                 emitterDataArch->SetUInt64("emitter.id", newId);
             }
+
+            emitterArch->SetVariantVector("emitter.data", emitterDatas);
         }
+
+        archive->SetVariantVector("pe.emitters", emitters);
+        String debug2 = archive->SaveToYamlString();
+        Logger::Warning("Archive après modif:\n%s", debug2.c_str());
     }
 }
 

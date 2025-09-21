@@ -1275,6 +1275,13 @@ bool SceneFileV2::PrepareSerializableDataNodes(Vector<VariantType>& dataNodes, S
 
             serializationContext.UpdateEmitterNodeId(oldId, maxDataNodeID);
 
+            if (nodeArchive->IsKeyExists("clone") && nodeArchive->GetBool("clone"))
+            {
+                uint64 oldReferenceId = nodeArchive->GetUInt64("reference.id");
+                uint64 newReferenceId = serializationContext.GetUpdatedEmitterNodeId(oldReferenceId);
+                nodeArchive->SetUInt64("reference.id", newReferenceId);
+            }
+
             VariantType updated(nodeArchive);
             dataNodes.push_back(updated);
         }
