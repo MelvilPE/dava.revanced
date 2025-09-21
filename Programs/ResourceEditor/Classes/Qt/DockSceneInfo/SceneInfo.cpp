@@ -1016,6 +1016,7 @@ void SceneInfo::EditSceneComponents()
     if (dialog.exec() == QDialog::Accepted)
     {
         activeScene->SetSceneComponents(editor->toPlainText().toStdString());
+        activeScene->MarkAsChanged();
         RefreshSceneComponentsSection();
     }
 }
@@ -1039,6 +1040,7 @@ void SceneInfo::EditSceneComponentsSets()
     if (dialog.exec() == QDialog::Accepted)
     {
         activeScene->SetSceneComponentSets(editor->toPlainText().toStdString());
+        activeScene->MarkAsChanged();
         RefreshSceneComponentSetsSection();
     }
 }
@@ -1062,6 +1064,7 @@ void SceneInfo::EditSceneRenderConfig()
     if (dialog.exec() == QDialog::Accepted)
     {
         activeScene->SetSceneRenderConfig(editor->toPlainText().toStdString());
+        activeScene->MarkAsChanged();
         RefreshSceneRenderConfigSection();
     }
 }
@@ -1085,6 +1088,7 @@ void SceneInfo::EditParticleEmitterNodes()
     if (dialog.exec() == QDialog::Accepted)
     {
         activeScene->SetParticleEmitterNodes(editor->toPlainText().toStdString());
+        activeScene->MarkAsChanged();
         RefreshParticleEmitterNodesSection();
     }
 }
