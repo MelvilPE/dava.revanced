@@ -877,7 +877,7 @@ SceneFileV2::eError Scene::LoadScene(const DAVA::FilePath& pathname)
     return ret;
 }
 
-SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath& pathname)
+SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath& pathname, bool legacy)
 {
     // this->OptimizeBeforeExport();
     
@@ -892,7 +892,7 @@ SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath& pathname)
 
     ScopedPtr<SceneFileV2> file(new SceneFileV2());
     file->EnableDebugLog(false);
-    return file->SaveScene(pathname, this);
+    return file->SaveScene(pathname, this, legacy);
 }
 
 void Scene::OptimizeBeforeExport()

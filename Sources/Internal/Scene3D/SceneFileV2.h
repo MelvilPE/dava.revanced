@@ -180,17 +180,21 @@ public:
      * @brief Writes the descriptor data to a file
      * @param[in] file Pointer to the file where descriptor will be written
      * @param[in] descriptor The descriptor data to write
+     * @param[in] legacy If enabled, the descriptor data will contain only size & fileType
      * @return true if writing was successful, false otherwise
      */
-    static bool WriteDescriptor(File* file, Descriptor& descriptor);
+    static bool WriteDescriptor(File* file, Descriptor& descriptor, bool legacy = false);
 
     /**
      * @brief Saves scene data to a file
      * @param[in] filename Path to file where scene should be saved
      * @param[in] _scene Scene object to save
+     * @param[in] legacy Legacy boolean (save as 25)
      * @return Error code indicating success or failure of save operation
      */
-    eError SaveScene(const FilePath& filename, Scene* _scene);
+    eError SaveScene(const FilePath& filename, Scene* _scene, bool legacy = false);
+    eError SaveSceneLegacy(const FilePath& filename, Scene* _scene);
+    eError SaveSceneLatest(const FilePath& filename, Scene* _scene);
     /**
      * @brief Loads scene data from a file into the specified Scene object
      * @param filename Path to the scene file to be loaded

@@ -56,7 +56,7 @@ public:
 
     // save/load
     SceneFileV2::eError LoadScene(const FilePath& path) override;
-    SceneFileV2::eError SaveScene(const FilePath& path) override;
+    SceneFileV2::eError SaveScene(const FilePath& path, bool legacy = false) override;
     SceneFileV2::eError SaveScene();
     bool Export(const SceneExporter::Params& exportingParams);
 

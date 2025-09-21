@@ -483,7 +483,116 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     return GetError();
 }
 
-SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scene)
+SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scene, bool legacy)
+{
+    if (legacy)
+    {
+        return SaveSceneLegacy(filename, scene);
+    }
+    else
+    {
+        return SaveSceneLatest(filename, scene);
+    }
+}
+
+SceneFileV2::eError SceneFileV2::SaveSceneLegacy(const FilePath& filename, Scene* scene)
+{
+    ScopedPtr<File> file(File::Create(filename, File::CREATE | File::WRITE));
+    if (!file)
+    {
+        Logger::Error("SceneFileV2::SaveSceneLegacy failed to create file: %s", filename.GetAbsolutePathname().c_str());
+        SetError(ERROR_FAILED_TO_CREATE_FILE);
+        return GetError();
+    }
+
+    header.signature = { 'S', 'F', 'V', '2' };
+    header.version = WORLD_OF_TANKS_BLITZ_6_2_VERSION;
+    header.nodeCount = scene->GetChildrenCount();
+
+    descriptor.size = sizeof(descriptor.fileType);
+    descriptor.fileType = SceneFile;
+
+    serializationContext.SetSavedSceneMethod(SerializationContext::eSavedSceneMethod::Wargaming_WordOfTanksBlitz);
+    serializationContext.SetRootNodePath(filename);
+    serializationContext.SetScenePath(FilePath(filename.GetDirectory()));
+    serializationContext.SetVersion(header.version);
+    serializationContext.SetScene(scene);
+
+    sceneComponents = scene->GetSceneComponents();
+    sceneComponentSets = scene->GetSceneComponentSets();
+    sceneRenderConfig = scene->GetSceneRenderConfig();
+    particleEmitterNodes = scene->GetParticleEmitterNodes();
+
+    ScopedPtr<KeyedArchive> sceneArchive(new KeyedArchive());
+
+    Vector<VariantType> dataNodes;
+
+    if (!PrepareSerializableDataNodes(dataNodes, scene))
+    {
+        Logger::Error("SceneFileV2::SaveSceneLegacy failed to prepare serializable data nodes file: %s", filename.GetAbsolutePathname().c_str());
+        SetError(ERROR_FILE_WRITE_ERROR);
+        return GetError();
+    }
+
+    if (!WriteHeader(file, header))
+    {
+        Logger::Error("SceneFileV2::SaveSceneLegacy failed to write header file: %s", filename.GetAbsolutePathname().c_str());
+        SetError(ERROR_FILE_WRITE_ERROR);
+        return GetError();
+    }
+
+    if (!WriteVersionTags(file))
+    {
+        Logger::Error("SceneFileV2::SaveSceneLegacy failed to write tags file: %s", filename.GetAbsolutePathname().c_str());
+        SetError(ERROR_FILE_WRITE_ERROR);
+        return GetError();
+    }
+
+    if (!WriteDescriptor(file, descriptor, true))
+    {
+        Logger::Error("SceneFileV2::SaveSceneLegacy failed to write descriptor file: %s", filename.GetAbsolutePathname().c_str());
+        SetError(ERROR_FILE_WRITE_ERROR);
+        return GetError();
+    }
+
+    uint32 dataNodesCount = static_cast<uint32>(dataNodes.size());
+    if (sizeof(dataNodesCount) != file->Write(&dataNodesCount, sizeof(dataNodesCount)))
+    {
+        Logger::Error("SceneFileV2::SaveSceneLegacy failed to write datanodes count file: %s", filename.GetAbsolutePathname().c_str());
+        SetError(ERROR_FILE_WRITE_ERROR);
+        return GetError();
+    }
+
+    for (auto& dataNode : dataNodes)
+    {
+        KeyedArchive* dataNodeArch = dataNode.AsKeyedArchive();
+        if (!dataNodeArch->Save(file))
+        {
+            Logger::Error("SceneFileV2::SaveSceneLegacy failed to save data node file: %s", filename.GetAbsolutePathname().c_str());
+            return GetError();
+        }
+    }
+
+    for (int ci = 0; ci < scene->GetChildrenCount(); ++ci)
+    {
+        if (!SaveHierarchy(scene->GetChild(ci), file, 1))
+        {
+            Logger::Error("SceneFileV2::SaveSceneLegacy failed to save hierarchy file: %s", filename.GetAbsolutePathname().c_str());
+            return GetError();
+        }
+    }
+
+    if (!file->Flush())
+    {
+        Logger::Error("SceneFileV2::SaveSceneLegacy failed to fliush file: %s", filename.GetAbsolutePathname().c_str());
+        SetError(ERROR_FILE_WRITE_ERROR);
+        return GetError();
+    }
+
+    return GetError();
+}
+
+SceneFileV2::eError SceneFileV2::SaveSceneLatest(const FilePath& filename, Scene* scene)
 {
     ScopedPtr<File> file(File::Create(filename, File::CREATE | File::WRITE));
     if (!file)
@@ -820,11 +929,26 @@ bool SceneFileV2::WriteVersionTags(File* file)
     return true;
 }
 
-bool SceneFileV2::WriteDescriptor(File* file, Descriptor& descriptor)
+bool SceneFileV2::WriteDescriptor(File* file, Descriptor& descriptor, bool legacy)
 {
-    if (sizeof(descriptor) != file->Write(&descriptor, sizeof(descriptor)))
+    if (legacy)
     {
-        return false;
+        if (sizeof(descriptor.size) != file->Write(&descriptor.size, sizeof(descriptor.size)))
+        {
+            return false;
+        }
+
+        if (sizeof(descriptor.fileType) != file->Write(&descriptor.fileType, sizeof(descriptor.fileType)))
+        {
+            return false;
+        }
+    }
+    else
+    {
+        if (sizeof(descriptor) != file->Write(&descriptor, sizeof(descriptor)))
+        {
+            return false;
+        }
     }
 
     return true;

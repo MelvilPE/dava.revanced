@@ -186,7 +186,7 @@ SceneFileV2::eError SceneEditor2::LoadScene(const FilePath& path)
     return ret;
 }
 
-SceneFileV2::eError SceneEditor2::SaveScene(const FilePath& path)
+SceneFileV2::eError SceneEditor2::SaveScene(const FilePath& path, bool legacy)
 {
     using namespace DAVA;
 
@@ -230,7 +230,7 @@ SceneFileV2::eError SceneEditor2::SaveScene(const FilePath& path)
         landscapeEditorDrawSystem->ResetTileMaskTexture();
     }
 
-    SceneFileV2::eError err = Scene::SaveScene(path);
+    SceneFileV2::eError err = Scene::SaveScene(path, legacy);
     if (SceneFileV2::ERROR_NO_ERROR == err)
     {
         curScenePath = path;

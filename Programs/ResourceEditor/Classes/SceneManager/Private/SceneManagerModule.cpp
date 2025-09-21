@@ -409,9 +409,8 @@ void SceneManagerModule::CreateModuleActions(DAVA::UI* ui)
         FieldDescriptor fieldDescr;
         fieldDescr.fieldName = DAVA::FastName(SceneData::scenePropertyName);
         fieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneData>();
-        action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any {
-            return value.CanCast<SceneData::TSceneType>() && value.Cast<SceneData::TSceneType>().Get() != nullptr;
-        });
+        action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any
+                                         { return value.CanCast<SceneData::TSceneType>() && value.Cast<SceneData::TSceneType>().Get() != nullptr; });
 
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(static_cast<void (SceneManagerModule::*)(bool)>(&SceneManagerModule::SaveScene), this, false));
 
@@ -446,23 +445,23 @@ void SceneManagerModule::CreateModuleActions(DAVA::UI* ui)
         ui->AddAction(mainWindowKey, placementInfo, action);
     }
 
-    // Export Scene For World Of Tanks Blitz Action
-    // {
-    //     QtAction* action = new QtAction(accessor, QString("Export Scene For World Of Tanks Blitz"));
+    // Save Scene Legacy As Action
+    {
+        QtAction* action = new QtAction(accessor, QString("Save Scene Legacy As"));
 
-    //     FieldDescriptor fieldDescr;
-    //     fieldDescr.fieldName = DAVA::FastName(SceneData::scenePropertyName);
-    //     fieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneData>();
-    //     action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any
-    //                                      { return value.CanCast<SceneData::TSceneType>() && value.Cast<SceneData::TSceneType>().Get() != nullptr; });
+        FieldDescriptor fieldDescr;
+        fieldDescr.fieldName = DAVA::FastName(SceneData::scenePropertyName);
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneData>();
+        action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& value) -> DAVA::Any
+                                         { return value.CanCast<SceneData::TSceneType>() && value.Cast<SceneData::TSceneType>().Get() != nullptr; });
 
-    //     connections.AddConnection(action, &QAction::triggered, DAVA::Bind(static_cast<void (SceneManagerModule::*)(bool)>(&SceneManagerModule::ExportSceneForWorldOfTanksBlitz), this, true));
+        connections.AddConnection(action, &QAction::triggered, DAVA::Bind(static_cast<void (SceneManagerModule::*)(bool)>(&SceneManagerModule::SaveSceneLegacy), this, true));
 
-    //     ActionPlacementInfo placementInfo;
-    //     placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuFile, { InsertionParams::eInsertionMethod::AfterItem, "Save Scene As" }));
+        ActionPlacementInfo placementInfo;
+        placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuFile, { InsertionParams::eInsertionMethod::AfterItem, "Save Scene As" }));
 
-    //     ui->AddAction(mainWindowKey, placementInfo, action);
-    // }
+        ui->AddAction(mainWindowKey, placementInfo, action);
+    }
 
     // Separator
     {
@@ -968,51 +967,52 @@ void SceneManagerModule::SaveScene(bool saveAs)
     instance->SetLastSavedScenePath(saveAsPath.GetAbsolutePathname());
 }
 
-// void SceneManagerModule::ExportSceneForWorldOfTanksBlitz(bool saveAs)
-// {
-//     using namespace DAVA;
-//     DataContext* ctx = GetAccessor()->GetActiveContext();
-//     DVASSERT(ctx != nullptr);
-//     SceneData* data = ctx->GetData<SceneData>();
-//     DVASSERT(data != nullptr);
-//     DVASSERT(data->scene.Get() != nullptr);
+void SceneManagerModule::SaveSceneLegacy(bool saveAs)
+{
+    using namespace DAVA;
 
-//     if (!IsSavingAllowed(data))
-//     {
-//         return;
-//     }
+    DataContext* ctx = GetAccessor()->GetActiveContext();
+    DVASSERT(ctx != nullptr);
+    SceneData* data = ctx->GetData<SceneData>();
+    DVASSERT(data != nullptr);
+    DVASSERT(data->scene.Get() != nullptr);
 
-//     data->scene->SaveSystemsLocalProperties(data->GetPropertiesRoot());
+    if (!IsSavingAllowed(data))
+    {
+        return;
+    }
 
-//     DAVA::FilePath saveAsPath;
-//     if (saveAs == true)
-//     {
-//         saveAsPath = GetSceneSavePath(data->scene);
-//     }
+    data->scene->SaveSystemsLocalProperties(data->GetPropertiesRoot());
 
-//     // if it wasn't, we should create properties holder for it
-//     bool sceneWasLoaded = data->scene->IsLoaded();
+    DAVA::FilePath saveAsPath;
+    if (saveAs == true)
+    {
+        saveAsPath = GetSceneSavePath(data->scene);
+    }
 
-//     ExportSceneForWorldOfTanksBlitzImpl(data->scene, saveAsPath);
+    // if it wasn't, we should create properties holder for it
+    bool sceneWasLoaded = data->scene->IsLoaded();
 
-//     if (sceneWasLoaded == false || saveAs == true)
-//     {
-//         CreateSceneProperties(data);
-//     }
+    SaveSceneImpl(data->scene, saveAsPath, true);
 
-//     PythonPluginsSingleton* instance = PythonPluginsSingleton::GetInstance();
-//     instance->SetLastSavedScenePath(saveAsPath.GetAbsolutePathname());
-// }
+    if (sceneWasLoaded == false || saveAs == true)
+    {
+        CreateSceneProperties(data);
+    }
+
+    PythonPluginsSingleton* instance = PythonPluginsSingleton::GetInstance();
+    instance->SetLastSavedScenePath(saveAsPath.GetAbsolutePathname());
+}
+
+void SceneManagerModule::SaveSceneLegacy()
+{
+    SaveSceneLegacy(true);
+}
 
 void SceneManagerModule::SaveScene()
 {
     SaveScene(false);
 }
-
-// void SceneManagerModule::ExportSceneForWorldOfTanksBlitz()
-// {
-//     ExportSceneForWorldOfTanksBlitz(false);
-// }
 
 void SceneManagerModule::CreateSceneProperties(DAVA::SceneData* const data, bool sceneIsTemp)
 {
@@ -1508,7 +1508,7 @@ DAVA::RefPtr<DAVA::SceneEditor2> SceneManagerModule::OpenSceneImpl(const DAVA::F
     return scene;
 }
 
-bool SceneManagerModule::SaveSceneImpl(DAVA::RefPtr<DAVA::SceneEditor2> scene, const DAVA::FilePath& scenePath)
+bool SceneManagerModule::SaveSceneImpl(DAVA::RefPtr<DAVA::SceneEditor2> scene, const DAVA::FilePath& scenePath, bool legacy)
 {
     DAVA::FilePath pathToSaveScene = scenePath;
     if (pathToSaveScene.IsEmpty())
@@ -1540,7 +1540,7 @@ bool SceneManagerModule::SaveSceneImpl(DAVA::RefPtr<DAVA::SceneEditor2> scene, c
         scene->SaveEmitters(DAVA::MakeFunction(this, &SceneManagerModule::SaveEmitterFallback));
     }
 
-    DAVA::SceneFileV2::eError ret = scene->SaveScene(pathToSaveScene);
+    DAVA::SceneFileV2::eError ret = scene->SaveScene(pathToSaveScene, legacy);
     if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
     {
         using namespace DAVA;
@@ -1557,56 +1557,6 @@ bool SceneManagerModule::SaveSceneImpl(DAVA::RefPtr<DAVA::SceneEditor2> scene, c
     recentItems->Add(pathToSaveScene.GetAbsolutePathname());
     return true;
 }
-
-// bool SceneManagerModule::ExportSceneForWorldOfTanksBlitzImpl(DAVA::RefPtr<DAVA::SceneEditor2> scene, const DAVA::FilePath& scenePath)
-// {
-//     DAVA::FilePath pathToSaveScene = scenePath;
-//     if (pathToSaveScene.IsEmpty())
-//     {
-//         if (scene->IsLoaded())
-//         {
-//             DAVA::FilePath currentScenePath = scene->GetScenePath();
-//             DVASSERT(!currentScenePath.IsEmpty());
-//             if (!scene->IsChanged())
-//             {
-//                 return false;
-//             }
-
-//             pathToSaveScene = scene->GetScenePath();
-//         }
-//         else
-//         {
-//             pathToSaveScene = GetSceneSavePath(scene);
-//         }
-//     }
-
-//     if (pathToSaveScene.IsEmpty())
-//     {
-//         return false;
-//     }
-
-//     if (GetAccessor()->GetGlobalContext()->GetData<DAVA::GlobalSceneSettings>()->saveEmitters == true)
-//     {
-//         scene->SaveEmitters(DAVA::MakeFunction(this, &SceneManagerModule::SaveEmitterFallback));
-//     }
-
-//     DAVA::SceneFileV2::eError ret = scene->ExportSceneForWorldOfTanksBlitz(pathToSaveScene);
-//     if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
-//     {
-//         using namespace DAVA;
-//         UI* ui = GetUI();
-//         ModalMessageParams params;
-//         params.buttons = ModalMessageParams::Ok;
-//         params.title = QStringLiteral("Save error");
-//         params.message = QStringLiteral("An error occurred while saving the scene.See log for more info.");
-//         ui->ShowModalMessage(DAVA::mainWindowKey, params);
-//         return false;
-//     }
-
-//     scene->SetScenePath(pathToSaveScene);
-//     recentItems->Add(pathToSaveScene.GetAbsolutePathname());
-//     return true;
-// }
 
 DAVA::FilePath SceneManagerModule::GetSceneSavePath(const DAVA::RefPtr<DAVA::SceneEditor2>& scene)
 {

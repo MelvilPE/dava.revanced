@@ -415,11 +415,13 @@ public:
      * 
      * @param pathname Path where the scene will be saved
      * 
+     * @param legacy Legacy boolean (save as 25)
+     * 
      * @return SceneFileV2::eError Error code indicating the result of the save operation
      * 
      * @details This method serializes the current scene state into a file at the specified location.
      */
-    virtual SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname);
+    virtual SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname, bool legacy = false);
 
     /**
      * @brief Performs optimization of the scene before exporting

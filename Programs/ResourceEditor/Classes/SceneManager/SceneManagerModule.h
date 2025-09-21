@@ -52,8 +52,8 @@ private:
     void AddSceneByPath(const DAVA::FilePath& scenePath);
     void SaveScene();
     void SaveScene(bool saveAs);
-    // void ExportSceneForWorldOfTanksBlitz();
-    // void ExportSceneForWorldOfTanksBlitz(bool saveAs);
+    void SaveSceneLegacy();
+    void SaveSceneLegacy(bool saveAs);
     void SaveSceneToFolder(bool compressedTextures);
     void ExportScene();
     void CloseAllScenes(bool needSavingReqiest);
@@ -79,9 +79,7 @@ private:
     /// return true if scene was saved
     /// Preconditions:
     ///     "scenePath" - should be a file
-    bool SaveSceneImpl(DAVA::RefPtr<DAVA::SceneEditor2> scene, const DAVA::FilePath& scenePath = DAVA::FilePath());
-
-    // bool ExportSceneForWorldOfTanksBlitzImpl(DAVA::RefPtr<DAVA::SceneEditor2> scene, const DAVA::FilePath& scenePath = DAVA::FilePath());
+    bool SaveSceneImpl(DAVA::RefPtr<DAVA::SceneEditor2> scene, const DAVA::FilePath& scenePath = DAVA::FilePath(), bool legacy = false);
 
     DAVA::FilePath GetSceneSavePath(const DAVA::RefPtr<DAVA::SceneEditor2>& scene);
 
