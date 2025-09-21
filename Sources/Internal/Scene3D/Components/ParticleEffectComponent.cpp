@@ -339,8 +339,6 @@ void ParticleEffectComponent::SerializeNestedEmitters(KeyedArchive* archive, Ser
             return;
         }
 
-        String debug1 = nestedEmittersComponent;
-
         Vector<VariantType> emitters = archive->GetVariantVector("pe.emitters");
         for (uint64 emitterIndex = 0; emitterIndex < emitters.size(); ++emitterIndex)
         {
@@ -376,8 +374,6 @@ void ParticleEffectComponent::SerializeNestedEmitters(KeyedArchive* archive, Ser
         }
 
         archive->SetVariantVector("pe.emitters", emitters);
-        String debug2 = archive->SaveToYamlString();
-        Logger::Warning("Archive après modif:\n%s", debug2.c_str());
     }
 }
 
