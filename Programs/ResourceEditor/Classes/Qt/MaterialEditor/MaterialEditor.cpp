@@ -475,7 +475,18 @@ private:
         const DAVA::InspMember* groupMember = info->Member(DAVA::FastName(DAVA::NMaterialSerializationKey::QualityGroup));
         if ((nullptr != groupMember) && (globalMaterial != material))
         {
-            baseRoot->MergeChild(std::unique_ptr<QtPropertyData>(new QtPropertyDataInspMember(UIName::Group, material, groupMember)));
+            QtPropertyDataInspMember* group = new QtPropertyDataInspMember(UIName::Group, material, groupMember);
+            baseRoot->MergeChild(std::unique_ptr<QtPropertyData>(group));
+
+            // Add unknown value:
+            group->AddAllowedValue(DAVA::VariantType(DAVA::FastName()), "Unknown");
+
+            // fill allowed values for material group
+            for (size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount(); ++i)
+            {
+                DAVA::FastName groupName = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupName(i);
+                group->AddAllowedValue(DAVA::VariantType(groupName), groupName.c_str());
+            }
         }
 
         // fill custom cull mode
