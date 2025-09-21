@@ -327,14 +327,48 @@ void ParticleEffectComponent::SerializeLegacyYaml(KeyedArchive* archive, Seriali
 
 void ParticleEffectComponent::SerializeNestedEmitters(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-    SerializationContext::eSavedSceneMethod savedSceneMethod = serializationContext->GetSavedSceneMethod();
-    if (savedSceneMethod == SerializationContext::eSavedSceneMethod::Wargaming_WordOfTanksBlitz ||
-        savedSceneMethod == SerializationContext::eSavedSceneMethod::LestaStudio_TanksBlitz)
+    using Method = SerializationContext::eSavedSceneMethod;
+    Method savedSceneMethod = serializationContext->GetSavedSceneMethod();
+
+    if (savedSceneMethod == Method::Wargaming_WordOfTanksBlitz ||
+        savedSceneMethod == Method::LestaStudio_TanksBlitz)
     {
         if (!archive->LoadFromYamlString(nestedEmittersComponent))
         {
             Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed nested emitters component is wrong");
             return;
+        }
+
+        Vector<VariantType> emitters = archive->GetVariantVector("pe.emitters");
+        for (auto& emitter : emitters)
+        {
+            KeyedArchive* emitterArch = emitter.AsKeyedArchive();
+            if (emitterArch == nullptr)
+            {
+                Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] emitter is not a valid archive");
+                continue;
+            }
+
+            Vector<VariantType> emitterDatas = emitterArch->GetVariantVector("emitter.data");
+            for (auto& emitterData : emitterDatas)
+            {
+                KeyedArchive* emitterDataArch = emitterData.AsKeyedArchive();
+                if (emitterDataArch == nullptr)
+                {
+                    Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] emitter.data entry is not a valid archive");
+                    continue;
+                }
+
+                if (!emitterDataArch->IsKeyExists("emitter.id"))
+                {
+                    Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] emitter.data missing 'emitter.id'");
+                    continue;
+                }
+
+                uint64 oldId = emitterDataArch->GetUInt64("emitter.id");
+                uint64 newId = serializationContext->GetUpdatedEmitterNodeId(oldId);
+                emitterDataArch->SetUInt64("emitter.id", newId);
+            }
         }
     }
 }

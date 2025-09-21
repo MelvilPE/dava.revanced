@@ -107,6 +107,21 @@ Vector<ParticleEmitterNode*> SerializationContext::GetParticleEmitterNodes()
     return particleEmitterNodes;
 }
 
+void SerializationContext::UpdateEmitterNodeId(uint64 oldId, uint64 newId)
+{
+    updatedEmitterNodesIds[oldId] = newId;
+}
+
+uint64 SerializationContext::GetUpdatedEmitterNodeId(uint64 oldId)
+{
+    if (updatedEmitterNodesIds.find(oldId) != updatedEmitterNodesIds.end())
+    {
+        return updatedEmitterNodesIds[oldId];
+    }
+
+    return oldId;
+}
+
 String SerializationContext::GetSceneFileName()
 {
     return GetSceneFilePath().GetFilename();

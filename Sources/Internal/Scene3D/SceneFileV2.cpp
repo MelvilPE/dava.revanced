@@ -515,69 +515,12 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scen
 
     Vector<VariantType> dataNodes;
     Vector<VariantType> hierarchy;
-    Vector<VariantType> polygonGroups;
-    Vector<VariantType> nestedEmitterNodes;
 
-    if (isSaveForGame)
+    if (!PrepareSerializableDataNodes(dataNodes, scene))
     {
-        
-    }
-
-    Set<DataNode*> nodes;
-    scene->GetDataNodes(nodes);
-
-    uint32 serializableNodesCount = 0;
-    uint64 maxDataNodeID = 0;
-
-    for (auto node : nodes)
-    {
-        if (node->GetScene() == scene && node->GetNodeID() > maxDataNodeID)
-        {
-            maxDataNodeID = node->GetNodeID();
-        }
-    }
-
-    for (auto node : nodes)
-    {
-        if (IsDataNodeSerializable(node))
-        {
-            serializableNodesCount++;
-            if (node->GetScene() != scene || node->GetNodeID() == DataNode::INVALID_ID)
-            {
-                node->SetNodeID(++maxDataNodeID);
-            }
-        }
-    }
-
-    if (!PrepareAndGetParticleEmitterNodes(nestedEmitterNodes))
-    {
-        Logger::Error("SceneFileV2::SaveScene failed to receive ParticleEmitterNodes from ParticleEffectComponent: %s", filename.GetAbsolutePathname().c_str());
+        Logger::Error("SceneFileV2::SaveScene failed to prepare serializable data nodes file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_FILE_WRITE_ERROR);
         return GetError();
-    }
-
-    for (uint32 emitterNodeIndex = 0; emitterNodeIndex < nestedEmitterNodes.size(); emitterNodeIndex++)
-    {
-        serializableNodesCount++;
-    }
-
-    Set<DataNode*, std::function<bool(DataNode*, DataNode*)>> orderedNodes(nodes.begin(), nodes.end(),
-                                                                           [](DataNode* a, DataNode* b)
-                                                                           { return a->GetNodeID() < b->GetNodeID(); });
-
-    for (uint32 emitterNodeIndex = 0; emitterNodeIndex < nestedEmitterNodes.size(); emitterNodeIndex++)
-    {
-        dataNodes.push_back(nestedEmitterNodes[emitterNodeIndex]);
-    }
-    for (auto node : orderedNodes)
-    {
-        if (IsDataNodeSerializable(node))
-        {
-            ScopedPtr<KeyedArchive> nodeArchive(new KeyedArchive());
-            node->Save(nodeArchive, &serializationContext);
-            VariantType nodeVariant(nodeArchive.get());
-            dataNodes.push_back(nodeVariant);
-        }
     }
 
     for (int ci = 0; ci < scene->GetChildrenCount(); ++ci)
@@ -606,6 +549,9 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scen
         return GetError();
     }
 
+    sceneArchive->SetVariantVector(SceneFileV2Key::DATANODES_KEY, dataNodes);
+    sceneArchive->SetVariantVector(SceneFileV2Key::HIERARCHY_KEY, hierarchy);
+
     if (!sceneComponents.empty())
     {
         ScopedPtr<KeyedArchive> sceneComponentsArch(new KeyedArchive());
@@ -631,24 +577,6 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath& filename, Scene* scen
 
         sceneArchive->SetArchive(SceneFileV2Key::SCENE_COMPONENT_SETS_KEY, sceneComponentSetsArch);
     }
-
-    if (!sceneRenderConfig.empty())
-    {
-        ScopedPtr<KeyedArchive> sceneRenderConfigArch(new KeyedArchive());
-        if (!sceneRenderConfigArch->LoadFromYamlString(sceneRenderConfig))
-        {
-            Logger::Error("SceneFileV2::SaveScene failed to receive sceneRenderConfig, data probably wrong: %s", filename.GetAbsolutePathname().c_str());
-            SetError(ERROR_FILE_WRITE_ERROR);
-            return GetError();
-        }
-
-        VariantType sceneRenderConfigVariant;
-        sceneRenderConfigVariant.SetKeyedArchive(sceneRenderConfigArch);
-        dataNodes.push_back(sceneRenderConfigVariant);
-    }
-
-    sceneArchive->SetVariantVector(SceneFileV2Key::DATANODES_KEY, dataNodes);
-    sceneArchive->SetVariantVector(SceneFileV2Key::HIERARCHY_KEY, hierarchy);
 
     if (!sceneArchive->Save(file))
     {
@@ -1159,6 +1087,97 @@ bool SceneFileV2::SaveHierarchy(Entity* node, File* file, int32 level)
     return true;
 }
 
+bool SceneFileV2::PrepareSerializableDataNodes(Vector<VariantType>& dataNodes, Scene* scene)
+{
+    Set<DataNode*> nodes;
+    scene->GetDataNodes(nodes);
+
+    uint64 maxDataNodeID = 0;
+
+    for (auto node : nodes)
+    {
+        if (node->GetScene() == scene && node->GetNodeID() > maxDataNodeID)
+        {
+            maxDataNodeID = node->GetNodeID();
+        }
+    }
+
+    for (auto node : nodes)
+    {
+        if (IsDataNodeSerializable(node))
+        {
+            if (node->GetScene() != scene || node->GetNodeID() == DataNode::INVALID_ID)
+            {
+                maxDataNodeID++;
+                node->SetNodeID(maxDataNodeID);
+            }
+        }
+    }
+
+    for (auto node : nodes)
+    {
+        if (IsDataNodeSerializable(node))
+        {
+            ScopedPtr<KeyedArchive> nodeArchive(new KeyedArchive());
+            node->Save(nodeArchive, &serializationContext);
+            VariantType nodeVariant(nodeArchive.get());
+            dataNodes.push_back(nodeVariant);
+        }
+    }
+
+    if (!particleEmitterNodes.empty())
+    {
+        ScopedPtr<KeyedArchive> listNodes(new KeyedArchive());
+        if (!listNodes->LoadFromYamlString(particleEmitterNodes))
+        {
+            Logger::Error("SceneFileV2::PrepareSerializableDataNodes failed to receive particle emitter nodes, data probably wrong");
+            return false;
+        }
+
+        Vector<VariantType> collectedEmitterNodes = listNodes->GetVariantVector("ParticleEmitterNodes");
+        for (auto& collectedEmitterNode : collectedEmitterNodes)
+        {
+            KeyedArchive* nodeArchive = collectedEmitterNode.AsKeyedArchive();
+            if (!nodeArchive)
+            {
+                Logger::Error("SceneFileV2::PrepareSerializableDataNodes failed to receive particle emitter node, data probably wrong");
+                return false;
+            }
+
+            maxDataNodeID++;
+
+            uint64 oldId = nodeArchive->GetByteArrayAsType<uint64>("#id", 0);
+            nodeArchive->SetByteArrayAsType("#id", maxDataNodeID);
+
+            serializationContext.UpdateEmitterNodeId(oldId, maxDataNodeID);
+
+            VariantType updated(nodeArchive);
+            dataNodes.push_back(updated);
+        }
+    }
+
+    if (!sceneRenderConfig.empty())
+    {
+        ScopedPtr<KeyedArchive> sceneRenderConfigArch(new KeyedArchive());
+        if (!sceneRenderConfigArch->LoadFromYamlString(sceneRenderConfig))
+        {
+            Logger::Error("SceneFileV2::PrepareSerializableDataNodes failed to receive scene render config, data probably wrong");
+            return false;
+        }
+
+        maxDataNodeID++;
+
+        uint64 oldId = sceneRenderConfigArch->GetByteArrayAsType<uint64>("#id", 0);
+        sceneRenderConfigArch->SetByteArrayAsType("#id", maxDataNodeID);
+
+        VariantType sceneRenderConfigVariant;
+        sceneRenderConfigVariant.SetKeyedArchive(sceneRenderConfigArch);
+        dataNodes.push_back(sceneRenderConfigVariant);
+    }
+
+    return true;
+}
+
 void SceneFileV2::PrepareAndGetHierarchy(Vector<VariantType>* hierarchy, Entity* node)
 {
     ScopedPtr<KeyedArchive> nodeArchive(new KeyedArchive());
@@ -1179,23 +1198,6 @@ void SceneFileV2::PrepareAndGetHierarchy(Vector<VariantType>* hierarchy, Entity*
 
     VariantType entityVariant(nodeArchive.get());
     hierarchy->push_back(entityVariant);
-}
-
-bool SceneFileV2::PrepareAndGetParticleEmitterNodes(Vector<VariantType>& prepared)
-{
-    if (particleEmitterNodes.empty())
-    {
-        return true;
-    }
-
-    ScopedPtr<KeyedArchive> listNodes(new KeyedArchive());
-    if (!listNodes->LoadFromYamlString(particleEmitterNodes))
-    {
-        return false;
-    }
-
-    prepared = listNodes->GetVariantVector("ParticleEmitterNodes");
-    return true;
 }
 
 bool SceneFileV2::LoadHierarchy(Scene* scene, Entity* parent, File* file, int32 level)

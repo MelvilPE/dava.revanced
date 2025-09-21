@@ -11,6 +11,7 @@
 #include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
 #include "Base/Message.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

@@ -418,9 +418,19 @@ private:
      */
     bool SaveHierarchy(Entity* node, File* file, int32 level);
 
+    /**
+     * @brief Prepare all dataNodes from scene for save
+     * @param dataNodes Reference to dataNodes
+     * @param scene Pointer to the scene
+     * @return true if preparation was successfull, false otherwise
+     */
+    bool PrepareSerializableDataNodes(Vector<VariantType>& dataNodes, Scene* scene);
+    /**
+     * @brief Prepare whole hierarchy from scene entities for save
+     * @param hierarchy Pointer to hierarchy
+     * @param node Pointer to the current child/parent node
+     */
     void PrepareAndGetHierarchy(Vector<VariantType>* hierarchy, Entity* node);
-
-    bool PrepareAndGetParticleEmitterNodes(Vector<VariantType>& prepared);
 
     bool LoadHierarchy(Scene* scene, Entity* node, File* file, int32 level);
 
