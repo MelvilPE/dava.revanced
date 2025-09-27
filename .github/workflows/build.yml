@@ -1,0 +1,134 @@
+name: Build ResourceEditor
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      DXSDK_DIR: "C:\\Program Files (x86)\\Microsoft DirectX SDK (June 2010)"
+
+    steps:
+      # 1️⃣ Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 1️⃣ Download LFS Files
+      - name: Download and extract LFSFiles.zip
+        run: |
+          gh release download lfs-files --repo MelvilPE/dava.framework.private --pattern "LFSFiles.zip" --dir .
+          Expand-Archive -Path "LFSFiles.zip" -DestinationPath "." -Force
+          Remove-Item "LFSFiles.zip"
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 2️⃣ Cache Python packages
+      - name: Cache Python packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: python-${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            python-${{ runner.os }}-pip-
+
+      # 3️⃣ Setup Python 3.12
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # 4️⃣ Cache / Install CMake
+      - name: Cache CMake
+        id: cache-cmake
+        uses: actions/cache@v3
+        with:
+          path: C:/ProgramData/chocolatey/lib/cmake/tools/cmake-*/bin
+          key: cmake-${{ runner.os }}-v3.*/bin
+
+      - name: Install CMake
+        if: steps.cache-cmake.outputs.cache-hit != 'true'
+        run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' --yes
+
+      # 5️⃣ Install DirectX SDK (June 2010)
+      - name: Install DirectX SDK (June 2010)
+        run: choco install directx-sdk -y
+
+      # 6️⃣ Check DirectX SDK environment variable
+      - name: Check DXSDK_DIR
+        run: echo $Env:DXSDK_DIR
+        shell: pwsh
+
+      # 7️⃣ Cache / Install Qt 5.12.2
+      - name: Cache Qt
+        id: cache-qt
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/installedQT
+          key: qt-5.12.2-${{ runner.os }}-msvc2017_64
+
+      - name: Install Qt 5.12.2
+        if: steps.cache-qt.outputs.cache-hit != 'true'
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: 5.12.2
+          host: windows
+          target: desktop
+          arch: win64_msvc2017_64
+          dir: ${{ github.workspace }}/installedQT/
+
+      # 8️⃣ Write DavaConfig.in with Qt + DX paths
+      - name: Write DavaConfig.in
+        run: |
+          @"
+          QT_PATH=$Env:QT5_HOME_64
+          ANDROID_KEY_STORE=$Env:DAVA_ROOT_DIR/Sources/CMake/Resources/Android/DavaTest.keystore
+          ANDROID_KEY_ALIAS=test
+          ANDROID_STORE_PASSWORD=qazwsx
+          ANDROID_ALIAS_PASSWORD=qazwsx
+          ANDROID_ANT=$Env:ANDROID_ANT_ROOT
+          ANDROID_NDK=$Env:ANDROID_NDK_ROOT
+          ANDROID_SDK=$Env:ANDROID_SDK_ROOT
+          ANDROID_ABI=armeabi-v7a
+          ANDROID_NATIVE_API_LEVEL=14
+          ANDROID_TARGET_API_LEVEL=25
+          GLOBAL_UNITYIGNORE_FILES=$Env:DAVA_ROOT_DIR/dava.unityignore
+          STEAM_SDK=$Env:STEAM_SDK
+          "@ | Out-File DavaConfig.in -Encoding UTF8
+        env:
+          DAVA_ROOT_DIR: ${{ github.workspace }}
+          ANDROID_ANT_ROOT: C:/Android/ant
+          ANDROID_NDK_ROOT: C:/Android/android-sdk/ndk/27.3.13750724
+          ANDROID_SDK_ROOT: C:/Android/android-sdk
+          STEAM_SDK: C:/SteamSDK
+          QT5_HOME_64: ${{ github.workspace }}/installedQT/Qt/5.12.2/msvc2017_64
+          DXSDK_DIR: "C:\\Program Files (x86)\\Microsoft DirectX SDK (June 2010)\\"
+
+      # 9️⃣ Debug step for DavaConfig.in
+      - name: Show DavaConfig.in
+        run: cat DavaConfig.in
+        shell: pwsh
+
+      # 🔟 Configure CMake (source = Programs/ResourceEditor)
+      - name: Configure with CMake
+        run: cmake -S Programs/ResourceEditor -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_POLICY_VERSION_MINIMUM="3.5" -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_DEFAULT_CMP0084=OLD -DUNITY_BUILD=true -DDEPLOY=true -DDEPLOY_DIR=${{github.workspace}}\deploy
+
+      # 1️⃣1️⃣ Build Release
+      - name: Build
+        run: cmake --build build --config Release
+
+      # 1️⃣2️⃣ Upload build artifacts
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ResourceEditor-build
+          path: |
+            build/Release/*.exe
+            build/Release/*.dll
+            deploy/**
