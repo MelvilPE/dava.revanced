@@ -509,9 +509,6 @@ SceneFileV2::eError SceneFileV2::SaveSceneLegacy(const FilePath& filename, Scene
     header.version = WORLD_OF_TANKS_BLITZ_6_2_VERSION;
     header.nodeCount = scene->GetChildrenCount();
 
-    descriptor.size = sizeof(descriptor.fileType);
-    descriptor.fileType = SceneFile;
-
     serializationContext.SetSavedSceneMethod(SerializationContext::eSavedSceneMethod::Wargaming_WordOfTanksBlitz);
     serializationContext.SetRootNodePath(filename);
     serializationContext.SetScenePath(FilePath(filename.GetDirectory()));
@@ -605,9 +602,6 @@ SceneFileV2::eError SceneFileV2::SaveSceneLatest(const FilePath& filename, Scene
     header.signature = { 'S', 'F', 'V', '2' };
     header.version = SCENE_FILE_SAVED_VERSION;
     header.nodeCount = scene->GetChildrenCount();
-
-    descriptor.size = sizeof(descriptor.fileType) + sizeof(descriptor.geometryIdHash) + sizeof(descriptor.geometryDataHash);
-    descriptor.fileType = ModelFile;
 
     serializationContext.SetSavedSceneMethod(SerializationContext::eSavedSceneMethod::Wargaming_WordOfTanksBlitz);
     serializationContext.SetRootNodePath(filename);
@@ -933,6 +927,9 @@ bool SceneFileV2::WriteDescriptor(File* file, Descriptor& descriptor, bool legac
 {
     if (legacy)
     {
+        descriptor.size = sizeof(descriptor.fileType);
+        descriptor.fileType = SceneFile;
+
         if (sizeof(descriptor.size) != file->Write(&descriptor.size, sizeof(descriptor.size)))
         {
             return false;
@@ -945,6 +942,9 @@ bool SceneFileV2::WriteDescriptor(File* file, Descriptor& descriptor, bool legac
     }
     else
     {
+        descriptor.size = sizeof(descriptor.fileType) + sizeof(descriptor.geometryIdHash) + sizeof(descriptor.geometryDataHash);
+        descriptor.fileType = ModelFile;
+
         if (sizeof(descriptor) != file->Write(&descriptor, sizeof(descriptor)))
         {
             return false;
