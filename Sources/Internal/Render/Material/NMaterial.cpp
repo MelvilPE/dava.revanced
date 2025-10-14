@@ -73,6 +73,7 @@ MaterialConfig::MaterialConfig()
     : localProperties(16)
     , localTextures(8)
     , localFlags(16)
+    , localPresets(16)
     , customCullMode(rhi::CullMode::CULL_MODE_COUNT)
 {
 }
@@ -80,6 +81,7 @@ MaterialConfig::MaterialConfig(const MaterialConfig& config)
     : localProperties(16)
     , localTextures(8)
     , localFlags(16)
+    , localPresets(16)
     , customCullMode(rhi::CullMode::CULL_MODE_COUNT)
 {
     operator=(config);
@@ -91,6 +93,7 @@ MaterialConfig& MaterialConfig::operator=(const MaterialConfig& config)
     name = config.name;
     fxName = config.fxName;
     localFlags = config.localFlags;
+    localPresets = config.localPresets;
     customCullMode = config.customCullMode;
     for (auto& tex : config.localTextures)
     {
@@ -765,7 +768,7 @@ uint32 NMaterial::FindConfigByName(const FastName& name) const
     return static_cast<uint32>(materialConfigs.size());
 }
 
-void NMaterial::InsertConfig(uint32 index, const MaterialConfig& config)
+void NMaterial::InsertConfig(uint32 index, const MaterialConfig config)
 {
     if (index < static_cast<uint32>(materialConfigs.size()))
     {

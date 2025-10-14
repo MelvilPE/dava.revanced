@@ -45,6 +45,14 @@ void StoreMaterialTextures(const MaterialConfig& config, KeyedArchive* content, 
     }
 }
 
+void StoreMaterialPresets(const MaterialConfig& config, KeyedArchive* content)
+{
+    for (const auto& lp : config.localPresets)
+    {
+        content->SetBool(lp.first.c_str(), lp.second);
+    }
+}
+
 void StoreMaterialFlags(const MaterialConfig& config, KeyedArchive* content)
 {
     for (const auto& lf : config.localFlags)
@@ -136,6 +144,32 @@ void UpdateMaterialPropertiesFromPreset(MaterialConfig& config, KeyedArchive* co
     }
 }
 
+void UpdateMaterialPresetsFromPreset(NMaterial* material, KeyedArchive* content, bool updateForUndo)
+{
+    if (updateForUndo)
+    {
+        ClearContent(MakeFunction(material, &NMaterial::GetLocalPresets), MakeFunction(material, &NMaterial::RemovePreset));
+    }
+
+    const auto presets = content->GetArchieveData();
+    for (const auto& preset : presets)
+    {
+        if (material->HasLocalPreset(FastName(preset.first)))
+            material->SetPreset(FastName(preset.first), preset.second->AsBool());
+        else
+            material->AddPreset(FastName(preset.first), preset.second->AsBool());
+    }
+}
+
+void UpdateMaterialPresetsFromPreset(MaterialConfig& config, KeyedArchive* content)
+{
+    const auto presets = content->GetArchieveData();
+    for (const auto& preset : presets)
+    {
+        config.localPresets[FastName(preset.first)] = preset.second->AsBool();
+    }
+}
+
 void UpdateMaterialFlagsFromPreset(NMaterial* material, KeyedArchive* content, bool updateForUndo)
 {
     if (updateForUndo)
@@ -212,6 +246,11 @@ void LoadMaterialPresetOld(KeyedArchive* preset, NMaterial* material, const Seri
 
     if (FlagEnabled(parts, ApplyMaterialPresetCommand::PROPERTIES))
     {
+        if (preset->IsKeyExists("presets"))
+        {
+            UpdateMaterialPresetsFromPreset(material, preset->GetArchive("presets"), loadForUndo);
+        }
+
         if (preset->IsKeyExists("flags"))
         {
             UpdateMaterialFlagsFromPreset(material, preset->GetArchive("flags"), loadForUndo);
@@ -258,6 +297,12 @@ Vector<MaterialConfig> LoadMaterialConfigs(KeyedArchive* preset, NMaterial* mate
 
             if (FlagEnabled(parts, ApplyMaterialPresetCommand::PROPERTIES))
             {
+                String presetsString = Format("presets_%d", ci);
+                if (preset->IsKeyExists(presetsString))
+                {
+                    UpdateMaterialPresetsFromPreset(config, preset->GetArchive(presetsString));
+                }
+
                 String flagsString = Format("flags_%d", ci);
                 if (preset->IsKeyExists(flagsString))
                 {
@@ -292,6 +337,11 @@ void LoadMaterialPreset(KeyedArchive* archive, NMaterial* material, const Serial
     if (FlagEnabled(parts, ApplyMaterialPresetCommand::GROUP) && preset->IsKeyExists("group"))
     {
         material->SetQualityGroup(preset->GetFastName("group"));
+    }
+
+    if (preset->IsKeyExists("customCullMode"))
+    {
+        material->SetCustomCullMode(preset->GetUInt32("customCullMode"));
     }
 
     if (preset->IsKeyExists("configCount"))
@@ -329,6 +379,8 @@ void LoadMaterialPreset(KeyedArchive* archive, NMaterial* material, const Serial
 
                         if (FlagEnabled(parts, ApplyMaterialPresetCommand::PROPERTIES))
                         {
+                            config.localPresets = newConfigs[ci].localPresets;
+
                             config.localFlags = newConfigs[ci].localFlags;
 
                             //release old properties
@@ -371,7 +423,7 @@ void LoadMaterialPreset(KeyedArchive* archive, NMaterial* material, const Serial
                             }
                         }
 
-                        material->InsertConfig(index + 1, config); //add new configs at proper position
+                        material->InsertConfig(index + 1, MaterialConfig(config)); //add new configs at proper position
                         material->RemoveConfig(index);
                     }
                     else
@@ -438,15 +490,18 @@ void ApplyMaterialPresetCommand::StoreCurrentConfigPreset(KeyedArchive* preset, 
 
     ScopedPtr<KeyedArchive> content(new KeyedArchive());
     ScopedPtr<KeyedArchive> texturesArchive(new KeyedArchive());
+    ScopedPtr<KeyedArchive> presetsArchive(new KeyedArchive());
     ScopedPtr<KeyedArchive> flagsArchive(new KeyedArchive());
     ScopedPtr<KeyedArchive> propertiesArchive(new KeyedArchive());
 
     const MaterialConfig& config = material->GetConfig(material->GetCurrentConfigIndex());
 
     StoreMaterialTextures(config, texturesArchive, context);
+    StoreMaterialPresets(config, presetsArchive);
     StoreMaterialFlags(config, flagsArchive);
     StoreMaterialProperties(config, propertiesArchive);
 
+    content->SetArchive("presets", presetsArchive);
     content->SetArchive("flags", flagsArchive);
     content->SetArchive("textures", texturesArchive);
     content->SetArchive("properties", propertiesArchive);
@@ -458,6 +513,8 @@ void ApplyMaterialPresetCommand::StoreCurrentConfigPreset(KeyedArchive* preset, 
     const FastName& qualityGroup = material->GetQualityGroup();
     if (qualityGroup.IsValid())
         content->SetFastName("group", qualityGroup);
+
+    content->SetUInt32("customCullMode", material->GetCustomCullMode());
 
     preset->SetUInt32("serializationContextVersion", context.GetVersion());
     preset->SetArchive("content", content);
@@ -485,6 +542,8 @@ void ApplyMaterialPresetCommand::StoreAllConfigsPreset(KeyedArchive* archive, NM
         content->SetFastName("group", qualityGroup);
     }
 
+    content->SetUInt32("customCullMode", material->GetCustomCullMode());
+
     uint32 configCount = material->GetConfigCount();
     content->SetUInt32("configCount", configCount);
 
@@ -503,13 +562,16 @@ void ApplyMaterialPresetCommand::StoreAllConfigsPreset(KeyedArchive* archive, NM
         }
 
         ScopedPtr<KeyedArchive> texturesArchive(new KeyedArchive());
+        ScopedPtr<KeyedArchive> presetsArchive(new KeyedArchive());
         ScopedPtr<KeyedArchive> flagsArchive(new KeyedArchive());
         ScopedPtr<KeyedArchive> propertiesArchive(new KeyedArchive());
 
         StoreMaterialTextures(config, texturesArchive, context);
+        StoreMaterialPresets(config, presetsArchive);
         StoreMaterialFlags(config, flagsArchive);
         StoreMaterialProperties(config, propertiesArchive);
 
+        content->SetArchive(Format("presets_%d", ci), presetsArchive);
         content->SetArchive(Format("flags_%d", ci), flagsArchive);
         content->SetArchive(Format("textures_%d", ci), texturesArchive);
         content->SetArchive(Format("properties_%d", ci), propertiesArchive);

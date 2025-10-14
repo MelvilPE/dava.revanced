@@ -176,7 +176,7 @@ public:
     //Configs managment
     uint32 GetConfigCount() const;
     const MaterialConfig& GetConfig(uint32 index) const;
-    void InsertConfig(uint32 index, const MaterialConfig& config);
+    void InsertConfig(uint32 index, const MaterialConfig config);
     void RemoveConfig(uint32 index);
 
     uint32 GetCurrentConfigIndex() const;
