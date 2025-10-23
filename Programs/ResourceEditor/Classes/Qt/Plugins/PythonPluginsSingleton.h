@@ -20,5 +20,6 @@ public:
     void SetOpenProjectPath(const std::string& openProjectPath);
     void SetLastLoadedScenePath(const std::string& lastLoadedScenePath);
     void SetLastSavedScenePath(const std::string& lastSavedScenePath);
+    void SetLastExportedBatchesDirectoryPath(const std::string& lastExportedBatchesDirectoryPath);
     bool Serialize(DAVA::FilePath path);
 };
