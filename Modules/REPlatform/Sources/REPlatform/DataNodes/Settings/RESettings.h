@@ -11,6 +11,7 @@
 #include <Math/Color.h>
 #include <Reflection/Reflection.h>
 #include <Scene3D/Components/ActionComponent.h>
+#include <Scene3D/Components/MarkedUnregistered/MarkedUnregisteredSingleton.h>
 
 namespace DAVA
 {
@@ -77,7 +78,13 @@ public:
     float32 wheelMoveIntensity = 180.0f;
     bool invertWheel = false;
 
+    // Marked as unregistered components
+    String markedUnregistered = "";
+
     void Load(const PropertiesItem& settingsNode) override;
+
+    String GetMarkedUnregistered() const;
+    void SetMarkedUnregistered(String value);
 
     DAVA_VIRTUAL_REFLECTION(GeneralSettings, SettingsNode);
 };

@@ -57,6 +57,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(GeneralSettings)
     .Field("wheelMoveCamera", &GeneralSettings::wheelMoveCamera)[M::DisplayName("Move camera on Wheel"), M::Group("Mouse")]
     .Field("wheelMoveIntensity", &GeneralSettings::wheelMoveIntensity)[M::DisplayName("Move intensity on Wheel"), M::Group("Mouse")]
     .Field("invertWheel", &GeneralSettings::invertWheel)[M::DisplayName("Invert Wheel"), M::Group("Mouse")]
+    .Field("markedUnregistered", &GeneralSettings::GetMarkedUnregistered, &GeneralSettings::SetMarkedUnregistered)[M::DisplayName("Marked Unregistered"), M::Group("Marked Unregistered")]
     .End();
 }
 
@@ -96,5 +97,27 @@ DAVA_VIRTUAL_REFLECTION_IMPL(CommonInternalSettings)
     .Field("validateShowConsole", &CommonInternalSettings::validateShowConsole)
     .Field("logWidgetState", &CommonInternalSettings::logWidgetState)
     .End();
+}
+
+String GeneralSettings::GetMarkedUnregistered() const
+{
+    return markedUnregistered;
+}
+void GeneralSettings::SetMarkedUnregistered(String value)
+{
+    ScopedPtr<KeyedArchive> emptyArchive(new KeyedArchive());
+    Vector<VariantType> emptyArray;
+    emptyArchive->SetVariantVector("list", emptyArray);
+    markedUnregistered = emptyArchive->SaveToYamlString();
+
+    ScopedPtr<KeyedArchive> archive(new KeyedArchive());
+    if (archive->LoadFromYamlString(value))
+    {
+        MarkedUnregisteredSingleton* marker = MarkedUnregisteredSingleton::GetInstance();
+        if (marker->TryUpdateList(archive))
+        {
+            markedUnregistered = value;
+        }
+    }
 }
 } // namespace DAVA

@@ -133,6 +133,8 @@ public:
         LOAD_SETTING(generalSettings, wheelMoveIntensity, General_Mouse_WheelMoveIntensity, AsFloat);
         LOAD_SETTING(generalSettings, invertWheel, General_Mouse_InvertWheel, AsBool);
 
+        LOAD_SETTING(generalSettings, markedUnregistered, Marked_Unregistered, AsString);
+
         LOAD_SETTING(globalSceneSettings, gridStep, Scene_GridStep, AsFloat);
         LOAD_SETTING(globalSceneSettings, gridSize, Scene_GridSize, AsFloat);
         LOAD_SETTING(globalSceneSettings, cameraSpeed0, Scene_CameraSpeed0, AsFloat);
@@ -290,6 +292,7 @@ private:
     const DAVA::String General_Mouse_InvertWheel = "General/Mouse/InvertWheel";
     const DAVA::String General_Mouse_WheelMoveCamera = "General/Mouse/WheelMoveCamera";
     const DAVA::String General_Mouse_WheelMoveIntensity = "General/Mouse/WheelMoveIntensity";
+    const DAVA::String Marked_Unregistered = "MarkedUnregistered/MarkedUnregistered";
     const DAVA::String Scene_GridColorX = "Scene/GridColorX";
     const DAVA::String Scene_GridColorY = "Scene/GridColorY";
     const DAVA::String Scene_GridOtherColors = "Scene/GridOtherColors";

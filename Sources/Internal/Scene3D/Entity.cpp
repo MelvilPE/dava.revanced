@@ -536,7 +536,7 @@ void Entity::Load(KeyedArchive* archive, SerializationContext* serializationCont
 
     KeyedArchive* compsArch = archive->GetArchive("components");
 
-    LoadComponentsV7(compsArch, serializationContext);
+    LoadComponentsV8(compsArch, serializationContext);
 }
 
 void Entity::LoadComponentsV7(KeyedArchive* compsArch, SerializationContext* serializationContext)
@@ -560,6 +560,50 @@ void Entity::LoadComponentsV7(KeyedArchive* compsArch, SerializationContext* ser
 
                     AddComponent(comp);
                     comp->Deserialize(compArch, serializationContext);
+                }
+                else
+                {
+                    UnregisteredComponent* comp = new UnregisteredComponent();
+                    AddComponent(comp);
+                    comp->Deserialize(compArch, serializationContext);
+                }
+            }
+        }
+    }
+}
+
+void Entity::LoadComponentsV8(KeyedArchive* compsArch, SerializationContext* serializationContext)
+{
+    if (nullptr != compsArch)
+    {
+        uint32 componentCount = compsArch->GetUInt32("count");
+        for (uint32 i = 0; i < componentCount; ++i)
+        {
+            KeyedArchive* compArch = compsArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
+            if (nullptr != compArch)
+            {
+                String componentType = compArch->GetString("comp.typename");
+                Component* comp = ObjectFactory::Instance()->New<Component>(componentType);
+                if (nullptr != comp)
+                {
+                    MarkedUnregisteredSingleton* marker = MarkedUnregisteredSingleton::GetInstance();
+                    Vector<String> marked = marker->GetAllMarkedUnregistered();
+                    if (std::find(marked.begin(), marked.end(), componentType) != marked.end())
+                    {
+                        UnregisteredComponent* comp = new UnregisteredComponent();
+                        AddComponent(comp);
+                        comp->Deserialize(compArch, serializationContext);
+                    }
+                    else
+                    {
+                        if (comp->GetType()->Is<TransformComponent>())
+                        {
+                            RemoveComponent(comp->GetType());
+                        }
+
+                        AddComponent(comp);
+                        comp->Deserialize(compArch, serializationContext);
+                    }
                 }
                 else
                 {

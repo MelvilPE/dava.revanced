@@ -10,6 +10,7 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/EntityFamily.h"
+#include "Scene3D/Components/MarkedUnregistered/MarkedUnregisteredSingleton.h"
 
 #include "MemoryManager/MemoryProfiler.h"
 
@@ -396,6 +397,7 @@ protected:
     void UpdateFamily();
     void RemoveAllComponents();
     void LoadComponentsV7(KeyedArchive* compsArch, SerializationContext* serializationContext);
+    void LoadComponentsV8(KeyedArchive* compsArch, SerializationContext* serializationContext);
 
     String RecursiveBuildFullName(Entity* node, Entity* endNode);
 
