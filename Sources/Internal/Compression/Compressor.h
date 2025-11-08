@@ -13,6 +13,8 @@ public:
         Lz4,
         Lz4HC,
         RFC1951, // deflate, inflate
+        Lz4Stream,
+        Count,
     };
 
     virtual ~Compressor();
