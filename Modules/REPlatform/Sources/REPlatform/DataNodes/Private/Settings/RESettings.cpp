@@ -3,6 +3,7 @@
 #include <Base/GlobalEnum.h>
 #include <Reflection/ReflectedMeta.h>
 #include <Reflection/ReflectionRegistrator.h>
+#include <Render/Material/NMaterialStateDynamicSingleton.h>
 
 ENUM_DECLARE(DAVA::RenderingBackend)
 {
@@ -58,6 +59,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(GeneralSettings)
     .Field("wheelMoveIntensity", &GeneralSettings::wheelMoveIntensity)[M::DisplayName("Move intensity on Wheel"), M::Group("Mouse")]
     .Field("invertWheel", &GeneralSettings::invertWheel)[M::DisplayName("Invert Wheel"), M::Group("Mouse")]
     .Field("markedUnregistered", &GeneralSettings::GetMarkedUnregistered, &GeneralSettings::SetMarkedUnregistered)[M::DisplayName("Marked Unregistered"), M::Group("Marked Unregistered")]
+    .Field("dynamicMaterialEditorProps", &GeneralSettings::GetDynamicMaterialEditorProps, &GeneralSettings::SetDynamicMaterialEditorProps)[M::DisplayName("Dynamic Material Editor Props"), M::Group("Dynamic Material Editor Props")]
     .End();
 }
 
@@ -118,6 +120,29 @@ void GeneralSettings::SetMarkedUnregistered(String value)
         {
             markedUnregistered = value;
         }
+    }
+}
+
+String GeneralSettings::GetDynamicMaterialEditorProps() const
+{
+    return dynamicMaterialEditorProps;
+}
+void GeneralSettings::SetDynamicMaterialEditorProps(String value)
+{
+    ScopedPtr<KeyedArchive> archive(new KeyedArchive());
+    if (archive->LoadFromYamlString(value))
+    {
+        NMaterialStateDynamicSingleton* instance = NMaterialStateDynamicSingleton::GetInstance();
+        if (instance->TryUpdateArchive(archive))
+        {
+            dynamicMaterialEditorProps = value;
+        }
+    }
+    else
+    {
+        NMaterialStateDynamicSingleton* instance = NMaterialStateDynamicSingleton::GetInstance();
+        instance->SetDefaultArchiveYaml();
+        dynamicMaterialEditorProps = instance->GetDefaultArchiveYaml();
     }
 }
 } // namespace DAVA

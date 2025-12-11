@@ -12,6 +12,7 @@
 #include <Reflection/Reflection.h>
 #include <Scene3D/Components/ActionComponent.h>
 #include <Scene3D/Components/MarkedUnregistered/MarkedUnregisteredSingleton.h>
+#include <Render/Material/NMaterialStateDynamicSingleton.h>
 
 namespace DAVA
 {
@@ -81,10 +82,16 @@ public:
     // Marked as unregistered components
     String markedUnregistered = "";
 
+    // DynamicMaterialEditorProps - dynamic properties flags, presets, textures, properties
+    String dynamicMaterialEditorProps = "";
+
     void Load(const PropertiesItem& settingsNode) override;
 
     String GetMarkedUnregistered() const;
     void SetMarkedUnregistered(String value);
+
+    String GetDynamicMaterialEditorProps() const;
+    void SetDynamicMaterialEditorProps(String value);
 
     DAVA_VIRTUAL_REFLECTION(GeneralSettings, SettingsNode);
 };

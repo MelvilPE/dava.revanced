@@ -4,6 +4,8 @@
 #include "Base/BaseTypes.h"
 #include "Base/Introspection.h"
 
+#include "NMaterialStateDynamicSingleton.h"
+
 namespace DAVA
 {
 class NMaterial;

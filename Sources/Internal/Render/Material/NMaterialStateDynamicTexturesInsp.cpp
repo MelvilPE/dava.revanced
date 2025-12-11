@@ -61,72 +61,16 @@ void NMaterialStateDynamicTexturesInsp::FindMaterialTexturesRecursive(NMaterial*
 
 void NMaterialStateDynamicTexturesInsp::SetAllPossibleMaterialTextures(NMaterial* material, Set<FastName>& ret) const
 {
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_ALBEDO));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_NORMAL));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_SPECULAR));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_DETAIL));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_LIGHTMAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_LIGHTMAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_DECAL));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_CUBEMAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_HEIGHTMAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_TANGENTSPACE));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_DECALMASK));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_DECALTEXTURE));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_TILED_DECAL_1));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_TILED_DECAL_2));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_TILED_DECAL_3));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_MASK));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_FLOW));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_NOISE));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_ALPHA_REMAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_DYNAMIC_REFLECTION));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_DYNAMIC_REFRACTION));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PARTICLES_HEATMAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PARTICLES_RT));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_ENV_REFLECTION_MASK));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_DIRT_NORMAL));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_DIRT_HEIGHTMAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_WETNESS_BOUNDARY));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_VERTEX_ANIMATION_TEXTURE));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_DYNAMIC_SHADOW_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_DYNAMIC_DEPTH_PREPASS));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_DYNAMIC_BLUE_NOISE));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_DYNAMIC_PERLIN_NOISE));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_DYNAMIC_SPECULAR_BRDF));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_DYNAMIC_SPECULAR_REFLECTION_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_DYNAMIC_DIFFUSE_IRRADIANCE_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_DYNAMIC_SRC_0));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_VEGETATION_COLOR_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_VEGETATION_DENSITY_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_BASE_COLOR_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_BASE_NORMAL_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_BASE_RM_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_MISC_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_MASK_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_ROUGHNESS_AO_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_LANDSCAPE_ALBEDO_ROUGHNESS_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_LANDSCAPE_NORMAL_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_LANDSCAPE_LIGHTMAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_LANDSCAPE_TILE_ALBEDO_HEIGHT_ARRAY));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_LANDSCAPE_TILE_NORMAL_ARRAY));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_LANDSCAPE_TILE_ROUGHNESS_AO_ARRAY));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_LANDSCAPE_TILE_ROUGHNESS_METALLIC_ARRAY));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_LANDSCAPE_TILE_AO_EMISSION_ARRAY));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_DECAL_COLOR_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_DECAL_NORMAL_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_DECAL_RM_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_DECAL_COLOR_ROUGHNESS_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_DECAL_LIGHTMAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_DETAIL_COLOR_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_DETAIL_NORMAL_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_PBR_DETAIL_ROUGHNESS_AO_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_FLORA_COLOR_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_FLORA_PBR_COLOR_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_FLORA_LANDSCAPE_NORMAL_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_FLORA_LIGHTMAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_FLORA_EDGE_MAP));
-    ret.insert(FastName(NMaterialTextureName::TEXTURE_FLORA_FAKE_SHADOW));
+    if (ret.empty())
+    {
+        KeyedArchive* archive = NMaterialStateDynamicSingleton::GetInstance()->GetArchive();
+
+        Vector<VariantType> textures = archive->GetVariantVector("textures");
+        for (auto texture : textures)
+        {
+            ret.insert(FastName(texture.AsString()));
+        }
+    }
 }
 
 InspInfoDynamic::DynamicData NMaterialStateDynamicTexturesInsp::Prepare(void* object, int filter) const

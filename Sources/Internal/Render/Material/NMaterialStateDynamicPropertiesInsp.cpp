@@ -96,10 +96,11 @@ InspInfoDynamic::DynamicData NMaterialStateDynamicPropertiesInsp::Prepare(void* 
     FindMaterialPropertiesRecursive(material, *data);
 
     // user require predefined global properties
-    if (filter > 0)
-    {
-        FillGlobalMaterialMemebers(material, *data);
-    }
+    // if (filter > 0)
+    // {
+    //     FillGlobalMaterialMemebers(material, *data);
+    // }
+    FillGlobalMaterialMemebers(material, *data);
 
     DynamicData ret;
     ret.object = object;
@@ -350,43 +351,60 @@ void NMaterialStateDynamicPropertiesInsp::FillGlobalMaterialMemebers(NMaterial* 
         }
     };
 
-    checkAndAdd(NMaterialParamName::PARAM_LIGHT_POSITION0, rhi::ShaderProp::TYPE_FLOAT3, 1, DefaultValues::defaultVec3.data);
-    checkAndAdd(NMaterialParamName::PARAM_PROP_AMBIENT_COLOR, rhi::ShaderProp::TYPE_FLOAT4, 1, DefaultValues::defaultColor.color);
-    checkAndAdd(NMaterialParamName::PARAM_PROP_DIFFUSE_COLOR, rhi::ShaderProp::TYPE_FLOAT4, 1, DefaultValues::defaultColor.color);
-    checkAndAdd(NMaterialParamName::PARAM_PROP_SPECULAR_COLOR, rhi::ShaderProp::TYPE_FLOAT4, 1, DefaultValues::defaultColor.color);
-    checkAndAdd(NMaterialParamName::PARAM_LIGHT_AMBIENT_COLOR, rhi::ShaderProp::TYPE_FLOAT4, 1, DefaultValues::defaultColor.color);
-    checkAndAdd(NMaterialParamName::PARAM_LIGHT_DIFFUSE_COLOR, rhi::ShaderProp::TYPE_FLOAT4, 1, DefaultValues::defaultColor.color);
-    checkAndAdd(NMaterialParamName::PARAM_LIGHT_SPECULAR_COLOR, rhi::ShaderProp::TYPE_FLOAT4, 1, DefaultValues::defaultColor.color);
-    checkAndAdd(NMaterialParamName::PARAM_LIGHT_INTENSITY0, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultFloat05);
-    checkAndAdd(NMaterialParamName::PARAM_MATERIAL_SPECULAR_SHININESS, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultFloat05);
+    KeyedArchive* archive = NMaterialStateDynamicSingleton::GetInstance()->GetArchive();
 
-    checkAndAdd(NMaterialParamName::PARAM_FOG_LIMIT, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultFloat10);
-    checkAndAdd(NMaterialParamName::PARAM_FOG_COLOR, rhi::ShaderProp::TYPE_FLOAT3, 1, DefaultValues::defaultColor.color);
-    checkAndAdd(NMaterialParamName::PARAM_FOG_DENSITY, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultFogDensity);
-    checkAndAdd(NMaterialParamName::PARAM_FOG_START, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultFogStart);
-    checkAndAdd(NMaterialParamName::PARAM_FOG_END, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultFogEnd);
-    checkAndAdd(NMaterialParamName::PARAM_FOG_HALFSPACE_DENSITY, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultFogDensity);
-    checkAndAdd(NMaterialParamName::PARAM_FOG_HALFSPACE_FALLOFF, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultFogDensity);
-    checkAndAdd(NMaterialParamName::PARAM_FOG_HALFSPACE_HEIGHT, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultFogHeight);
-    checkAndAdd(NMaterialParamName::PARAM_FOG_HALFSPACE_LIMIT, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultFloat10);
-    checkAndAdd(NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SUN, rhi::ShaderProp::TYPE_FLOAT3, 1, DefaultValues::defaultColor.color);
-    checkAndAdd(NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SKY, rhi::ShaderProp::TYPE_FLOAT3, 1, DefaultValues::defaultColor.color);
-    checkAndAdd(NMaterialParamName::PARAM_FOG_ATMOSPHERE_SCATTERING, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultFloat10);
-    checkAndAdd(NMaterialParamName::PARAM_FOG_ATMOSPHERE_DISTANCE, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultFogEnd);
+    Vector<VariantType> properties = archive->GetVariantVector("properties");
+    for (uint32 propertyIndex = 0; propertyIndex < properties.size(); propertyIndex++)
+    {
+        KeyedArchive* propertyArch = properties[propertyIndex].AsKeyedArchive();
+        if (!propertyArch)
+        {
+            continue;
+        }
 
-    checkAndAdd(NMaterialParamName::PARAM_LIGHTMAP_SIZE, rhi::ShaderProp::TYPE_FLOAT1, 1, &NMaterial::DEFAULT_LIGHTMAP_SIZE);
-    checkAndAdd(NMaterialParamName::PARAM_FLAT_COLOR, rhi::ShaderProp::TYPE_FLOAT4, 1, DefaultValues::defaultColor.color);
-    checkAndAdd(NMaterialParamName::PARAM_TEXTURE0_SHIFT, rhi::ShaderProp::TYPE_FLOAT2, 1, DefaultValues::defaultVec2.data);
-    checkAndAdd(NMaterialParamName::PARAM_UV_OFFSET, rhi::ShaderProp::TYPE_FLOAT2, 1, DefaultValues::defaultVec2.data);
-    checkAndAdd(NMaterialParamName::PARAM_UV_SCALE, rhi::ShaderProp::TYPE_FLOAT2, 1, DefaultValues::defaultVec2.data);
-    checkAndAdd(NMaterialParamName::PARAM_DECAL_TILE_SCALE, rhi::ShaderProp::TYPE_FLOAT2, 1, DefaultValues::defaultVec2.data);
-    checkAndAdd(NMaterialParamName::PARAM_DECAL_TILE_COLOR, rhi::ShaderProp::TYPE_FLOAT4, 1, Color::White.color);
-    checkAndAdd(NMaterialParamName::PARAM_DETAIL_TILE_SCALE, rhi::ShaderProp::TYPE_FLOAT2, 1, DefaultValues::defaultVec2.data);
-    checkAndAdd(NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM, rhi::ShaderProp::TYPE_FLOAT4, 1, DefaultValues::defaultColor.color);
-    checkAndAdd(NMaterialParamName::FORCED_SHADOW_DIRECTION_PARAM, rhi::ShaderProp::TYPE_FLOAT3, 1, DefaultValues::defaultVec3.data);
-    checkAndAdd(NMaterialParamName::WATER_CLEAR_COLOR, rhi::ShaderProp::TYPE_FLOAT4, 1, DefaultValues::blackColor.color);
+        String name = propertyArch->GetString("name");
+        rhi::ShaderProp::Type type = static_cast<rhi::ShaderProp::Type>(propertyArch->GetUInt32("type"));
+        uint32 size = propertyArch->GetUInt32("size");
+        VariantType* defaultValue = propertyArch->GetVariant("defaultValue");
 
-    //checkAndAdd(NMaterialParamName::PARAM_NORMAL_SCALE, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultFloat10);
-    //checkAndAdd(NMaterialParamName::PARAM_ALPHATEST_THRESHOLD, rhi::ShaderProp::TYPE_FLOAT1, 1, (float32*) &DefaultValues::defaultFloat05);
+        switch (defaultValue->GetType())
+        {
+        case VariantType::TYPE_FLOAT: {
+            float32 dumb = defaultValue->AsFloat();
+            checkAndAdd(FastName(name), type, size, reinterpret_cast<float32*>(new float32(dumb)));
+            break;
+        }
+        case VariantType::TYPE_VECTOR2:
+        {
+            Vector2 dumb = defaultValue->AsVector2();
+            checkAndAdd(FastName(name), type, size, reinterpret_cast<float32*>(new Vector2(dumb)));
+            break;
+        }
+        case VariantType::TYPE_VECTOR3:
+        {
+            Vector3 dumb = defaultValue->AsVector3();
+            checkAndAdd(FastName(name), type, size, reinterpret_cast<float32*>(new Vector3(dumb)));
+            break;
+        }
+        case VariantType::TYPE_VECTOR4:
+        {
+            Vector4 dumb = defaultValue->AsVector4();
+            checkAndAdd(FastName(name), type, size, reinterpret_cast<float32*>(new Vector4(dumb)));
+            break;
+        }
+        case VariantType::TYPE_COLOR:
+        {
+            Color dumb = defaultValue->AsColor();
+            checkAndAdd(FastName(name), type, size, reinterpret_cast<float32*>(new Color(dumb)));
+            break;
+        }
+        case VariantType::TYPE_MATRIX4:
+        {
+            Matrix4 dumb = defaultValue->AsMatrix4();
+            checkAndAdd(FastName(name), type, size, reinterpret_cast<float32*>(new Matrix4(dumb)));
+            break;
+        }
+        }
+    }
 }
 }

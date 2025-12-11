@@ -5,6 +5,8 @@
 #include "Base/Introspection.h"
 #include "Render/RHI/rhi_ShaderSource.h"
 
+#include "NMaterialStateDynamicSingleton.h"
+
 namespace DAVA
 {
 class NMaterial;
