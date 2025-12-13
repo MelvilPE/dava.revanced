@@ -1259,6 +1259,7 @@ bool SceneFileV2::PrepareSerializableDataNodes(Vector<VariantType>& dataNodes, S
         }
 
         Vector<VariantType> collectedEmitterNodes = listNodes->GetVariantVector("ParticleEmitterNodes");
+        // First case - update main particules without clones
         for (auto& collectedEmitterNode : collectedEmitterNodes)
         {
             KeyedArchive* nodeArchive = collectedEmitterNode.AsKeyedArchive();
@@ -1268,6 +1269,10 @@ bool SceneFileV2::PrepareSerializableDataNodes(Vector<VariantType>& dataNodes, S
                 return false;
             }
 
+            const bool clone = nodeArchive->IsKeyExists("clone") && nodeArchive->GetBool("clone");
+            if (clone)
+                continue;
+
             maxDataNodeID++;
 
             uint64 oldId = nodeArchive->GetByteArrayAsType<uint64>("#id", 0);
@@ -1275,15 +1280,37 @@ bool SceneFileV2::PrepareSerializableDataNodes(Vector<VariantType>& dataNodes, S
 
             serializationContext.UpdateEmitterNodeId(oldId, maxDataNodeID);
 
-            if (nodeArchive->IsKeyExists("clone") && nodeArchive->GetBool("clone"))
+            dataNodes.emplace_back(nodeArchive);
+        }
+        // Second case - update clones and references
+        for (auto& collectedEmitterNode : collectedEmitterNodes)
+        {
+            KeyedArchive* nodeArchive = collectedEmitterNode.AsKeyedArchive();
+            if (!nodeArchive)
+                continue;
+
+            const bool clone = nodeArchive->IsKeyExists("clone") && nodeArchive->GetBool("clone");
+            if (!clone)
+                continue;
+
+            maxDataNodeID++;
+
+            uint64 oldId = nodeArchive->GetByteArrayAsType<uint64>("#id", 0);
+            nodeArchive->SetByteArrayAsType("#id", maxDataNodeID);
+
+            serializationContext.UpdateEmitterNodeId(oldId, maxDataNodeID);
+
+            uint64 oldReferenceId = nodeArchive->GetUInt64("reference.id");
+            uint64 newReferenceId = serializationContext.GetUpdatedEmitterNodeId(oldReferenceId);
+
+            if (newReferenceId == 0)
             {
-                uint64 oldReferenceId = nodeArchive->GetUInt64("reference.id");
-                uint64 newReferenceId = serializationContext.GetUpdatedEmitterNodeId(oldReferenceId);
-                nodeArchive->SetUInt64("reference.id", newReferenceId);
+                Logger::Error("SceneFileV2::PrepareSerializableDataNodes Emitter clone reference not found. Old reference id: %llu", oldReferenceId);
+                return false;
             }
 
-            VariantType updated(nodeArchive);
-            dataNodes.push_back(updated);
+            nodeArchive->SetUInt64("reference.id", newReferenceId);
+            dataNodes.emplace_back(nodeArchive);
         }
     }
 
