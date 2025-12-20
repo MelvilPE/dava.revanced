@@ -36,8 +36,8 @@ public:
     // Grid & scene settings
     Color gridColorX = Color(0.0f, 1.0f, 0.0f, 1.0f);
     Color gridColorY = Color(1.0f, 0.0f, 0.0f, 1.0f);
-    Color gridOtherColors = Color(1.0f, 1.0f, 1.0f, 1.0f);
-    Color sceneBackgroundColor = Color(0.0f, 0.0f, 0.0f, 1.0f);
+    Color gridOtherColors = Color(0.5f, 0.5f, 0.5f, 1.0f);
+    Color sceneBackgroundColor = Color(0.2f, 0.2f, 0.2f, 1.0f);
 
     // Material Editor settings
     Color materialEditorSwitchColor0 = Color(0.0f, 1.0f, 0.0f, 1.0f);
