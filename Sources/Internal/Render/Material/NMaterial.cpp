@@ -1360,10 +1360,25 @@ void NMaterial::LoadConfigFromArchive(uint32 configId, KeyedArchive* archive, Se
         const KeyedArchive::UnderlyingMap& texturesMap = archive->GetArchive(NMaterialSerializationKey::TexturesKey)->GetArchieveData();
         for (KeyedArchive::UnderlyingMap::const_iterator it = texturesMap.begin(); it != texturesMap.end(); ++it)
         {
-            String relativePathname = it->second->AsString();
-            MaterialTextureInfo* texInfo = new MaterialTextureInfo();
-            texInfo->path = serializationContext->GetScenePath() + relativePathname;
-            config.localTextures[FastName(it->first)] = texInfo;
+            if (it->second->GetType() == VariantType::TYPE_STRING)
+            {
+                String relativePathname = it->second->AsString();
+                MaterialTextureInfo* texInfo = new MaterialTextureInfo();
+                texInfo->path = serializationContext->GetScenePath() + relativePathname;
+                config.localTextures[FastName(it->first)] = texInfo;
+            }
+
+            if (it->second->GetType() == VariantType::TYPE_KEYED_ARCHIVE)
+            {
+                KeyedArchive* texturesArchive = it->second->AsKeyedArchive();
+                if (texturesArchive->IsKeyExists("basePath"))
+                {
+                    String relativePathname = texturesArchive->GetString("basePath");
+                    MaterialTextureInfo* texInfo = new MaterialTextureInfo();
+                    texInfo->path = serializationContext->GetScenePath() + relativePathname;
+                    config.localTextures[FastName(it->first)] = texInfo;
+                }
+            }
         }
     }
 
