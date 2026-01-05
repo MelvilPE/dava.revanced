@@ -1,38 +1,56 @@
-# DAVA.Framework - Independent Modifications
+# 📘 DAVA Revanced – Independent Modifications
 
-## Context
-This project is based on an **open source** version of the **DAVA.Framework**.  
-It has been adapted as part of an independent initiative, with the main goal of **tracking and integrating updates introduced by Wargaming and Lesta Studio** in their respective games.
+## Introduction
+**DAVA Revanced** is a reworked and enhanced continuation of the publicly available versions of  
+[DAVA.Framework](https://github.com/smile4u/dava.engine).
+
+This project provides a set of tools for **modding Blitz Tank Models**, allowing creators to independently customize and enhance game assets for **personal use and community-driven purposes**.
+
+---
 
 ## Project Goals
-The modifications applied to the engine aim to:
-- **Update the legacy codebase** to make it compatible with recent game changes.
-- **Enable tank model modifications**, as was possible in the past.
-- **Introduce new customization features** and improve content management.
-- **Provide tools to track and adapt to changes** introduced in recent versions of the games.
+This project aims to:  
 
-## Target Games
-This project is primarily focused on supporting and adapting to changes in:
-- **World of Tanks Blitz (Wargaming)**
-- **Tanks Blitz (Lesta Studio)**
+- Modernize the legacy codebase to ensure compatibility with recent game changes.  
+- Restore support for **tank model modifications**, as was possible in earlier versions.  
+- Introduce **new customization features** for game assets.  
+
+---
+
+## Supported Games
+This project primarily focuses on:  
+
+- **[World of Tanks Blitz (Wargaming.net)](https://eu.wotblitz.com/)**  
+- **[Tanks Blitz (Lesta Studio)](https://tanksblitz.ru/ru/)**
+
+---
+
+## Platforms
+We would like to thank the original DAVA.Framework team for their work on the engine, which made this project possible.  
+DAVA Revanced continues to offer **cross-platform compatibility** across:
+
+- iOS  
+- Android  
+- Windows  
+- Mac OS X  
+- Universal Windows Platform  
+
+---
 
 ## Disclaimer
-This project is completely **independent** and has no official connection with Wargaming.net or Lesta Studio.  
-Its purpose is solely to provide an updated technical base for research, experimentation, and customization.
+⚠️ **Important:**  
+This project is **completely independent and community-driven**. It **has no official affiliation** with Wargaming.net or Lesta Studio.
 
-## Previous README
+- This project is based only on **publicly available versions** of DAVA.Framework. It does not imply any claim to rights on the engine or its licensing status.
+- If Wargaming, Lesta Studio, or any rights holder wants to contact me regarding this project, I will **review the request and take appropriate action**.
+- **Under no circumstances** tools provided do they encourage cheating, leaking private company information, or violating the games’ terms of service.  
 
-Cross platform game development framework  
+Thank you for your understanding and support of the community.
 
-- Our mission
-   - Best framework for development of mobile games.
+---
 
-- Platforms
-   - iOS
-   - Android 
-   - Windows
-   - Mac OS X
-   - Universal Windows Platform
+## Contact
+For questions, feedback, or support, please reach out via **Discord only**:  
 
-Enhancing dava framework
-https://github.com/dava/dava.framework/wiki/Topics-that-requires-investigation
+- **Discord Server:** [Invite Link Here](https://discord.com/invite/FS9uTTnab7)  
+- **Discord Contact:** `0x5862`  
