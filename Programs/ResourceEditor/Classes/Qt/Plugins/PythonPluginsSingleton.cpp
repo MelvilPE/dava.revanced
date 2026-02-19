@@ -14,6 +14,7 @@ PythonPluginsSingleton::PythonPluginsSingleton()
     object->SetString("lastSavedScenePath", "");
     object->SetString("openProjectPath", "");
     object->SetString("lastExportedBatchesDirectoryPath", "");
+    object->SetString("lastLibrarySelectedFileSc2", "");
 }
 
 PythonPluginsSingleton::~PythonPluginsSingleton()
@@ -21,24 +22,29 @@ PythonPluginsSingleton::~PythonPluginsSingleton()
     DAVA::SafeRelease(object);
 }
 
-void PythonPluginsSingleton::SetOpenProjectPath(const std::string& openProjectPath)
+void PythonPluginsSingleton::SetOpenProjectPath(const std::string& value)
 {
-    object->SetString("openProjectPath", openProjectPath);
+    object->SetString("openProjectPath", value);
 }
 
-void PythonPluginsSingleton::SetLastLoadedScenePath(const std::string& lastLoadedScenePath)
+void PythonPluginsSingleton::SetLastLoadedScenePath(const std::string& value)
 {
-    object->SetString("lastLoadedScenePath", lastLoadedScenePath);
+    object->SetString("lastLoadedScenePath", value);
 }
 
-void PythonPluginsSingleton::SetLastSavedScenePath(const std::string& lastSavedScenePath)
+void PythonPluginsSingleton::SetLastSavedScenePath(const std::string& value)
 {
-    object->SetString("lastSavedScenePath", lastSavedScenePath);
+    object->SetString("lastSavedScenePath", value);
 }
 
-void PythonPluginsSingleton::SetLastExportedBatchesDirectoryPath(const std::string& lastExportedBatchesDirectoryPath)
+void PythonPluginsSingleton::SetLastExportedBatchesDirectoryPath(const std::string& value)
 {
-    object->SetString("lastExportedBatchesDirectoryPath", lastExportedBatchesDirectoryPath);
+    object->SetString("lastExportedBatchesDirectoryPath", value);
+}
+
+void PythonPluginsSingleton::SetLastLibrarySelectedFileSc2(const std::string& value)
+{
+    object->SetString("lastLibrarySelectedFileSc2", value);
 }
 
 bool PythonPluginsSingleton::Serialize(DAVA::FilePath path)

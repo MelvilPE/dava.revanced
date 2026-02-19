@@ -3,12 +3,14 @@
 
 #include "Base/BaseMath.h"
 #include "Base/BaseObject.h"
+#include "Base/Hash.h"
 #include "FileSystem/File.h"
 #include "Render/3D/PolygonGroup.h"
 #include "Render/3D/StaticMesh.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Utils/Utils.h"
+#include "Utils/CRC32.h"
 
 namespace DAVA
 {
@@ -403,17 +405,6 @@ private:
     }
 
     /**
-     * @brief Checks if the DataNode is a PolygonGroup
-     *
-     * @param[in] node Pointer to the DataNode to check
-     * @return true if the node is a PolygonGroup, false otherwise
-     */
-    inline bool IsPolygonGroupDataNode(DataNode* node)
-    {
-        return (node->GetClassName() == "PolygonGroup");
-    }
-
-    /**
      * @brief Saves the hierarchy of entities to a file
      * @param node The root entity node to save
      * @param file The file to write the hierarchy to
@@ -425,10 +416,16 @@ private:
     /**
      * @brief Prepare all dataNodes from scene for save
      * @param dataNodes Reference to dataNodes
+     * @param polygons Reference to dataNodes polygon groups
      * @param scene Pointer to the scene
      * @return true if preparation was successfull, false otherwise
      */
-    bool PrepareSerializableDataNodes(Vector<VariantType>& dataNodes, Scene* scene);
+    bool PrepareSerializableDataNodes(Vector<VariantType>& dataNodes, Vector<VariantType>& polygons, Scene* scene);
+    /**
+     * @brief Prepare descriptor geometry id hash
+     * @param nodes Reference to dataNodes
+     */
+    void PrepareDescriptorGeometryIdHash(Set<DataNode*>& nodes);
     /**
      * @brief Prepare whole hierarchy from scene entities for save
      * @param hierarchy Pointer to hierarchy

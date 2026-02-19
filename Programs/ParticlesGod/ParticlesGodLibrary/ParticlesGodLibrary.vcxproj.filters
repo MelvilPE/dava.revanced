@@ -1,0 +1,180 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Fichiers sources">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Fichiers de ressources">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Fichiers sources\Library">
+      <UniqueIdentifier>{61091803-f72e-4559-8923-994511be6370}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Library\RapidJson">
+      <UniqueIdentifier>{c6b4d866-9b69-43e5-8011-e715791ae15c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Library\RapidJson\error">
+      <UniqueIdentifier>{26f08695-5751-4ecf-a010-d3949a0c1f1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Library\RapidJson\internal">
+      <UniqueIdentifier>{b91862fc-16b9-4675-a02d-fb045b092249}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Library\RapidJson\msinttypes">
+      <UniqueIdentifier>{767993e5-f7d7-4278-bac1-fe2f4bc184f3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\Includes.h">
+      <Filter>Fichiers sources\Library</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\Main.h">
+      <Filter>Fichiers sources\Library</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\allocators.h">
+      <Filter>Fichiers sources\Library\RapidJson</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\document.h">
+      <Filter>Fichiers sources\Library\RapidJson</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\encodedstream.h">
+      <Filter>Fichiers sources\Library\RapidJson</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\encodings.h">
+      <Filter>Fichiers sources\Library\RapidJson</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\filereadstream.h">
+      <Filter>Fichiers sources\Library\RapidJson</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\filewritestream.h">
+      <Filter>Fichiers sources\Library\RapidJson</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\fwd.h">
+      <Filter>Fichiers sources\Library\RapidJson</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\istreamwrapper.h">
+      <Filter>Fichiers sources\Library\RapidJson</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\memorybuffer.h">
+      <Filter>Fichiers sources\Library\RapidJson</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\memorystream.h">
+      <Filter>Fichiers sources\Library\RapidJson</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\ostreamwrapper.h">
+      <Filter>Fichiers sources\Library\RapidJson</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\pointer.h">
+      <Filter>Fichiers sources\Library\RapidJson</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\prettywriter.h">
+      <Filter>Fichiers sources\Library\RapidJson</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\rapidjson.h">
+      <Filter>Fichiers sources\Library\RapidJson</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\reader.h">
+      <Filter>Fichiers sources\Library\RapidJson</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\schema.h">
+      <Filter>Fichiers sources\Library\RapidJson</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\stream.h">
+      <Filter>Fichiers sources\Library\RapidJson</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\stringbuffer.h">
+      <Filter>Fichiers sources\Library\RapidJson</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\writer.h">
+      <Filter>Fichiers sources\Library\RapidJson</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\msinttypes\stdint.h">
+      <Filter>Fichiers sources\Library\RapidJson\msinttypes</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\msinttypes\inttypes.h">
+      <Filter>Fichiers sources\Library\RapidJson\msinttypes</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\internal\meta.h">
+      <Filter>Fichiers sources\Library\RapidJson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\internal\pow10.h">
+      <Filter>Fichiers sources\Library\RapidJson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\internal\regex.h">
+      <Filter>Fichiers sources\Library\RapidJson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\internal\stack.h">
+      <Filter>Fichiers sources\Library\RapidJson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\internal\strfunc.h">
+      <Filter>Fichiers sources\Library\RapidJson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\internal\strtod.h">
+      <Filter>Fichiers sources\Library\RapidJson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\internal\swap.h">
+      <Filter>Fichiers sources\Library\RapidJson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\internal\biginteger.h">
+      <Filter>Fichiers sources\Library\RapidJson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\internal\diyfp.h">
+      <Filter>Fichiers sources\Library\RapidJson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\internal\dtoa.h">
+      <Filter>Fichiers sources\Library\RapidJson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\internal\ieee754.h">
+      <Filter>Fichiers sources\Library\RapidJson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\internal\itoa.h">
+      <Filter>Fichiers sources\Library\RapidJson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\error\error.h">
+      <Filter>Fichiers sources\Library\RapidJson\error</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\RapidJson\error\en.h">
+      <Filter>Fichiers sources\Library\RapidJson\error</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\InternalFunctionsCaller.h">
+      <Filter>Fichiers sources\Library</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\Config.h">
+      <Filter>Fichiers sources\Library</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\AOB.h">
+      <Filter>Fichiers sources\Library</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Library\Main.cpp">
+      <Filter>Fichiers sources\Library</Filter>
+    </ClCompile>
+    <ClCompile Include="Library\InternalFunctionsCaller.cpp">
+      <Filter>Fichiers sources\Library</Filter>
+    </ClCompile>
+    <ClCompile Include="Library\Config.cpp">
+      <Filter>Fichiers sources\Library</Filter>
+    </ClCompile>
+    <ClCompile Include="Library\AOB.cpp">
+      <Filter>Fichiers sources\Library</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

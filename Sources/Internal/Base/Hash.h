@@ -158,6 +158,60 @@ inline void HashCombine(std::size_t& seed, const T& v)
     seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 
+/**
+ * Derived of 32 bits HashCombine but for 64 bits
+ */
+inline uint64_t HashCombine64(uint64_t hash, uint64_t combined)
+{
+    uint32_t hL = static_cast<uint32_t>(hash & 0xFFFFFFFF);
+    uint32_t hH = static_cast<uint32_t>(hash >> 32);
+    uint32_t cL = static_cast<uint32_t>(combined & 0xFFFFFFFF);
+    uint32_t cH = static_cast<uint32_t>(combined >> 32);
+
+    uint32_t ebx = cL;
+    uint32_t edi = cH;
+
+    uint32_t t_edi = (edi << 26) | (ebx >> 6);
+    uint32_t t_ebx = (ebx << 26);
+    ebx = t_ebx;
+    edi = t_edi;
+
+    uint64_t sum1 = static_cast<uint64_t>(ebx) + hH;
+    ebx = static_cast<uint32_t>(sum1 & 0xFFFFFFFF);
+    edi = edi + hL + static_cast<uint32_t>(sum1 >> 32);
+
+    uint32_t t_edi2 = (edi << 6) | (ebx >> 26);
+    uint32_t t_ebx2 = (ebx << 6);
+    ebx = t_ebx2;
+    edi = t_edi2;
+
+    uint32_t partL = (hH >> 2) | (hL << 30);
+    uint32_t partH = hL >> 2;
+    uint64_t sum2 = static_cast<uint64_t>(ebx) + partL;
+    ebx = static_cast<uint32_t>(sum2 & 0xFFFFFFFF);
+    edi = edi + partH + static_cast<uint32_t>(sum2 >> 32);
+
+    uint64_t sum3 = static_cast<uint64_t>(ebx) + 0x9E3779B9;
+    ebx = static_cast<uint32_t>(sum3 & 0xFFFFFFFF);
+    edi = edi + 0x9E3779B9 + static_cast<uint32_t>(sum3 >> 32);
+
+    ebx ^= cL;
+    edi ^= cH;
+
+    uint32_t resH = hH ^ ebx;
+    uint32_t resL = hL ^ edi;
+
+    return (static_cast<uint64_t>(resH) << 32) | resL;
+}
+
+/**
+ * High and low parts 32 bits of full 64-bit hash swap.
+ */
+inline uint64_t HashCombine64FinalSwap(uint64_t val)
+{
+    return (val << 32) | (val >> 32);
+}
+
 inline DAVA::uint32 HashValue_N(const char* key, uint32 length) DAVA_NOEXCEPT
 {
     using DAVA::uint32;

@@ -2,6 +2,7 @@
 #include "Classes/Library/Private/LibraryFileSystemModel.h"
 #include "Classes/Library/Private/LibraryData.h"
 #include "Classes/Library/Private/REFileOperationsManager.h"
+#include "Classes/Qt/Plugins/PythonPluginsSingleton.h"
 
 #include <REPlatform/DataNodes/ProjectManagerData.h>
 #include <REPlatform/DataNodes/SceneData.h>
@@ -291,7 +292,15 @@ void LibraryWidget::SelectionChanged(const QItemSelection& selected, const QItem
 
     const QModelIndex index = selected.indexes().first();
     QFileInfo fileInfo = filesModel->fileInfo(index);
-    libraryData->selectedPath = fileInfo.filePath().toStdString();
+
+    DAVA::FilePath selectedPath = fileInfo.filePath().toStdString();
+    libraryData->selectedPath = selectedPath;
+
+    if (selectedPath.IsEqualToExtension(".sc2"))
+    {
+        PythonPluginsSingleton* instance = PythonPluginsSingleton::GetInstance();
+        instance->SetLastLibrarySelectedFileSc2(selectedPath.GetAbsolutePathname());
+    }
 }
 
 void LibraryWidget::fileDoubleClicked(const QModelIndex& index)

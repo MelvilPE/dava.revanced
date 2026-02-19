@@ -17,9 +17,10 @@ public:
 
     static PythonPluginsSingleton* GetInstance();
 
-    void SetOpenProjectPath(const std::string& openProjectPath);
-    void SetLastLoadedScenePath(const std::string& lastLoadedScenePath);
-    void SetLastSavedScenePath(const std::string& lastSavedScenePath);
-    void SetLastExportedBatchesDirectoryPath(const std::string& lastExportedBatchesDirectoryPath);
+    void SetOpenProjectPath(const std::string& value);
+    void SetLastLoadedScenePath(const std::string& value);
+    void SetLastSavedScenePath(const std::string& value);
+    void SetLastExportedBatchesDirectoryPath(const std::string& value);
+    void SetLastLibrarySelectedFileSc2(const std::string& value);
     bool Serialize(DAVA::FilePath path);
 };

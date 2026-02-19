@@ -509,6 +509,8 @@ SceneFileV2::eError SceneFileV2::SaveSceneLegacy(const FilePath& filename, Scene
     header.version = WORLD_OF_TANKS_BLITZ_6_2_VERSION;
     header.nodeCount = scene->GetChildrenCount();
 
+    descriptor = {};
+
     serializationContext.SetSavedSceneMethod(SerializationContext::eSavedSceneMethod::Wargaming_WordOfTanksBlitz);
     serializationContext.SetRootNodePath(filename);
     serializationContext.SetScenePath(FilePath(filename.GetDirectory()));
@@ -523,8 +525,9 @@ SceneFileV2::eError SceneFileV2::SaveSceneLegacy(const FilePath& filename, Scene
     ScopedPtr<KeyedArchive> sceneArchive(new KeyedArchive());
 
     Vector<VariantType> dataNodes;
+    Vector<VariantType> polygons;
 
-    if (!PrepareSerializableDataNodes(dataNodes, scene))
+    if (!PrepareSerializableDataNodes(dataNodes, polygons, scene))
     {
         Logger::Error("SceneFileV2::SaveSceneLegacy failed to prepare serializable data nodes file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_FILE_WRITE_ERROR);
@@ -562,10 +565,20 @@ SceneFileV2::eError SceneFileV2::SaveSceneLegacy(const FilePath& filename, Scene
 
     for (auto& dataNode : dataNodes)
     {
-        KeyedArchive* dataNodeArch = dataNode.AsKeyedArchive();
-        if (!dataNodeArch->Save(file))
+        KeyedArchive* nodeArch = dataNode.AsKeyedArchive();
+        if (!nodeArch->Save(file))
         {
             Logger::Error("SceneFileV2::SaveSceneLegacy failed to save data node file: %s", filename.GetAbsolutePathname().c_str());
+            return GetError();
+        }
+    }
+
+    for (auto& polygon : polygons)
+    {
+        KeyedArchive* nodeArch = polygon.AsKeyedArchive();
+        if (!nodeArch->Save(file))
+        {
+            Logger::Error("SceneFileV2::SaveSceneLegacy failed to polygon group node file: %s", filename.GetAbsolutePathname().c_str());
             return GetError();
         }
     }
@@ -603,6 +616,8 @@ SceneFileV2::eError SceneFileV2::SaveSceneLatest(const FilePath& filename, Scene
     header.version = SCENE_FILE_SAVED_VERSION;
     header.nodeCount = scene->GetChildrenCount();
 
+    descriptor = {};
+
     serializationContext.SetSavedSceneMethod(SerializationContext::eSavedSceneMethod::Wargaming_WordOfTanksBlitz);
     serializationContext.SetRootNodePath(filename);
     serializationContext.SetScenePath(FilePath(filename.GetDirectory()));
@@ -618,8 +633,9 @@ SceneFileV2::eError SceneFileV2::SaveSceneLatest(const FilePath& filename, Scene
 
     Vector<VariantType> dataNodes;
     Vector<VariantType> hierarchy;
+    Vector<VariantType> polygons;
 
-    if (!PrepareSerializableDataNodes(dataNodes, scene))
+    if (!PrepareSerializableDataNodes(dataNodes, polygons, scene))
     {
         Logger::Error("SceneFileV2::SaveScene failed to prepare serializable data nodes file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_FILE_WRITE_ERROR);
@@ -643,6 +659,58 @@ SceneFileV2::eError SceneFileV2::SaveSceneLatest(const FilePath& filename, Scene
         Logger::Error("SceneFileV2::SaveScene failed to write tags file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_FILE_WRITE_ERROR);
         return GetError();
+    }
+
+    if (descriptor.geometryIdHash != NULL)
+    {
+        FilePath geometryFilePath(filename);
+        geometryFilePath.ReplaceExtension(".scg");
+
+        ScopedPtr<File> geometryFile(File::Create(geometryFilePath, File::CREATE | File::WRITE));
+        if (!geometryFile)
+        {
+            Logger::Error("SceneFileV2::SaveScene failed to create geometry file: %s", geometryFilePath.GetAbsolutePathname().c_str());
+            SetError(ERROR_FAILED_TO_CREATE_FILE);
+            return GetError();
+        }
+
+        Header geometryHeader;
+        geometryHeader.signature = { 'S', 'C', 'P', 'G' };
+        geometryHeader.version = SCENE_FILE_GEOMETRY_CURRENT_VERSION;
+        geometryHeader.nodeCount = static_cast<int32>(polygons.size());
+
+        if (!WriteHeader(geometryFile, geometryHeader))
+        {
+            Logger::Error("SceneFileV2::SaveScene failed to write geometry header file: %s", geometryFilePath.GetAbsolutePathname().c_str());
+            SetError(ERROR_FILE_WRITE_ERROR);
+            return GetError();
+        }
+        if (sizeof(geometryHeader.nodeCount) != geometryFile->Write(&geometryHeader.nodeCount, sizeof(geometryHeader.nodeCount)))
+        {
+            Logger::Error("SceneFileV2::SaveScene failed to write geometry header file node count: %s", geometryFilePath.GetAbsolutePathname().c_str());
+            SetError(ERROR_FILE_WRITE_ERROR);
+            return GetError();
+        }
+
+        for (auto polygon : polygons)
+        {
+            KeyedArchive* nodeArchive = polygon.AsKeyedArchive();
+            if (!nodeArchive->Save(geometryFile))
+            {
+                Logger::Error("SceneFileV2::SaveScene failed to write polygon group node file: %s", geometryFilePath.GetAbsolutePathname().c_str());
+                SetError(ERROR_FILE_WRITE_ERROR);
+                return GetError();
+            }
+        }
+
+        if (!geometryFile->Flush())
+        {
+            Logger::Error("SceneFileV2::SaveScene failed to flush geometry file: %s", geometryFilePath.GetAbsolutePathname().c_str());
+            SetError(ERROR_FILE_WRITE_ERROR);
+            return GetError();
+        }
+
+        descriptor.geometryDataHash = static_cast<uint64>(CRC32::ForFile(geometryFilePath));
     }
 
     if (!WriteDescriptor(file, descriptor))
@@ -1211,7 +1279,7 @@ bool SceneFileV2::SaveHierarchy(Entity* node, File* file, int32 level)
     return true;
 }
 
-bool SceneFileV2::PrepareSerializableDataNodes(Vector<VariantType>& dataNodes, Scene* scene)
+bool SceneFileV2::PrepareSerializableDataNodes(Vector<VariantType>& dataNodes, Vector<VariantType>& polygons, Scene* scene)
 {
     Set<DataNode*> nodes;
     scene->GetDataNodes(nodes);
@@ -1245,9 +1313,18 @@ bool SceneFileV2::PrepareSerializableDataNodes(Vector<VariantType>& dataNodes, S
             ScopedPtr<KeyedArchive> nodeArchive(new KeyedArchive());
             node->Save(nodeArchive, &serializationContext);
             VariantType nodeVariant(nodeArchive.get());
-            dataNodes.push_back(nodeVariant);
+            if (node->GetClassName() == "PolygonGroup")
+            {
+                polygons.push_back(nodeVariant);
+            }
+            else
+            {
+                dataNodes.push_back(nodeVariant);
+            }
         }
     }
+
+    PrepareDescriptorGeometryIdHash(nodes);
 
     if (!particleEmitterNodes.empty())
     {
@@ -1334,6 +1411,19 @@ bool SceneFileV2::PrepareSerializableDataNodes(Vector<VariantType>& dataNodes, S
     }
 
     return true;
+}
+
+void SceneFileV2::PrepareDescriptorGeometryIdHash(Set<DataNode*>& nodes)
+{
+    for (auto node : nodes)
+    {
+        if (IsDataNodeSerializable(node) && (node->GetClassName() == "PolygonGroup"))
+        {
+            descriptor.geometryIdHash = HashCombine64(descriptor.geometryIdHash, node->GetNodeID());
+        }
+    }
+
+    descriptor.geometryIdHash = HashCombine64FinalSwap(descriptor.geometryIdHash);
 }
 
 void SceneFileV2::PrepareAndGetHierarchy(Vector<VariantType>* hierarchy, Entity* node)
