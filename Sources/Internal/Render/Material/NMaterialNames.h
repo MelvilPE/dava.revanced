@@ -432,6 +432,7 @@ public:
     static const FastName DefaultConfigName;
     static const DAVA::String CustomCullMode;
     static const DAVA::String EnabledPresets;
+    static const DAVA::String ForceQuality;
 };
 
 class NMaterialQualityName

@@ -74,16 +74,18 @@ MaterialConfig::MaterialConfig()
     , localTextures(8)
     , localFlags(16)
     , localPresets(16)
-    , customCullMode(rhi::CullMode::CULL_MODE_COUNT)
 {
+    customCullMode = rhi::CullMode::CULL_MODE_COUNT;
+    forceQuality = FastName(NMaterialSerializationKey::ForceQuality);
 }
 MaterialConfig::MaterialConfig(const MaterialConfig& config)
     : localProperties(16)
     , localTextures(8)
     , localFlags(16)
     , localPresets(16)
-    , customCullMode(rhi::CullMode::CULL_MODE_COUNT)
 {
+    customCullMode = rhi::CullMode::CULL_MODE_COUNT;
+    forceQuality = FastName(NMaterialSerializationKey::ForceQuality);
     operator=(config);
 }
 
@@ -95,6 +97,7 @@ MaterialConfig& MaterialConfig::operator=(const MaterialConfig& config)
     localFlags = config.localFlags;
     localPresets = config.localPresets;
     customCullMode = config.customCullMode;
+    forceQuality = config.forceQuality;
     for (auto& tex : config.localTextures)
     {
         MaterialTextureInfo* texInfo = new MaterialTextureInfo();
@@ -370,6 +373,16 @@ uint32 NMaterial::GetCustomCullMode() const
 void NMaterial::SetCustomCullMode(uint32 initCustomCullMode)
 {
     GetMutableCurrentConfig().customCullMode = static_cast<rhi::CullMode>(initCustomCullMode);
+}
+
+const FastName& NMaterial::GetForceQuality() const
+{
+    return GetCurrentConfig().forceQuality;
+}
+
+void NMaterial::SetForceQuality(const FastName& init)
+{
+    GetMutableCurrentConfig().forceQuality = init;
 }
 
 void NMaterial::AddProperty(const FastName& propName, const float32* propData, rhi::ShaderProp::Type type, uint32 arraySize)
@@ -1216,6 +1229,11 @@ void NMaterial::SaveConfigToArchive(uint32 configId, KeyedArchive* archive, Seri
         archive->SetUInt32(NMaterialSerializationKey::CustomCullMode, config.customCullMode);
     }
 
+    if (config.forceQuality != FastName("DEFAULT"))
+    {
+        archive->SetFastName(NMaterialSerializationKey::ForceQuality, config.forceQuality);
+    }
+
     ScopedPtr<KeyedArchive> propertiesArchive(new KeyedArchive());
     for (auto it = config.localProperties.begin(), itEnd = config.localProperties.end(); it != itEnd; ++it)
     {
@@ -1326,6 +1344,12 @@ void NMaterial::LoadConfigFromArchive(uint32 configId, KeyedArchive* archive, Se
     if (archive->IsKeyExists(NMaterialSerializationKey::ConfigName))
     {
         config.name = FastName(archive->GetString(NMaterialSerializationKey::ConfigName));
+    }
+
+    config.forceQuality = FastName("DEFAULT");
+    if (archive->IsKeyExists(NMaterialSerializationKey::ForceQuality))
+    {
+        config.forceQuality = archive->GetFastName(NMaterialSerializationKey::ForceQuality);
     }
 
     if (archive->IsKeyExists(NMaterialSerializationKey::PropertiesKey))

@@ -58,6 +58,7 @@ const DAVA::FastName Template("Template");
 const DAVA::FastName Name("Name");
 const DAVA::FastName Group("Group");
 const DAVA::FastName CustomCullMode("Cull Mode");
+const DAVA::FastName ForceQuality("Force quality");
 
 const DAVA::FastName Base("Base");
 const DAVA::FastName Presets("Presets");
@@ -501,6 +502,22 @@ private:
             dataInsp->AddAllowedValue(DAVA::VariantType(rhi::CullMode::CULL_NONE), "NONE");
             dataInsp->AddAllowedValue(DAVA::VariantType(rhi::CullMode::CULL_CCW), "FACE_FRONT");
             dataInsp->AddAllowedValue(DAVA::VariantType(rhi::CullMode::CULL_CW), "FACE_BACK");
+        }
+
+        // fill force quality
+        const DAVA::InspMember* forceQualityMember = info->Member(DAVA::FastName(DAVA::NMaterialSerializationKey::ForceQuality));
+        if ((nullptr != forceQualityMember))
+        {
+            QtPropertyDataInspMember* forceQuality = new QtPropertyDataInspMember(UIName::ForceQuality, material, forceQualityMember);
+            baseRoot->MergeChild(std::unique_ptr<QtPropertyData>(forceQuality));
+
+            forceQuality->AddAllowedValue(DAVA::VariantType(DAVA::FastName("DEFAULT")), "DEFAULT");
+
+            for (size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityCount(material->GetQualityGroup()); ++i)
+            {
+                DAVA::FastName forceQualityName = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityName(material->GetQualityGroup(), i);
+                forceQuality->AddAllowedValue(DAVA::VariantType(forceQualityName), forceQualityName.c_str());
+            }
         }
     }
 
@@ -1038,7 +1055,8 @@ void MaterialEditor::commandExecuted(DAVA::SceneEditor2* scene, const DAVA::RECo
         const DAVA::String memberName(cmd->member->Name().c_str());
         if (memberName == DAVA::NMaterialSerializationKey::QualityGroup ||
             memberName == DAVA::NMaterialSerializationKey::FXName ||
-            memberName == DAVA::NMaterialSerializationKey::CustomCullMode)
+            memberName == DAVA::NMaterialSerializationKey::CustomCullMode ||
+            memberName == DAVA::NMaterialSerializationKey::ForceQuality)
         {
             for (auto& m : curMaterials)
             {
