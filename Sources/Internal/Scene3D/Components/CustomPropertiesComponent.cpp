@@ -49,17 +49,9 @@ void CustomPropertiesComponent::Serialize(KeyedArchive* archive, SerializationCo
 
     if (NULL != archive && properties->Count() > 0)
     {
-        String savedPath = "";
         if (properties->IsKeyExists("editor.referenceToOwner"))
         {
-            savedPath = properties->GetString("editor.referenceToOwner");
-            String newPath = FilePath(savedPath).GetRelativePathname(serializationContext->GetScenePath());
-            properties->SetString("editor.referenceToOwner", newPath);
-        }
-
-        if (savedPath.length())
-        {
-            properties->SetString("editor.referenceToOwner", savedPath);
+            properties->DeleteKey("editor.referenceToOwner");
         }
 
         archive->SetArchive("cpc.properties.archive", properties);
@@ -98,14 +90,5 @@ void CustomPropertiesComponent::LoadFromArchive(const KeyedArchive& srcPropertie
 {
     SafeRelease(properties);
     properties = new KeyedArchive(srcProperties);
-
-    if (properties && properties->IsKeyExists("editor.referenceToOwner"))
-    {
-        FilePath newPath(serializationContext->GetScenePath());
-        newPath += properties->GetString("editor.referenceToOwner");
-
-        //TODO: why we use absolute pathname instead of relative?
-        properties->SetString("editor.referenceToOwner", newPath.GetAbsolutePathname());
-    }
 }
 };
