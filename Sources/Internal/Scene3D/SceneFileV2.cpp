@@ -393,6 +393,26 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
             }
         }
 
+        NMaterial* globalMaterial = nullptr;
+        if (sceneArchive->IsKeyExists(SceneFileV2Key::GLOBAL_MATERIAL_LEGACY))
+        {
+            KeyedArchive* archive = sceneArchive->GetArchive(SceneFileV2Key::GLOBAL_MATERIAL_LEGACY);
+            if (!archive)
+            {
+                Logger::Error("SceneFileV2::LoadScene failed to load global material legacy: %s", filename.GetAbsolutePathname().c_str());
+                SetError(ERROR_FILE_READ_ERROR);
+                return GetError();
+            }
+
+            String name = archive->GetString("##name");
+            if (name == "GlobalMaterial")
+            {
+                uint64 globalMaterialId = archive->GetUInt64("globalMaterialId");
+                globalMaterial = static_cast<NMaterial*>(serializationContext.GetDataBlock(globalMaterialId));
+                serializationContext.SetGlobalMaterialKey(globalMaterialId);
+            }
+        }
+
         if (descriptor.geometryIdHash != NULL)
         {
             ScopedPtr<File> geometryFile(File::Create(geometryPath, File::OPEN | File::READ));
@@ -436,7 +456,6 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
             }
         }
 
-        NMaterial* globalMaterial = nullptr;
         serializationContext.ResolveMaterialBindings();
         ApplyFogQuality(globalMaterial);
         scene->SetGlobalMaterial(globalMaterial);
@@ -555,7 +574,7 @@ SceneFileV2::eError SceneFileV2::SaveSceneLegacy(const FilePath& filename, Scene
         return GetError();
     }
 
-    uint32 dataNodesCount = static_cast<uint32>(dataNodes.size());
+    uint32 dataNodesCount = static_cast<uint32>(dataNodes.size()) + static_cast<uint32>(polygons.size());
     if (sizeof(dataNodesCount) != file->Write(&dataNodesCount, sizeof(dataNodesCount)))
     {
         Logger::Error("SceneFileV2::SaveSceneLegacy failed to write datanodes count file: %s", filename.GetAbsolutePathname().c_str());
@@ -579,6 +598,22 @@ SceneFileV2::eError SceneFileV2::SaveSceneLegacy(const FilePath& filename, Scene
         if (!nodeArch->Save(file))
         {
             Logger::Error("SceneFileV2::SaveSceneLegacy failed to polygon group node file: %s", filename.GetAbsolutePathname().c_str());
+            return GetError();
+        }
+    }
+
+    NMaterial* globalMaterial = scene->GetGlobalMaterial();
+    if (nullptr != globalMaterial)
+    {
+        ScopedPtr<KeyedArchive> archive(new KeyedArchive());
+        const uint64 globalMaterialId = scene->GetGlobalMaterial()->GetNodeID();
+
+        archive->SetString("##name", "GlobalMaterial");
+        archive->SetUInt64("globalMaterialId", globalMaterialId);
+        if (!archive->Save(file))
+        {
+            Logger::Error("SceneFileV2::SaveScene failed to write global material settings file: %s", filename.GetAbsolutePathname().c_str());
+            SetError(ERROR_FILE_WRITE_ERROR);
             return GetError();
         }
     }
@@ -640,6 +675,18 @@ SceneFileV2::eError SceneFileV2::SaveSceneLatest(const FilePath& filename, Scene
         Logger::Error("SceneFileV2::SaveScene failed to prepare serializable data nodes file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_FILE_WRITE_ERROR);
         return GetError();
+    }
+
+    NMaterial* globalMaterial = scene->GetGlobalMaterial();
+    if (nullptr != globalMaterial)
+    {
+        ScopedPtr<KeyedArchive> nodeArchive(new KeyedArchive());
+        const uint64 globalMaterialId = scene->GetGlobalMaterial()->GetNodeID();
+
+        nodeArchive->SetString("##name", "GlobalMaterial");
+        nodeArchive->SetUInt64("globalMaterialId", globalMaterialId);
+
+        sceneArchive->SetArchive(SceneFileV2Key::GLOBAL_MATERIAL_LEGACY, nodeArchive);
     }
 
     for (int ci = 0; ci < scene->GetChildrenCount(); ++ci)
@@ -1304,6 +1351,20 @@ bool SceneFileV2::PrepareSerializableDataNodes(Vector<VariantType>& dataNodes, V
                 node->SetNodeID(maxDataNodeID);
             }
         }
+    }
+
+    NMaterial* globalMaterial = scene->GetGlobalMaterial();
+    if (nullptr != globalMaterial)
+    {
+        if (nodes.count(globalMaterial) > 0)
+        {
+            nodes.erase(globalMaterial);
+        }
+
+        ScopedPtr<KeyedArchive> nodeArchive(new KeyedArchive());
+        globalMaterial->Save(nodeArchive, &serializationContext);
+        VariantType nodeVariant(nodeArchive.get());
+        dataNodes.push_back(nodeVariant);
     }
 
     for (auto node : nodes)
@@ -1971,4 +2032,5 @@ const String SceneFileV2Key::DATANODES_KEY = "#dataNodes";
 const String SceneFileV2Key::HIERARCHY_KEY = "#hierarchy";
 const String SceneFileV2Key::SCENE_COMPONENTS_KEY = "#sceneComponents";
 const String SceneFileV2Key::SCENE_COMPONENT_SETS_KEY = "#sceneComponentSets";
+const String SceneFileV2Key::GLOBAL_MATERIAL_LEGACY = "#globalMaterialLegacy";
 }; // namespace DAVA

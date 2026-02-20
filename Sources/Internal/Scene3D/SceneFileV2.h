@@ -501,6 +501,7 @@ public:
     static const String HIERARCHY_KEY;
     static const String SCENE_COMPONENTS_KEY;
     static const String SCENE_COMPONENT_SETS_KEY;
+    static const String GLOBAL_MATERIAL_LEGACY;
 };
 
 }; // namespace DAVA
