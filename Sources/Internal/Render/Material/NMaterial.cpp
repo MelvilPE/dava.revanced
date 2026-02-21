@@ -1231,7 +1231,7 @@ void NMaterial::SaveConfigToArchive(uint32 configId, KeyedArchive* archive, Seri
 
     if (config.forceQuality != FastName("DEFAULT"))
     {
-        archive->SetFastName(NMaterialSerializationKey::ForceQuality, config.forceQuality);
+        archive->SetString(NMaterialSerializationKey::ForceQuality, String(config.forceQuality.c_str()));
     }
 
     ScopedPtr<KeyedArchive> propertiesArchive(new KeyedArchive());
@@ -1349,7 +1349,7 @@ void NMaterial::LoadConfigFromArchive(uint32 configId, KeyedArchive* archive, Se
     config.forceQuality = FastName("DEFAULT");
     if (archive->IsKeyExists(NMaterialSerializationKey::ForceQuality))
     {
-        config.forceQuality = archive->GetFastName(NMaterialSerializationKey::ForceQuality);
+        config.forceQuality = FastName(archive->GetString(NMaterialSerializationKey::ForceQuality));
     }
 
     if (archive->IsKeyExists(NMaterialSerializationKey::PropertiesKey))
