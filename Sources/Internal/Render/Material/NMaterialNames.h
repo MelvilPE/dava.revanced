@@ -80,6 +80,17 @@ public:
     static const FastName NORMALIZED_BLINN_PHONG_PER_PIXEL_OPAQUE;
     static const FastName NORMALIZED_BLINN_PHONG_PER_PIXEL_FAST_OPAQUE;
     static const FastName NORMALIZED_BLINN_PHONG_PER_VERTEX_OPAQUE;
+
+    static const FastName BLINN_PHONG;
+    static const FastName DECAL;
+    static const FastName DETAIL;
+    static const FastName DETAIL_Q;
+    static const FastName SPHERICAL_LIT_Q;
+    static const FastName VERTEXCOLOR;
+    static const FastName TEXTURED;
+    static const FastName TEXTURE_LIGHTMAP;
+    static const FastName SPEEDTREE;
+    static const FastName SPEEDTREE_SPHERICAL_LIT_Q;
 };
 
 class NMaterialTextureName

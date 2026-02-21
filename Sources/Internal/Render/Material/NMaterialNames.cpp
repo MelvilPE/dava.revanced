@@ -74,6 +74,17 @@ const FastName NMaterialName::NORMALIZED_BLINN_PHONG_PER_PIXEL_OPAQUE = FastName
 const FastName NMaterialName::NORMALIZED_BLINN_PHONG_PER_PIXEL_FAST_OPAQUE = FastName("~res:/Materials/NormalizedBlinnPhongPerPixelFast.Opaque.material");
 const FastName NMaterialName::NORMALIZED_BLINN_PHONG_PER_VERTEX_OPAQUE = FastName("~res:/Materials/NormalizedBlinnPhongPerVertex.Opaque.material");
 
+const FastName NMaterialName::BLINN_PHONG = FastName("~res:/Materials/BlinnPhongAllQualities.material");
+const FastName NMaterialName::DECAL = FastName("~res:/Materials/Decal.material");
+const FastName NMaterialName::DETAIL = FastName("~res:/Materials/Detail.material");
+const FastName NMaterialName::DETAIL_Q = FastName("~res:/Materials/DetailAllQualities.material");
+const FastName NMaterialName::SPHERICAL_LIT_Q = FastName("~res:/Materials/SphericalLit.material");
+const FastName NMaterialName::VERTEXCOLOR = FastName("~res:/Materials/VertexColor.material");
+const FastName NMaterialName::TEXTURED = FastName("~res:/Materials/Textured.material");
+const FastName NMaterialName::TEXTURE_LIGHTMAP = FastName("~res:/Materials/TextureLightmap.material");
+const FastName NMaterialName::SPEEDTREE = FastName("~res:/Materials/SpeedTree.material");
+const FastName NMaterialName::SPEEDTREE_SPHERICAL_LIT_Q = FastName("~res:/Materials/SpeedTree.SphericalLit.material");
+
 const FastName NMaterialTextureName::TEXTURE_ALBEDO("albedo");
 const FastName NMaterialTextureName::TEXTURE_NORMAL("normalmap");
 const FastName NMaterialTextureName::TEXTURE_SPECULAR("specularmap");

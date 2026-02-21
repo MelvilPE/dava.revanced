@@ -208,6 +208,14 @@ public:
 
     static const float32 DEFAULT_LIGHTMAP_SIZE;
 
+    enum eMaterialTypeOld : int32
+    {
+        MATERIALTYPE_NONE = 0,
+        MATERIALTYPE_MATERIAL = 1,
+        MATERIALTYPE_INSTANCE = 2,
+        MATERIALTYPE_GLOBAL = 3
+    };
+
     enum eUserFlag
     {
         USER_FLAG_ALPHABLEND = 1 << 0,
@@ -218,6 +226,8 @@ private:
     void LoadOldNMaterial(KeyedArchive* archive, SerializationContext* serializationContext);
     void SaveConfigToArchive(uint32 configId, KeyedArchive* archive, SerializationContext* serializationContext, bool forceNameSaving);
     void LoadConfigFromArchive(uint32 configId, KeyedArchive* archive, SerializationContext* serializationContext);
+
+    void MaterialConfigMigration(MaterialConfig& config, int32 sceneVersion);
 
     void RebuildBindings();
     void RebuildTextureBindings();

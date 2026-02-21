@@ -1423,6 +1423,314 @@ void NMaterial::LoadConfigFromArchive(uint32 configId, KeyedArchive* archive, Se
             config.localPresets[FastName(it->first)] = it->second->AsBool();
         }
     }
+
+    if (archive->IsKeyExists(NMaterialSerializationKey::FXName))
+    {
+        MaterialConfigMigration(config, static_cast<int32>(serializationContext->GetVersion()));
+    }
+}
+
+void NMaterial::MaterialConfigMigration(MaterialConfig& config, int32 sceneVersion)
+{
+    if (sceneVersion > WORLD_OF_TANKS_BLITZ_6_2_VERSION)
+    {
+        return;
+    }
+
+    const String fx = config.fxName.c_str();
+    if (fx.empty() || fx.find("2d.") != String::npos)
+    {
+        return;
+    }
+
+    auto contains = [&](const String& s)
+    {
+        return fx.find(s) != String::npos;
+    };
+
+    if (contains("NormalizedBlinnPhong"))
+    {
+        if (contains("NormalizedBlinnPhongPerPixel."))
+        {
+            config.forceQuality = FastName("HIGH");
+        }
+        else if (contains("NormalizedBlinnPhongPerPixelFast."))
+        {
+            config.forceQuality = FastName("MEDIUM");
+        }
+        else if (contains("NormalizedBlinnPhongPerVertex."))
+        {
+            config.forceQuality = FastName("LOW");
+        }
+
+        if (contains(".Alphatest"))
+        {
+            config.localPresets.insert({ NMaterialPresetName::ALPHA_TEST, true });
+            SetCustomCullMode(rhi::CullMode::CULL_NONE);
+
+            if (!HasLocalProperty(NMaterialParamName::PARAM_ALPHATEST_THRESHOLD))
+            {
+                NMaterialProperty* prop = new NMaterialProperty();
+                prop->name = NMaterialParamName::PARAM_ALPHATEST_THRESHOLD;
+                prop->type = rhi::ShaderProp::Type::TYPE_FLOAT1;
+                prop->arraySize = 1;
+                float32 temp = 0.5f;
+                prop->SetPropertyValue(&temp);
+                config.localProperties[NMaterialParamName::PARAM_ALPHATEST_THRESHOLD] = prop;
+            }
+        }
+
+        if (contains(".Alphablend"))
+        {
+            config.localPresets.insert({ NMaterialPresetName::ALPHA_BLEND, true });
+            SetCustomCullMode(rhi::CullMode::CULL_NONE);
+        }
+
+        config.fxName = NMaterialName::BLINN_PHONG;
+    }
+
+    if (contains("VertexLit."))
+    {
+        if (contains(".Alphatest"))
+        {
+            config.localPresets.insert({ NMaterialPresetName::ALPHA_TEST, true });
+        }
+
+        config.forceQuality = FastName("LOW");
+        config.fxName = NMaterialName::BLINN_PHONG;
+    }
+
+    if (contains("PixelLit."))
+    {
+        if (contains(".Alphatest"))
+        {
+            config.localPresets.insert({ NMaterialPresetName::ALPHA_TEST, true });
+        }
+
+        config.forceQuality = FastName("MEDIUM");
+        config.fxName = NMaterialName::BLINN_PHONG;
+    }
+
+    if (contains("Skyobject.Flowmap"))
+    {
+        config.fxName = NMaterialName::SKYOBJECT;
+        config.localPresets.insert({ NMaterialPresetName::FLOW_MAP, true });
+    }
+
+    if (contains("WaterPer"))
+    {
+        if (contains("WaterPerPixelRealReflections."))
+        {
+            config.forceQuality = FastName("ULTRA_HIGH");
+        }
+        else if (contains("WaterPerPixelCubemapAlphablend."))
+        {
+            config.forceQuality = FastName("HIGH");
+        }
+        else
+        {
+            config.forceQuality = FastName("LOW");
+        }
+
+        config.fxName = NMaterialName::WATER_ALL_QUALITIES;
+    }
+
+    if (contains("Decal."))
+    {
+        if (contains("Alphatest"))
+        {
+            config.localPresets.insert({ NMaterialPresetName::ALPHA_TEST, true });
+            SetCustomCullMode(rhi::CullMode::CULL_NONE);
+        }
+        else if (contains("Alphablend"))
+        {
+            config.localPresets.insert({ NMaterialPresetName::ALPHA_BLEND, true });
+            SetCustomCullMode(rhi::CullMode::CULL_NONE);
+        }
+
+        config.fxName = NMaterialName::DECAL;
+    }
+
+    if (contains("DetailAllQualities"))
+    {
+        if (contains("Lightmap"))
+        {
+            config.localPresets.insert({ NMaterialPresetName::LIGHTMAP, true });
+        }
+
+        config.fxName = NMaterialName::DETAIL_Q;
+    }
+    else if (contains("Detail."))
+    {
+        config.fxName = NMaterialName::DETAIL;
+
+        if (contains("Lightmap"))
+        {
+            config.localPresets.insert({ NMaterialPresetName::LIGHTMAP, true });
+        }
+        if (contains(".Alphatest"))
+        {
+            config.localPresets.insert({ NMaterialPresetName::ALPHA_TEST, true });
+        }
+        if (contains(".Alphablend"))
+        {
+            config.localPresets.insert({ NMaterialPresetName::ALPHA_BLEND, true });
+        }
+    }
+
+    if (contains("SphericalLit"))
+    {
+        if (contains("SphericalLit9."))
+        {
+            config.forceQuality = FastName("HIGH");
+        }
+        else if (contains("SphericalLit4."))
+        {
+            config.forceQuality = FastName("MEDIUM");
+        }
+        else if (contains("SphericalLit1."))
+        {
+            config.forceQuality = FastName("LOW");
+        }
+
+        if (contains("VertexColor."))
+        {
+            config.localPresets.insert({ NMaterialPresetName::VERTEX_COLOR, true });
+        }
+
+        if (contains(".Alphatest"))
+        {
+            config.localPresets.insert({ NMaterialPresetName::ALPHA_TEST, true });
+        }
+
+        if (contains(".Alphablend"))
+        {
+            config.localPresets.insert({ NMaterialPresetName::ALPHA_BLEND, true });
+        }
+
+        config.fxName = NMaterialName::SPHERICAL_LIT_Q;
+    }
+
+    if (contains("SpeedTreeLeaf"))
+    {
+        config.fxName = NMaterialName::SPEEDTREE;
+
+        if (contains("SphericalLit9"))
+        {
+            config.fxName = NMaterialName::SPEEDTREE_SPHERICAL_LIT_Q;
+            config.forceQuality = FastName("HIGH");
+        }
+
+        if (contains("SphericalLit4"))
+        {
+            config.fxName = NMaterialName::SPEEDTREE_SPHERICAL_LIT_Q;
+            config.forceQuality = FastName("MEDIUM");
+        }
+
+        if (contains("SphericalLit1"))
+        {
+            config.fxName = NMaterialName::SPEEDTREE_SPHERICAL_LIT_Q;
+            config.forceQuality = FastName("LOW");
+        }
+
+        if (contains("SphericalLitAllQualities"))
+        {
+            config.fxName = NMaterialName::SPEEDTREE_SPHERICAL_LIT_Q;
+        }
+
+        if (contains(".Alphatest"))
+        {
+            config.localPresets.emplace(NMaterialPresetName::ALPHA_TEST, true);
+        }
+
+        if (contains(".Alphablend"))
+        {
+            config.localPresets.emplace(NMaterialPresetName::ALPHA_BLEND, true);
+        }
+    }
+
+    if (contains("VertexColor.") && !contains("Textured.") && !contains("FrameBlend."))
+    {
+        if (contains(".Alphablend"))
+        {
+            config.localPresets.insert({ NMaterialPresetName::ALPHA_BLEND, true });
+        }
+
+        if (contains("NoDepthTest."))
+        {
+            config.localPresets.insert({ NMaterialPresetName::NO_DEPTH_TEST, true });
+        }
+
+        if (contains("NoCull."))
+        {
+            config.customCullMode = rhi::CullMode::CULL_NONE;
+        }
+
+        config.fxName = NMaterialName::VERTEXCOLOR;
+    }
+
+    if (contains("Textured.") || contains("FrameBlend."))
+    {
+        if (contains("Flowmap."))
+        {
+            config.localPresets.insert({ NMaterialPresetName::FLOW_MAP, true });
+        }
+        if (contains("NoCull."))
+        {
+            config.customCullMode = rhi::CullMode::CULL_NONE;
+        }
+        if (contains(".Alphatest"))
+        {
+            config.localPresets.insert({ NMaterialPresetName::ALPHA_TEST, true });
+        }
+        if (contains("Alphamask."))
+        {
+            config.localPresets.insert({ NMaterialPresetName::ALPHA_MASK, true });
+        }
+        if (contains("Cullface."))
+        {
+            config.customCullMode = rhi::CullMode::CULL_CW;
+        }
+        if (contains("VertexColor."))
+        {
+            config.localPresets.insert({ NMaterialPresetName::VERTEX_COLOR, true });
+        }
+        if (contains("Alphablend.Additive."))
+        {
+            config.localPresets.insert({ NMaterialPresetName::ALPHA_BLEND_ADDITIVE, true });
+        }
+        else if (contains(".Alphablend"))
+        {
+            config.localPresets.insert({ NMaterialPresetName::ALPHA_BLEND, true });
+        }
+        else if (contains("Additive."))
+        {
+            config.localPresets.insert({ NMaterialPresetName::ADDITIVE, true });
+        }
+
+        config.customCullMode = rhi::CullMode::CULL_NONE;
+        config.fxName = NMaterialName::TEXTURED;
+    }
+
+    if (contains("TextureLightmap"))
+    {
+        if (contains(".Alphatest"))
+        {
+            config.localPresets.insert({ NMaterialPresetName::ALPHA_TEST, true });
+        }
+        if (contains(".Alphablend"))
+        {
+            config.localPresets.insert({ NMaterialPresetName::ALPHA_BLEND, true });
+        }
+        if (contains("ReflectionMask."))
+        {
+            config.localPresets.insert({ NMaterialPresetName::REFLECTION_MASK, true });
+        }
+
+        config.fxName = NMaterialName::TEXTURE_LIGHTMAP;
+    }
+
+    Logger::Info("[NMaterial::MaterialConfigMigration] has been applied to old materials");
 }
 
 void NMaterial::Load(KeyedArchive* archive, SerializationContext* serializationContext)
@@ -1499,7 +1807,7 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
         id = materialKey;
     }
 
-    int32 oldType = 0;
+    int32 oldType = eMaterialTypeOld::MATERIALTYPE_NONE;
     if (archive->IsKeyExists("materialType"))
     {
         oldType = archive->GetInt32("materialType");
@@ -1517,8 +1825,7 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
         qualityGroup = FastName(archive->GetString("materialGroup").c_str());
     }
 
-    // don't load fxName from material instance (type = 2)
-    if (archive->IsKeyExists("materialTemplate") && oldType != 2)
+    if (archive->IsKeyExists("materialTemplate") && oldType != eMaterialTypeOld::MATERIALTYPE_INSTANCE)
     {
         auto materialTemplate = archive->GetString("materialTemplate");
         materialConfigs[0].fxName = materialTemplate.empty() ? FastName() : FastName(materialTemplate);
@@ -1676,6 +1983,11 @@ void NMaterial::LoadOldNMaterial(KeyedArchive* archive, SerializationContext* se
     else if (illuminationUsed)
     {
         AddProperty(NMaterialParamName::PARAM_LIGHTMAP_SIZE, &DEFAULT_LIGHTMAP_SIZE, rhi::ShaderProp::TYPE_FLOAT1, 1);
+    }
+
+    if (archive->IsKeyExists("materialTemplate") && oldType != eMaterialTypeOld::MATERIALTYPE_INSTANCE && oldType != eMaterialTypeOld::MATERIALTYPE_GLOBAL)
+    {
+        MaterialConfigMigration(materialConfigs[0], static_cast<int32>(serializationContext->GetVersion()));
     }
 }
 
