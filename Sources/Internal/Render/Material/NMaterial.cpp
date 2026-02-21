@@ -2,12 +2,14 @@
 
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
+#include "Scene3D/SceneFile/VersionInfo.h"
 
 #include "Render/Material/NMaterialNames.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Material/FXCache.h"
 #include "Render/Shader.h"
 #include "Render/Texture.h"
+#include "Render/Material/EnableMaterialsMigrationSingleton.h"
 
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
@@ -1432,6 +1434,11 @@ void NMaterial::LoadConfigFromArchive(uint32 configId, KeyedArchive* archive, Se
 
 void NMaterial::MaterialConfigMigration(MaterialConfig& config, int32 sceneVersion)
 {
+    if (!EnableMaterialsMigrationSingleton::GetInstance()->GetValue())
+    {
+        return;
+    }
+
     if (sceneVersion > WORLD_OF_TANKS_BLITZ_6_2_VERSION)
     {
         return;

@@ -135,6 +135,7 @@ public:
 
         LOAD_SETTING(generalSettings, markedUnregistered, Marked_Unregistered, AsString);
         LOAD_SETTING(generalSettings, dynamicMaterialEditorProps, Dynamic_Material_Editor_Props, AsString);
+        LOAD_SETTING(generalSettings, enableMaterialsMigration, Enable_Materials_Migration, AsBool);
 
         LOAD_SETTING(globalSceneSettings, gridStep, Scene_GridStep, AsFloat);
         LOAD_SETTING(globalSceneSettings, gridSize, Scene_GridSize, AsFloat);
@@ -295,6 +296,7 @@ private:
     const DAVA::String General_Mouse_WheelMoveIntensity = "General/Mouse/WheelMoveIntensity";
     const DAVA::String Marked_Unregistered = "MarkedUnregistered/MarkedUnregistered";
     const DAVA::String Dynamic_Material_Editor_Props = "DynamicMaterialEditorProps/DynamicMaterialEditorProps";
+    const DAVA::String Enable_Materials_Migration = "EnableMaterialsMigration/EnableMaterialsMigration";
     const DAVA::String Scene_GridColorX = "Scene/GridColorX";
     const DAVA::String Scene_GridColorY = "Scene/GridColorY";
     const DAVA::String Scene_GridOtherColors = "Scene/GridOtherColors";

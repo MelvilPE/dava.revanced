@@ -85,6 +85,9 @@ public:
     // DynamicMaterialEditorProps - dynamic properties flags, presets, textures, properties
     String dynamicMaterialEditorProps = "";
 
+    // Enable Materials Migration
+    bool enableMaterialsMigration = false;
+
     void Load(const PropertiesItem& settingsNode) override;
 
     String GetMarkedUnregistered() const;
@@ -92,6 +95,9 @@ public:
 
     String GetDynamicMaterialEditorProps() const;
     void SetDynamicMaterialEditorProps(String value);
+
+    bool GetEnableMaterialsMigration() const;
+    void SetEnableMaterialsMigration(bool value);
 
     DAVA_VIRTUAL_REFLECTION(GeneralSettings, SettingsNode);
 };

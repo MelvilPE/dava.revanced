@@ -4,6 +4,7 @@
 #include <Reflection/ReflectedMeta.h>
 #include <Reflection/ReflectionRegistrator.h>
 #include <Render/Material/NMaterialStateDynamicSingleton.h>
+#include <Render/Material/EnableMaterialsMigrationSingleton.h>
 
 ENUM_DECLARE(DAVA::RenderingBackend)
 {
@@ -60,6 +61,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(GeneralSettings)
     .Field("invertWheel", &GeneralSettings::invertWheel)[M::DisplayName("Invert Wheel"), M::Group("Mouse")]
     .Field("markedUnregistered", &GeneralSettings::GetMarkedUnregistered, &GeneralSettings::SetMarkedUnregistered)[M::DisplayName("Marked Unregistered"), M::Group("Marked Unregistered")]
     .Field("dynamicMaterialEditorProps", &GeneralSettings::GetDynamicMaterialEditorProps, &GeneralSettings::SetDynamicMaterialEditorProps)[M::DisplayName("Dynamic Material Editor Props"), M::Group("Dynamic Material Editor Props")]
+    .Field("enableMaterialsMigration", &GeneralSettings::GetEnableMaterialsMigration, &GeneralSettings::SetEnableMaterialsMigration)[M::DisplayName("Enable Materials Migration"), M::Group("Enable Materials Migration")]
     .End();
 }
 
@@ -144,5 +146,15 @@ void GeneralSettings::SetDynamicMaterialEditorProps(String value)
         instance->SetDefaultArchiveYaml();
         dynamicMaterialEditorProps = instance->GetDefaultArchiveYaml();
     }
+}
+
+bool GeneralSettings::GetEnableMaterialsMigration() const
+{
+    return enableMaterialsMigration;
+}
+void GeneralSettings::SetEnableMaterialsMigration(bool value)
+{
+    enableMaterialsMigration = value;
+    EnableMaterialsMigrationSingleton::GetInstance()->SetValue(value);
 }
 } // namespace DAVA
