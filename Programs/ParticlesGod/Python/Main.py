@@ -1,3 +1,4 @@
+import subprocess
 import struct
 import psutil
 import shutil
@@ -7,13 +8,13 @@ import json
 import time
 import os
 
-import pyinjector
-
 import SceneFile
 import SceneFilePolygonGroups
 
 LIBRARY_PARAMS_FILENAME = "ParticlesGodLibrary.json"
 LIBRARY_FILENAME = "ParticlesGodLibrary.dll"
+
+INJECTOR_PATHNAME = os.path.join(os.path.dirname(__file__), "ParticlesGodInjector.exe")
 
 WOTBLITZ_PROCESS_NAME = "wotblitz.exe"
 WOTBLITZ_EXECUTABLE_VERSION = "11.17.0.744"
@@ -26,7 +27,15 @@ def InjectDLL(procId, dllPath) -> int:
     """
     Inject a dynamic-link library (DLL) into a running process.
     """
-    return pyinjector.inject(procId, dllPath)
+    result = subprocess.run(
+        [INJECTOR_PATHNAME, str(procId), dllPath],
+        capture_output=True, text=True
+    )
+    print(result.stdout)
+    if result.returncode != 0:
+        raise RuntimeError(f"Injection failed: {result.stderr or result.stdout}")
+    
+    return result.returncode
 
 def IsLoadingDLL(procId, dllName):
     """
@@ -471,10 +480,13 @@ def Main():
         print("[ParticlesGod] Prepared parameters for library at:", libraryParamsFilePath)
 
         library = os.path.abspath(LIBRARY_FILENAME)
-        if not InjectDLL(processId, library):
+        try:
+            InjectDLL(processId, library)
+            print("[ParticlesGod] Injection successful")
+        except:
             print(f"[ParticlesGod] Failed to inject library in the game {WOTBLITZ_PROCESS_NAME}")
             return False
-        
+
         print("[ParticlesGod] Library has been injected to the game, waiting for processing update")
         
         WaitLoadingDLL(processId, LIBRARY_FILENAME)
