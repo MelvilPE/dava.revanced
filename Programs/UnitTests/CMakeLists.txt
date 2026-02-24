@@ -14,6 +14,8 @@ if( NOT DAVA_MEGASOLUTION AND NOT DISABLE_MEMORY_PROFILER )
     # WARNING !!! memory profiler crush on win64 build (but UnitTests works on 32bit in all our tests)
     set ( DAVA_MEMORY_PROFILER 1 )
 endif()
+set ( DAVA_MEMORY_PROFILER 0 ) # Compiling on WINDOWS-11 WIN64 ANYWAY
+
 
 if (LINUX)
     set ( DAVA_MEMORY_PROFILER 0 )
