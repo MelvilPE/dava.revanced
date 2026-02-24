@@ -17,10 +17,10 @@ PARENT_DIRECTORY  = os.path.dirname(SCRIPT_DIRECTORY)
 DEPLOY_DIRECTORY  = os.path.join(SCRIPT_DIRECTORY, "_build")
 
 BUILD_TOOLS = {
-    "ResourceEditor": True,
-    "FormatEditorCLI": True,
-    "ResourceDLC": True,
-    "ResourceDVPL": True,
+    "ResourceEditor": False,
+    "FormatEditorCLI": False,
+    "ResourceDLC": False,
+    "ResourceDVPL": False,
     "ParticlesGod": True,
 }
 
@@ -127,15 +127,27 @@ def BuildProgram(programName):
     print(f"✅ Copy of {programName} to deploy directory succeeded.")
 
 def BuildParticlesGod():
-    library_name = "ParticlesGodLibrary"
+    library_name, injector_name = "ParticlesGodLibrary", "ParticlesGodInjector"
 
     dir_particles_god = os.path.join(PARENT_DIRECTORY, "Programs", "ParticlesGod")
     dir_scr_particles_god = os.path.join(dir_particles_god, "Python")
+
     dir_lib_particles_god = os.path.join(dir_particles_god, library_name)
     sln_lib_particles_god = os.path.join(dir_lib_particles_god, library_name + ".sln")
 
+    dir_inj_particles_god = os.path.join(dir_particles_god, injector_name)
+    sln_inj_particles_god = os.path.join(dir_inj_particles_god, injector_name + ".sln")
+
+    GOD_DIRECTORY = os.path.join(DEPLOY_DIRECTORY, "Data", "ResourceEditor", "Plugins", PARTICLES_GOD)
+    try:
+        os.makedirs(GOD_DIRECTORY, exist_ok=True)
+    except Exception as e:
+        print(f"❌ Failed to create particles god directory: {e}")
+        return
+
     generation_mode = "Release"
 
+    # Library generation and copy
     msbuild_command = [
         f"msbuild",
         f"{sln_lib_particles_god}",
@@ -144,14 +156,7 @@ def BuildParticlesGod():
     ]
     
     if not RunCommand(msbuild_command):
-        print("❌ MSBuild generation failed for ParticlesGod")
-        return
-    
-    GOD_DIRECTORY = os.path.join(DEPLOY_DIRECTORY, "Data", "ResourceEditor", "Plugins", PARTICLES_GOD)
-    try:
-        os.makedirs(GOD_DIRECTORY, exist_ok=True)
-    except Exception as e:
-        print(f"❌ Failed to create particles god directory: {e}")
+        print(f"❌ MSBuild generation failed for {library_name}")
         return
     
     dll_particles_god = os.path.join(dir_lib_particles_god, generation_mode, library_name + ".dll")
@@ -161,12 +166,37 @@ def BuildParticlesGod():
     if not os.path.exists(dll_particles_god):
         print(f"❌ Source DLL not found: {dll_particles_god}")
         return
-    
     try:
         shutil.copy(dll_particles_god, GOD_DIRECTORY)
         print(f"✅ Successfully copied {library_name}.dll")
     except Exception as e:
         print(f"❌ Failed to copy compiled {library_name} to deploy particle god directory: {e}")
+        return
+    
+    # Injector generation and copy
+    msbuild_command = [
+        f"msbuild",
+        f"{sln_inj_particles_god}",
+        f"/p:Configuration={generation_mode}",
+        f"/p:Platform=x86"
+    ]
+    
+    if not RunCommand(msbuild_command):
+        print(f"❌ MSBuild generation failed for {injector_name}")
+        return
+    
+    inj_particles_god = os.path.join(dir_inj_particles_god, generation_mode, injector_name + ".exe")
+    print(f"Source: {inj_particles_god}")
+    print(f"Destination: {GOD_DIRECTORY}")
+    
+    if not os.path.exists(inj_particles_god):
+        print(f"❌ Source injector not found: {inj_particles_god}")
+        return
+    try:
+        shutil.copy(inj_particles_god, GOD_DIRECTORY)
+        print(f"✅ Successfully copied {injector_name}.exe")
+    except Exception as e:
+        print(f"❌ Failed to copy compiled {injector_name} to deploy particle god directory: {e}")
         return
     
     try:
