@@ -8,16 +8,23 @@ from xml.etree.ElementTree import fromstring, ElementTree, Element
 
 g_nsLink = '{http://schemas.microsoft.com/developer/msbuild/2003}' 
 
-def load_vcx_tree( pathVcxProj ) :
-    ET.register_namespace("","http://schemas.microsoft.com/developer/msbuild/2003")
-    tree = ET.parse( pathVcxProj )
+def load_vcx_tree(pathVcxProj):
+    if not os.path.exists(pathVcxProj):
+        print(f"[vs_prj_modifications] Skipping: {pathVcxProj} not found (non-VS generator?)")
+        return None, None
+
+    ET.register_namespace("", "http://schemas.microsoft.com/developer/msbuild/2003")
+    tree = ET.parse(pathVcxProj)
     root = tree.getroot()
     return tree, root
 
 def vs_prj_modification_dependent( args ) :
     print('Added dependency to [ {0} ] in project {1}'.format( args.targetDepend, args.pathVcxProj ))
     
-    tree, root = load_vcx_tree( args.pathVcxProj )
+    tree, root = load_vcx_tree(args.pathVcxProj)
+    if tree is None:
+        return
+        
     modified_project = False
 
     for neighbor in root.iter( g_nsLink+'ItemGroup' ) :
@@ -54,7 +61,10 @@ def vs_prj_modification_dependent( args ) :
 def vs_uwp_dll_deploy_fix( args ) :
     print('vs_uwp_dll_deploy_fix in {0}'.format( args.pathVcxProj ))
     
-    tree, root = load_vcx_tree( args.pathVcxProj )
+    tree, root = load_vcx_tree(args.pathVcxProj)
+    if tree is None:
+        return
+        
     modified_project = False
 
     for neighbor in root.iter( g_nsLink+'ItemGroup' ):
@@ -95,7 +105,10 @@ def vs_prj_dpi_awarness( args ) :
     else:
         raise AssertionError( 'Invalid value args.typeAwerness :', args.typeAwerness  )
 
-    tree, root = load_vcx_tree( args.pathVcxProj )
+    tree, root = load_vcx_tree(args.pathVcxProj)
+    if tree is None:
+        return
+        
     modified_project = False
 
     for neighbor in root.iter( g_nsLink+'ItemDefinitionGroup' ):
