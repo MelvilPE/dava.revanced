@@ -1481,8 +1481,9 @@ void NMaterial::MaterialConfigMigration(MaterialConfig& config, int32 sceneVersi
                 prop->name = NMaterialParamName::PARAM_ALPHATEST_THRESHOLD;
                 prop->type = rhi::ShaderProp::Type::TYPE_FLOAT1;
                 prop->arraySize = 1;
-                float32 temp = 0.5f;
-                prop->SetPropertyValue(&temp);
+                prop->data.reset(new float[ShaderDescriptor::CalculateDataSize(prop->type, prop->arraySize)]);
+                float32 value = 0.5f;
+                prop->SetPropertyValue(&value);
                 config.localProperties[NMaterialParamName::PARAM_ALPHATEST_THRESHOLD] = prop;
             }
         }
