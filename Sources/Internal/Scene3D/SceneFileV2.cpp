@@ -301,7 +301,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
                 if (!geometryFile)
                 {
                     Logger::Error("SceneFileV2::LoadScene failed to open geometry file: %s", geometryPath.GetAbsolutePathname().c_str());
-                    SetError(ERROR_FAILED_TO_CREATE_FILE);
+                    SetError(ERROR_LINKED_FILE_READ_ERROR);
                     return GetError();
                 }
 
@@ -309,7 +309,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
                 if (!ReadGeometryFileHeader(geometryHeader, geometryFile))
                 {
                     Logger::Error("SceneFileV2::LoadScene failed to read geometry header in file: %s", geometryPath.GetAbsolutePathname().c_str());
-                    SetError(ERROR_FILE_READ_ERROR);
+                    SetError(ERROR_LINKED_FILE_READ_ERROR);
                     return GetError();
                 }
 
@@ -317,7 +317,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
                 if (sizeof(geometryNodeCount) != geometryFile->Read(&geometryNodeCount, sizeof(geometryNodeCount)))
                 {
                     Logger::Error("SceneFileV2::LoadScene read geometryNodeCount failed in file: %s", geometryPath.GetAbsolutePathname().c_str());
-                    SetError(ERROR_FILE_READ_ERROR);
+                    SetError(ERROR_LINKED_FILE_READ_ERROR);
                     return GetError();
                 }
 
@@ -332,10 +332,21 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
                     if (!nodeLoaded)
                     {
                         Logger::Error("SceneFileV2::LoadScene LoadDataNode for geometry failed in file: %s", filename.GetAbsolutePathname().c_str());
-                        SetError(ERROR_FILE_READ_ERROR);
+                        SetError(ERROR_LINKED_FILE_READ_ERROR);
                         return GetError();
                     }
                 }
+            }
+        }
+
+        if (header.version >= WORLD_OF_TANKS_BLITZ_7_6_VERSION)
+        {
+            ScopedPtr<KeyedArchive> archiveCount(new KeyedArchive());
+            if (!archiveCount->Load(file))
+            {
+                Logger::Error("SceneFileV2::LoadScene load archive count failed in file: %s", filename.GetAbsolutePathname().c_str());
+                SetError(ERROR_FILE_READ_ERROR);
+                return GetError();
             }
         }
 
@@ -466,7 +477,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
             if (!geometryFile)
             {
                 Logger::Error("SceneFileV2::LoadScene failed to open geometry file: %s", geometryPath.GetAbsolutePathname().c_str());
-                SetError(ERROR_FAILED_TO_CREATE_FILE);
+                SetError(ERROR_LINKED_FILE_READ_ERROR);
                 return GetError();
             }
 
@@ -474,7 +485,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
             if (!ReadGeometryFileHeader(geometryHeader, geometryFile))
             {
                 Logger::Error("SceneFileV2::LoadScene failed to read geometry header in file: %s", geometryPath.GetAbsolutePathname().c_str());
-                SetError(ERROR_FILE_READ_ERROR);
+                SetError(ERROR_LINKED_FILE_READ_ERROR);
                 return GetError();
             }
 
@@ -482,7 +493,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
             if (sizeof(geometryNodeCount) != geometryFile->Read(&geometryNodeCount, sizeof(geometryNodeCount)))
             {
                 Logger::Error("SceneFileV2::LoadScene read geometryNodeCount failed in file: %s", geometryPath.GetAbsolutePathname().c_str());
-                SetError(ERROR_FILE_READ_ERROR);
+                SetError(ERROR_LINKED_FILE_READ_ERROR);
                 return GetError();
             }
 
@@ -497,7 +508,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
                 if (!nodeLoaded)
                 {
                     Logger::Error("SceneFileV2::LoadScene LoadDataNode for geometry failed in file: %s", filename.GetAbsolutePathname().c_str());
-                    SetError(ERROR_FILE_READ_ERROR);
+                    SetError(ERROR_LINKED_FILE_READ_ERROR);
                     return GetError();
                 }
             }

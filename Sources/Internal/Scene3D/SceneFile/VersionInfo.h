@@ -28,6 +28,7 @@ static const int32 COMPONENTS_REFLECTION_SCENE_VERSION = 23; // enum Component::
 static const int32 TRANSFORM_REFACTORING_SCENE_VERSION = 24; // TransformComponent has Transform instead of Matrix4
 static const int32 WORLD_OF_TANKS_BLITZ_6_2_VERSION = 25;
 static const int32 WORLD_OF_TANKS_BLITZ_6_8_VERSION = 26;
+static const int32 WORLD_OF_TANKS_BLITZ_7_6_VERSION = 28;
 static const int32 WORLD_OF_TANKS_BLITZ_7_8_VERSION = 30;
 static const int32 WORLD_OF_TANKS_BLITZ_11_8_0_VERSION = 48;
 
