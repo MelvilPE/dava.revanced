@@ -206,7 +206,13 @@ public:
      * @note Scene must be properly initialized before calling this function
      */
     eError LoadScene(const FilePath& filename, Scene* _scene);
-
+    /**
+     * @brief Read geometry data from a file.
+     * @param[in] filename Path to the geometry file.
+     * @param[in] scene Scene where polygon group data will be loaded.
+     * @return true if loading succeeded, false otherwise.
+     */
+    bool TryReadGeometryFile(FilePath& filename, Scene* scene);
     /**
      * @brief Loads scene version information from a file
      * @param[in] filename Path to the scene file
