@@ -245,14 +245,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         break;
     }
 
-    if (header.version > WORLD_OF_TANKS_BLITZ_6_2_VERSION && header.version < WORLD_OF_TANKS_BLITZ_7_8_VERSION)
-    {
-        Logger::Error("SceneFileV2::LoadScene failed in file - framework doesn't support scene versions between %d and %d : %s", WORLD_OF_TANKS_BLITZ_6_2_VERSION, WORLD_OF_TANKS_BLITZ_7_8_VERSION, filename.GetAbsolutePathname().c_str());
-        SetError(ERROR_FILE_READ_ERROR);
-        return GetError();
-    }
-
-    if (header.version >= 10)
+    if (header.version >= SCENE_FILE_VERSION_10)
     {
         const bool resultRead = ReadDescriptor(file, descriptor);
         if (!resultRead)
@@ -270,7 +263,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     serializationContext.SetScene(scene);
     serializationContext.SetDefaultMaterialQuality(NMaterialQualityName::DEFAULT_QUALITY_NAME);
 
-    if (header.version <= WORLD_OF_TANKS_BLITZ_6_2_VERSION)
+    if (header.version < WORLD_OF_TANKS_BLITZ_7_8_VERSION)
     {
         int32 dataNodeCount = 0;
         uint32 result = file->Read(&dataNodeCount, sizeof(int32));
@@ -289,6 +282,60 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
                 Logger::Error("SceneFileV2::LoadScene LoadDataNode failed in file: %s", filename.GetAbsolutePathname().c_str());
                 SetError(ERROR_FILE_READ_ERROR);
                 return GetError();
+            }
+        }
+
+        if (header.version >= WORLD_OF_TANKS_BLITZ_6_8_VERSION)
+        {
+            uint64 geometryIdHash = NULL;
+            if (sizeof(geometryIdHash) != file->Read(&geometryIdHash, sizeof(geometryIdHash)))
+            {
+                Logger::Error("SceneFileV2::LoadScene read geometryIdHash failed in file: %s", filename.GetAbsolutePathname().c_str());
+                SetError(ERROR_FILE_READ_ERROR);
+                return GetError();
+            }
+
+            if (geometryIdHash != NULL)
+            {
+                ScopedPtr<File> geometryFile(File::Create(geometryPath, File::OPEN | File::READ));
+                if (!geometryFile)
+                {
+                    Logger::Error("SceneFileV2::LoadScene failed to open geometry file: %s", geometryPath.GetAbsolutePathname().c_str());
+                    SetError(ERROR_FAILED_TO_CREATE_FILE);
+                    return GetError();
+                }
+
+                Header geometryHeader;
+                if (!ReadGeometryFileHeader(geometryHeader, geometryFile))
+                {
+                    Logger::Error("SceneFileV2::LoadScene failed to read geometry header in file: %s", geometryPath.GetAbsolutePathname().c_str());
+                    SetError(ERROR_FILE_READ_ERROR);
+                    return GetError();
+                }
+
+                int32 geometryNodeCount = 0;
+                if (sizeof(geometryNodeCount) != geometryFile->Read(&geometryNodeCount, sizeof(geometryNodeCount)))
+                {
+                    Logger::Error("SceneFileV2::LoadScene read geometryNodeCount failed in file: %s", geometryPath.GetAbsolutePathname().c_str());
+                    SetError(ERROR_FILE_READ_ERROR);
+                    return GetError();
+                }
+
+                if (geometryHeader.nodeCount != geometryNodeCount)
+                {
+                    Logger::Warning("SceneFileV2::LoadScene geometryNodeCount mismatch in file: %s", geometryPath.GetAbsolutePathname().c_str());
+                }
+
+                for (int32 geometryNodeIndex = 0; geometryNodeIndex < geometryNodeCount; ++geometryNodeIndex)
+                {
+                    const bool nodeLoaded = LoadDataNode(scene, geometryFile);
+                    if (!nodeLoaded)
+                    {
+                        Logger::Error("SceneFileV2::LoadScene LoadDataNode for geometry failed in file: %s", filename.GetAbsolutePathname().c_str());
+                        SetError(ERROR_FILE_READ_ERROR);
+                        return GetError();
+                    }
+                }
             }
         }
 
@@ -877,7 +924,7 @@ SceneArchive* SceneFileV2::LoadSceneArchive(const FilePath& filename)
         return res;
     }
 
-    if (header.version >= 10)
+    if (header.version >= SCENE_FILE_VERSION_10)
     {
         const bool resultRead = ReadDescriptor(file, descriptor);
         if (!resultRead)

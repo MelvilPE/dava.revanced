@@ -12,6 +12,7 @@
 namespace DAVA
 {
 static const int32 CUSTOM_PROPERTIES_COMPONENT_SAVE_SCENE_VERSION = 8;
+static const int32 SCENE_FILE_VERSION_10 = 10;
 static const int32 OLD_LODS_SCENE_VERSION = 11;
 static const int32 TREE_ANIMATION_SCENE_VERSION = 12;
 static const int32 PREREQUIRED_BINORMAL_SCENE_VERSION = 13;
@@ -26,6 +27,7 @@ static const int32 SPEED_TREE_POLYGON_GROUPS_PIVOT3_SCENE_VERSION = 22; // conve
 static const int32 COMPONENTS_REFLECTION_SCENE_VERSION = 23; // enum Component::eType removed, scene components serialization without "comp.type".
 static const int32 TRANSFORM_REFACTORING_SCENE_VERSION = 24; // TransformComponent has Transform instead of Matrix4
 static const int32 WORLD_OF_TANKS_BLITZ_6_2_VERSION = 25;
+static const int32 WORLD_OF_TANKS_BLITZ_6_8_VERSION = 26;
 static const int32 WORLD_OF_TANKS_BLITZ_7_8_VERSION = 30;
 static const int32 WORLD_OF_TANKS_BLITZ_11_8_0_VERSION = 48;
 
