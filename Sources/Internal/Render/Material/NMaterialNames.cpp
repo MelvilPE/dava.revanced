@@ -201,6 +201,9 @@ const FastName NMaterialParamName::PARAM_PARTICLES_GRADIENT_COLOR_FOR_BLACK("gra
 const FastName NMaterialParamName::PARAM_PARTICLES_GRADIENT_COLOR_FOR_MIDDLE("gradientColorForMiddle");
 const FastName NMaterialParamName::PARAM_PARTICLES_GRADIENT_MIDDLE_POINT("gradientMiddlePoint");
 
+// MapBorderRenderObject
+const FastName NMaterialParamName::DISTANCE_FADE_NEAR_FAR_SQ("distanceFadeNearFarSq");
+
 // Presets
 const FastName NMaterialPresetName::ADDITIVE = FastName("Additive");
 const FastName NMaterialPresetName::REFLECTION_MASK = FastName("ReflectionMask");

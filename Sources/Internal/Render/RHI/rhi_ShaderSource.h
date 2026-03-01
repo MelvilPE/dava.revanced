@@ -30,6 +30,16 @@ struct ShaderProp
         TYPE_FLOAT4X4
     };
 
+    // This isn't in original https://github.com/smile4u/dava.engine
+    enum RepresentationType : int32
+    {
+        RPT_UNSPECIFIED = 0x0,
+        RPT_RECT = 0x1,
+        RPT_COLOR = 0x2,
+        RPT_TEXTURE_TRANSFORM = 0x3,
+        RPT_DEFAULT = 0x0,
+    };
+
     enum Precision
     {
         PRECISION_NORMAL,

@@ -52,6 +52,7 @@
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 #include "Render/Highlevel/BillboardRenderObject.h"
+#include "Render/Highlevel/MapBorderRenderObject.h"
 #include "Render/Highlevel/Heightmap.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/Light.h"
@@ -346,6 +347,7 @@ void RegisterPermanentNames()
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(RenderBatch);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(VegetationRenderObject);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(BillboardRenderObject);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(MapBorderRenderObject);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Heightmap);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Landscape);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Light);

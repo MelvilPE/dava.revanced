@@ -64,6 +64,10 @@ public:
         TYPE_VEGETATION,
         TYPE_SPEED_TREE,
         TYPE_BILLBOARD,
+        TYPE_DEFERRED_DECAL, // This and next ones aren't in original https://github.com/smile4u/dava.engine
+        TYPE_MAP_BORDER,
+        TYPE_FLORA,
+        TYPE_WATER,
     };
 
     enum eFlags

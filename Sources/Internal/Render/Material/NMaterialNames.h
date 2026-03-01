@@ -213,6 +213,7 @@ public:
     static const FastName PARAM_PARTICLES_GRADIENT_COLOR_FOR_BLACK;
     static const FastName PARAM_PARTICLES_GRADIENT_COLOR_FOR_MIDDLE;
     static const FastName PARAM_PARTICLES_GRADIENT_MIDDLE_POINT;
+    static const FastName DISTANCE_FADE_NEAR_FAR_SQ;
 };
 
 class NMaterialPresetName

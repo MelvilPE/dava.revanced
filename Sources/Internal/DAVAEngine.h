@@ -188,6 +188,7 @@
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/SpeedTreeObject.h"
 #include "Render/Highlevel/BillboardRenderObject.h"
+#include "Render/Highlevel/MapBorderRenderObject.h"
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 
 #include "Scene3D/AnimationData.h"
