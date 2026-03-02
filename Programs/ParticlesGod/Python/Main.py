@@ -257,7 +257,7 @@ def FindEmitterFileNames(archive):
 
     return emitterFileNames
 
-def UpdateNestedEmitters(archive, maxDataNodeId, resolvedEmitterPathsMap):
+def UpdateNestedEmitters(archive, maxDataNodeId):
     """
     Update ParticleEffectComponent's in the archive to nested emitters.
     Assigns each emitter a new unique ID based on `maxDataNodeId`, incrementing it as emitters are updated.
@@ -297,6 +297,7 @@ def UpdateNestedEmitters(archive, maxDataNodeId, resolvedEmitterPathsMap):
                 continue
 
             componentArch["pe.nestedEmitters"] = {VariantType.TYPENAME_BOOLEAN: True}
+            componentArch["pe.updatedFromGame"] = {VariantType.TYPENAME_BOOLEAN: True}
 
             newEmittersVector = []
 
@@ -328,6 +329,10 @@ def UpdateNestedEmitters(archive, maxDataNodeId, resolvedEmitterPathsMap):
                     'emitter.scale': {
                         VariantType.TYPENAME_VECTOR3: {"x": 1.0, "y": 1.0, "z": 1.0}
                     },
+                    # Keep emitter filename for ResourceEditor rendering (pe.updatedFromGame)
+                    'emitter.filename': {
+                        VariantType.TYPENAME_STRING: emitterArch["emitter.filename"][VariantType.TYPENAME_STRING]
+                    },
                 }
 
                 newEmittersVector.append({
@@ -346,7 +351,6 @@ def UpdateNestedEmitters(archive, maxDataNodeId, resolvedEmitterPathsMap):
             maxDataNodeId = UpdateNestedEmitters(
                 childArchive,
                 maxDataNodeId,
-                resolvedEmitterPathsMap
             )
 
     return maxDataNodeId
@@ -445,6 +449,7 @@ def Main():
             print(f"[ParticlesGod] No emitter yaml paths found, ending script")
             return False
         
+        # resolvedEmitterPathsMap could be usefull but finally unused
         resolvedEmitterPathsMap = {}
 
         for index in range(len(emitterFilePaths)):
@@ -527,7 +532,6 @@ def Main():
                 maxDataNodesId = UpdateNestedEmitters(
                     archive,
                     maxDataNodesId,
-                    resolvedEmitterPathsMap
                 )
         except Exception as e:
             print("[ParticlesGod] Error while updating nested emitters:", e)

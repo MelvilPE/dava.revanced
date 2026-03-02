@@ -128,6 +128,7 @@ private:
     bool isPaused = false;
 
     String nestedEmittersComponent = "";
+    bool updatedFromGame = false;
 
 public: //mostly editor commands
     uint32 GetEmittersCount() const;

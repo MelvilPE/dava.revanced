@@ -330,51 +330,54 @@ void ParticleEffectComponent::SerializeNestedEmitters(KeyedArchive* archive, Ser
     using Method = SerializationContext::eSavedSceneMethod;
     Method savedSceneMethod = serializationContext->GetSavedSceneMethod();
 
-    if (savedSceneMethod == Method::Wargaming_WordOfTanksBlitz ||
-        savedSceneMethod == Method::LestaStudio_TanksBlitz)
+    if (savedSceneMethod != Method::Wargaming_WordOfTanksBlitz &&
+        savedSceneMethod != Method::LestaStudio_TanksBlitz)
     {
-        if (!archive->LoadFromYamlString(nestedEmittersComponent))
+        Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed selected save scene method is invalid");
+        return;
+    }
+
+    if (!archive->LoadFromYamlString(nestedEmittersComponent))
+    {
+        Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed nested emitters component is wrong");
+        return;
+    }
+
+    Vector<VariantType> emitters = archive->GetVariantVector("pe.emitters");
+    for (uint64 emitterIndex = 0; emitterIndex < emitters.size(); ++emitterIndex)
+    {
+        KeyedArchive* emitterArch = emitters[emitterIndex].AsKeyedArchive();
+        if (emitterArch == nullptr)
         {
-            Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] failed nested emitters component is wrong");
-            return;
+            Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] emitter is not a valid archive");
+            continue;
         }
 
-        Vector<VariantType> emitters = archive->GetVariantVector("pe.emitters");
-        for (uint64 emitterIndex = 0; emitterIndex < emitters.size(); ++emitterIndex)
+        Vector<VariantType> emitterDatas = emitterArch->GetVariantVector("emitter.data");
+        for (uint64 emitterDataIndex = 0; emitterDataIndex < emitterDatas.size(); ++emitterDataIndex)
         {
-            KeyedArchive* emitterArch = emitters[emitterIndex].AsKeyedArchive();
-            if (emitterArch == nullptr)
+            KeyedArchive* emitterDataArch = emitterDatas[emitterDataIndex].AsKeyedArchive();
+            if (emitterDataArch == nullptr)
             {
-                Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] emitter is not a valid archive");
+                Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] emitter.data entry is not a valid archive");
                 continue;
             }
 
-            Vector<VariantType> emitterDatas = emitterArch->GetVariantVector("emitter.data");
-            for (uint64 emitterDataIndex = 0; emitterDataIndex < emitterDatas.size(); ++emitterDataIndex)
+            if (!emitterDataArch->IsKeyExists("emitter.id"))
             {
-                KeyedArchive* emitterDataArch = emitterDatas[emitterDataIndex].AsKeyedArchive();
-                if (emitterDataArch == nullptr)
-                {
-                    Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] emitter.data entry is not a valid archive");
-                    continue;
-                }
-
-                if (!emitterDataArch->IsKeyExists("emitter.id"))
-                {
-                    Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] emitter.data missing 'emitter.id'");
-                    continue;
-                }
-
-                uint64 oldId = emitterDataArch->GetUInt64("emitter.id");
-                uint64 newId = serializationContext->GetUpdatedEmitterNodeId(oldId);
-                emitterDataArch->SetUInt64("emitter.id", newId);
+                Logger::Warning("[ParticleEffectComponent::SerializeNestedEmitters] emitter.data missing 'emitter.id'");
+                continue;
             }
 
-            emitterArch->SetVariantVector("emitter.data", emitterDatas);
+            uint64 oldId = emitterDataArch->GetUInt64("emitter.id");
+            uint64 newId = serializationContext->GetUpdatedEmitterNodeId(oldId);
+            emitterDataArch->SetUInt64("emitter.id", newId);
         }
 
-        archive->SetVariantVector("pe.emitters", emitters);
+        emitterArch->SetVariantVector("emitter.data", emitterDatas);
     }
+
+    archive->SetVariantVector("pe.emitters", emitters);
 }
 
 void ParticleEffectComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
@@ -434,6 +437,53 @@ void ParticleEffectComponent::DeserializeLegacyYaml(KeyedArchive* archive, Seria
 void ParticleEffectComponent::DeserializeNestedEmitters(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     nestedEmittersComponent = archive->SaveToYamlString();
+
+    if (!archive->IsKeyExists("pe.updatedFromGame"))
+    {
+        Logger::Warning("[ParticleEffectComponent::DeserializeNestedEmitters] Effect not updated from game - skipping load of nested emitters");
+        return;
+    }
+
+    updatedFromGame = archive->GetBool("pe.updatedFromGame");
+
+    // If we hit this point, it means that we already updated particles via particles god library (pe.updatedFromGame)
+    // Then we can try to reload the particle (mainly to keep original rendering)
+
+    const ParticlesQualitySettings::FilepathSelector* filepathSelector = QualitySettingsSystem::Instance()->GetParticlesQualitySettings().GetOrCreateFilepathSelector();
+    loadedVersion = archive->GetUInt32("pe.version", 0);
+    stopWhenEmpty = archive->GetBool("pe.stopWhenEmpty");
+    effectDuration = archive->GetFloat("pe.effectDuration");
+    repeatsCount = archive->GetUInt32("pe.repeatsCount");
+    clearOnRestart = archive->GetBool("pe.clearOnRestart");
+    startFromTime = archive->GetFloat("pe.startFromTime");
+    Vector<VariantType> emitters = archive->GetVariantVector("pe.emitters");
+    uint32 emittersCount = static_cast<uint32>(emitters.size());
+    emitterInstances.resize(emittersCount);
+    for (uint32 emitterIndex = 0; emitterIndex < emittersCount; ++emitterIndex)
+    {
+        emitterInstances[emitterIndex].ConstructInplace(this);
+
+        KeyedArchive* emitterArch = emitters[emitterIndex].AsKeyedArchive();
+        String filename = emitterArch->GetString("emitter.filename");
+        if (!filename.empty())
+        {
+            emitterInstances[emitterIndex]->SetFilePath(serializationContext->GetScenePath() + filename);
+            FilePath qualityFilepath = emitterInstances[emitterIndex]->GetFilePath();
+            if (filepathSelector)
+            {
+                qualityFilepath = filepathSelector->SelectFilepath(emitterInstances[emitterIndex]->GetFilePath());
+            }
+            emitterInstances[emitterIndex]->SetEmitter(ParticleEmitter::LoadEmitter(qualityFilepath));
+        }
+        else
+        {
+            emitterInstances[emitterIndex]->SetEmitter(new ParticleEmitter());
+        }
+        emitterInstances[emitterIndex]->SetSpawnPosition(emitterArch->GetVector3("emitter.position"));
+    }
+    uint32 savedFlags = RenderObject::SERIALIZATION_CRITERIA & archive->GetUInt32("ro.flags", RenderObject::VISIBLE);
+    effectRenderObject->SetFlags(savedFlags | (effectRenderObject->GetFlags() & ~PARTICLE_FLAGS_SERIALIZATION_CRITERIA));
+    RebuildEffectModifiables();
 }
 
 void ParticleEffectComponent::CollapseOldEffect(SerializationContext* serializationContext)
