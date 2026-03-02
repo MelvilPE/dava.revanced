@@ -87,6 +87,10 @@ public:
     String GetNestedEmittersComponent();
     void SetNestedEmittersComponent(String value);
 
+    bool IsNestedEmitters() const;
+    bool IsUpdatedFromGame() const;
+    void SetUpdatedFromGame(bool value);
+
     float32 GetStartFromTime() const;
     void SetStartFromTime(float32 time);
 
@@ -160,6 +164,21 @@ public:
 
     DAVA_VIRTUAL_REFLECTION(ParticleEffectComponent, Component);
 };
+
+inline bool ParticleEffectComponent::IsNestedEmitters() const
+{
+    return nestedEmittersComponent != "";
+}
+
+inline bool ParticleEffectComponent::IsUpdatedFromGame() const
+{
+    return updatedFromGame;
+}
+
+inline void ParticleEffectComponent::SetUpdatedFromGame(bool value)
+{
+    updatedFromGame = value;
+}
 
 inline float32 ParticleEffectComponent::GetStartFromTime() const
 {

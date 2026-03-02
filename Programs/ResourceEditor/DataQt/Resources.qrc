@@ -66,6 +66,8 @@
     <file>QtIcons/pause.png</file>
     <file>QtIcons/step_forward.png</file>
     <file>QtIcons/effect.png</file>
+	<file>QtIcons/effect_nested.png</file>
+	<file>QtIcons/effect_nested_god.png</file>
     <file>QtIcons/emitter_particle.png</file>
     <file>QtIcons/force.png</file>
     <file>QtIcons/turtle.png</file>

@@ -70,7 +70,16 @@ QIcon EntityTraits::GetIcon(const DAVA::Selectable& object) const
     }
     if (nullptr != DAVA::GetEffectComponent(entity))
     {
-        return DAVA::SharedIcon(":/QtIcons/effect.png");
+        DAVA::ParticleEffectComponent* PEC = DAVA::GetEffectComponent(entity);
+        if (!PEC->IsNestedEmitters())
+        {
+            return DAVA::SharedIcon(":/QtIcons/effect.png");
+        }
+        if (PEC->IsUpdatedFromGame())
+        {
+            return DAVA::SharedIcon(":/QtIcons/effect_nested_god.png");
+        }
+        return DAVA::SharedIcon(":/QtIcons/effect_nested.png");
     }
     else if (nullptr != DAVA::GetLandscape(entity))
     {
