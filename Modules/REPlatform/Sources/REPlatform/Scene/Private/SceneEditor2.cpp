@@ -425,6 +425,84 @@ void SceneEditor2::SetScenePath(const FilePath& newScenePath)
     curScenePath = newScenePath;
 }
 
+String SceneEditor2::GetParticleEmitterNodesAsYaml()
+{
+    ScopedPtr<KeyedArchive> listNodes(new KeyedArchive());
+
+    Vector<VariantType> variantsList;
+    for (auto node : particleEmitterNodes)
+    {
+        VariantType var;
+        var.SetKeyedArchive(node->GetArchive());
+        variantsList.push_back(var);
+    }
+
+    listNodes->SetVariantVector("ParticleEmitterNodes", variantsList);
+    return listNodes->SaveToYamlString();
+}
+
+bool SceneEditor2::SetParticleEmitterNodesFromYaml(String value)
+{
+    if (value.empty())
+    {
+        return false;
+    }
+    ScopedPtr<KeyedArchive> listNodes(new KeyedArchive());
+    if (!listNodes->LoadFromYamlString(value))
+    {
+        return false;
+    }
+    if (!listNodes->IsKeyExists("ParticleEmitterNodes"))
+    {
+        return false;
+    }
+
+    ClearParticleEmitterNodes();
+
+    Vector<VariantType> variants = listNodes->GetVariantVector("ParticleEmitterNodes");
+    for (auto& variant : variants)
+    {
+        KeyedArchive* arch = variant.AsKeyedArchive();
+        ParticleEmitterNode* node = new ParticleEmitterNode();
+        node->Load(arch, nullptr);
+
+        AddParticleEmitterNode(node);
+    }
+
+    return true;
+}
+
+String SceneEditor2::GetSceneRenderConfigAsYaml()
+{
+    if (sceneRenderConfig != nullptr)
+    {
+        return sceneRenderConfig->GetNodeYaml();
+    }
+    
+    return "";
+}
+
+bool SceneEditor2::SetSceneRenderConfigFromYaml(String value)
+{
+    if (value.empty())
+    {
+        return false;
+    }
+    ScopedPtr<KeyedArchive> archive(new KeyedArchive());
+    if (!archive->LoadFromYamlString(value))
+    {
+        return false;
+    }
+
+    ClearSceneRenderConfig();
+
+    SceneRenderConfig* node = new SceneRenderConfig();
+    node->Load(archive, nullptr);
+    SetSceneRenderConfig(node);
+
+    return true;
+}
+
 bool SceneEditor2::CanUndo() const
 {
     return commandStack->CanUndo();

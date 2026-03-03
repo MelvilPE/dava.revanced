@@ -177,6 +177,8 @@
 // 3D scene management
 #include "Scene3D/Scene.h"
 #include "Scene3D/Entity.h"
+#include "Scene3D/DataNode.h"
+#include "Scene3D/ArchiveDataNode.h"
 #include "Render/Highlevel/RenderPass.h"
 #include "Render/Highlevel/RenderPassNames.h"
 #include "Render/Highlevel/Landscape.h"
@@ -200,6 +202,7 @@
 #include "Scene3D/Systems/ParticleEffectSystem.h"
 #include "Scene3D/Lod/LodSystem.h"
 #include "Scene3D/Lod/LodComponent.h"
+#include "Scene3D/SceneRenderConfig.h"
 
 //Components
 #include "Scene3D/Components/ComponentHelpers.h"
@@ -209,6 +212,7 @@
 #include "Scene3D/Components/DebugRenderComponent.h"
 #include "Scene3D/Components/LightComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
+#include "Scene3D/Components/ParticleMeshesComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/UpdatableComponent.h"

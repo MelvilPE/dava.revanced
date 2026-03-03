@@ -332,13 +332,6 @@ public:
      */
     SceneArchive* LoadSceneArchive(const FilePath& filename); // purely load data
 
-    String GetSceneComponents();
-    String GetSceneComponentSets();
-    String GetSceneRenderConfig();
-    String GetParticleEmitterNodes();
-
-    void SetupParticleEmitterNodes();
-
 private:
     /**
      * @brief Adds the specified data node to the node mapping.
@@ -492,11 +485,6 @@ private:
     bool isDebugLogEnabled;
     bool isSaveForGame;
     eError lastError;
-
-    String sceneComponents = "";
-    String sceneComponentSets = "";
-    String sceneRenderConfig = "";
-    String particleEmitterNodes = "";
 
     SerializationContext serializationContext;
 };

@@ -2,14 +2,6 @@
 
 #include "Reflection/ReflectionRegistrator.h"
 
-#include "Scene3D/Systems/QualitySettingsSystem.h"
-
-#include "FileSystem/YamlParser.h"
-#include "Utils/StringFormat.h"
-#include "Utils/Utils.h"
-
-#include "Logger/Logger.h"
-
 namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(ParticleEmitterNode)
@@ -18,41 +10,79 @@ DAVA_VIRTUAL_REFLECTION_IMPL(ParticleEmitterNode)
     .End();
 }
 
-ParticleEmitterNode::ParticleEmitterNode()
-    : DataNode()
+void ParticleEmitterNode::GetMeshGeometryIds(Vector<uint64>& output)
 {
+    GetMeshGeometryIdsRecursively(output, archiveNode);
 }
 
-ParticleEmitterNode::~ParticleEmitterNode()
+void ParticleEmitterNode::GetMeshGeometryIdsRecursively(Vector<uint64>& output, KeyedArchive* archive)
 {
+    Vector<VariantType> layers;
+    if (archive->IsKeyExists("layers"))
+    {
+        layers = archive->GetVariantVector("layers");
+    }
+
+    for (const auto& layer : layers)
+    {
+        KeyedArchive* layerArchive = layer.AsKeyedArchive();
+        if (layerArchive->IsKeyExists("meshGeometryId"))
+        {
+            uint64 id = layerArchive->GetUInt64("meshGeometryId");
+            output.push_back(id);
+        }
+
+        if (layerArchive->IsKeyExists("innerEmitter"))
+        {
+            KeyedArchive* innerArch = layerArchive->GetArchive("innerEmitter");
+            GetMeshGeometryIdsRecursively(output, innerArch);
+        }
+    }
 }
 
-void ParticleEmitterNode::Load(KeyedArchive* archive, SerializationContext* serializationContext)
+void ParticleEmitterNode::UpdateMeshGeometryIds(SerializationContext* serializationContext)
 {
-    // DataNode::Load(archive, serializationContext);
-    nodeYaml = archive->SaveToYamlString();
+    UpdateMeshGeometryIdsRecursively(archiveNode, serializationContext);
 }
 
-void ParticleEmitterNode::Save(KeyedArchive* archive, SerializationContext* serializationContext)
+void ParticleEmitterNode::UpdateMeshGeometryIdsRecursively(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-    //DataNode::Save(archive, serializationContext);
-    archive->LoadFromYamlString(nodeYaml);
+    Vector<VariantType> layers;
+    if (archive->IsKeyExists("layers"))
+    {
+        layers = archive->GetVariantVector("layers");
+    }
+
+    for (auto& layer : layers)
+    {
+        KeyedArchive* layerArchive = layer.AsKeyedArchive();
+        if (layerArchive->IsKeyExists("meshGeometryId"))
+        {
+            uint64 oldId = layerArchive->GetUInt64("meshGeometryId");
+            uint64 newId = serializationContext->GetUpdatedNodeId(oldId);
+            layerArchive->SetUInt64("meshGeometryId", newId);
+        }
+
+        if (layerArchive->IsKeyExists("innerEmitter"))
+        {
+            KeyedArchive* innerArch = layerArchive->GetArchive("innerEmitter");
+            UpdateMeshGeometryIdsRecursively(innerArch, serializationContext);
+        }
+    }
 }
 
-uint64 ParticleEmitterNode::GetParticleEmitterNodeID()
+bool ParticleEmitterNode::IsClone()
 {
-    ScopedPtr<KeyedArchive> archive(new KeyedArchive());
-    archive->LoadFromYamlString(nodeYaml);
-    return archive->GetByteArrayAsType<uint64>("#id", 0);
+    return archiveNode->IsKeyExists("clone") && archiveNode->GetBool("clone");
 }
 
-String ParticleEmitterNode::GetNodeYaml()
+uint64 ParticleEmitterNode::GetReferenceId()
 {
-    return nodeYaml;
+    return archiveNode->GetUInt64("reference.id");
 }
 
-void ParticleEmitterNode::SetNodeYaml(String value)
+void ParticleEmitterNode::SetReferenceId(uint64 id)
 {
-    nodeYaml = value;
+    return archiveNode->SetUInt64("reference.id", id);
 }
 }; // namespace DAVA

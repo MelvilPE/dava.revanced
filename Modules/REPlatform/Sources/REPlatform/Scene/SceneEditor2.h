@@ -65,6 +65,12 @@ public:
     const FilePath& GetScenePath() const;
     void SetScenePath(const FilePath& newScenePath);
 
+    String GetParticleEmitterNodesAsYaml();
+    bool SetParticleEmitterNodesFromYaml(String value);
+
+    String GetSceneRenderConfigAsYaml();
+    bool SetSceneRenderConfigFromYaml(String value);
+
     // commands
     bool CanUndo() const;
     bool CanRedo() const;

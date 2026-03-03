@@ -35,11 +35,6 @@ SerializationContext::~SerializationContext()
         SafeRelease(it->second);
     }
 
-    for (uint32 nodeIndex = 0; nodeIndex < particleEmitterNodes.size(); nodeIndex++)
-    {
-        SafeRelease(particleEmitterNodes[nodeIndex]);
-    }
-
     DVASSERT(materialBindings.size() == 0 && "Serialization context destroyed without resolving material bindings!");
     materialBindings.clear();
 }
@@ -97,26 +92,16 @@ bool SerializationContext::LoadPolygonGroupData()
     return resultLoaded;
 }
 
-void SerializationContext::AddParticleEmitterNode(ParticleEmitterNode* emitterNode)
+void SerializationContext::SetUpdatedNodeId(uint64 oldId, uint64 newId)
 {
-    particleEmitterNodes.push_back(emitterNode);
+    updatedNodeIds[oldId] = newId;
 }
 
-Vector<ParticleEmitterNode*> SerializationContext::GetParticleEmitterNodes()
+uint64 SerializationContext::GetUpdatedNodeId(uint64 oldId)
 {
-    return particleEmitterNodes;
-}
-
-void SerializationContext::UpdateEmitterNodeId(uint64 oldId, uint64 newId)
-{
-    updatedEmitterNodesIds[oldId] = newId;
-}
-
-uint64 SerializationContext::GetUpdatedEmitterNodeId(uint64 oldId)
-{
-    if (updatedEmitterNodesIds.find(oldId) != updatedEmitterNodesIds.end())
+    if (updatedNodeIds.find(oldId) != updatedNodeIds.end())
     {
-        return updatedEmitterNodesIds[oldId];
+        return updatedNodeIds[oldId];
     }
 
     return oldId;

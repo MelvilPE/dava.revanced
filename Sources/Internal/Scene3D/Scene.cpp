@@ -248,12 +248,12 @@ String Scene::GetSceneComponentSets()
     return sceneComponentSets;
 }
 
-String Scene::GetSceneRenderConfig()
+SceneRenderConfig* Scene::GetSceneRenderConfig()
 {
     return sceneRenderConfig;
 }
 
-String Scene::GetParticleEmitterNodes()
+Vector<ParticleEmitterNode*> Scene::GetParticleEmitterNodes()
 {
     return particleEmitterNodes;
 }
@@ -268,14 +268,32 @@ void Scene::SetSceneComponentSets(String value)
     sceneComponentSets = value;
 }
 
-void Scene::SetSceneRenderConfig(String value)
+void Scene::SetSceneRenderConfig(SceneRenderConfig* node)
 {
-    sceneRenderConfig = value;
+    node->SetScene(this);
+    sceneRenderConfig = node;
 }
 
-void Scene::SetParticleEmitterNodes(String value)
+void Scene::AddParticleEmitterNode(ParticleEmitterNode* node)
 {
-    particleEmitterNodes = value;
+    node->SetScene(this);
+    particleEmitterNodes.push_back(node);
+}
+
+void Scene::ClearParticleEmitterNodes()
+{
+    size_t size = particleEmitterNodes.size();
+    for (size_t n = 0; n < size; ++n)
+    {
+        SafeRelease(particleEmitterNodes[n]);
+    }
+
+    particleEmitterNodes.clear();
+}
+
+void Scene::ClearSceneRenderConfig()
+{
+    SafeRelease(sceneRenderConfig);
 }
 
 rhi::RenderPassConfig& Scene::GetMainPassConfig()
@@ -474,6 +492,9 @@ Scene::~Scene()
     physicsSystem = nullptr;
 #endif
 
+    ClearParticleEmitterNodes();
+    ClearSceneRenderConfig();
+
     renderSystem->PrepareForShutdown();
 
     size_t size = systems.size();
@@ -583,6 +604,32 @@ void Scene::UnregisterComponent(Entity* entity, Component* component)
     for (uint32 k = 0; k < systemsCount; ++k)
     {
         systems[k]->UnregisterComponent(entity, component);
+    }
+}
+
+void Scene::GetDataNodes(Set<DataNode*>& dataNodes)
+{
+    size_t size = components.size();
+    for (size_t k = 0; k < size; ++k)
+    {
+        components[k]->GetDataNodes(dataNodes);
+    }
+
+    size = children.size();
+    for (size_t c = 0; c < size; ++c)
+    {
+        children[c]->GetDataNodes(dataNodes);
+    }
+
+    size = particleEmitterNodes.size();
+    for (size_t n = 0; n < size; ++n)
+    {
+        dataNodes.insert(particleEmitterNodes[n]);
+    }
+
+    if (sceneRenderConfig != nullptr)
+    {
+        dataNodes.insert(sceneRenderConfig);
     }
 }
 
@@ -867,11 +914,6 @@ SceneFileV2::eError Scene::LoadScene(const DAVA::FilePath& pathname)
         ScopedPtr<SceneFileV2> file(new SceneFileV2());
         file->EnableDebugLog(false);
         ret = file->LoadScene(pathname, this);
-
-        sceneComponents = file->GetSceneComponents();
-        sceneComponentSets = file->GetSceneComponentSets();
-        sceneRenderConfig = file->GetSceneRenderConfig();
-        particleEmitterNodes = file->GetParticleEmitterNodes();
     }
 
     return ret;
@@ -897,18 +939,23 @@ SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath& pathname, bool legacy
 
 void Scene::OptimizeBeforeExport()
 {
-    List<NMaterial*> materials;
-    GetDataNodes(materials);
+    Set<DataNode*> dataNodes;
+    GetDataNodes(dataNodes);
 
-    const auto RemoveMaterialFlag = [](NMaterial* material, const FastName& flagName) {
+    const auto RemoveMaterialFlag = [](NMaterial* material, const FastName& flagName)
+    {
         if (material->HasLocalFlag(flagName))
         {
             material->RemoveFlag(flagName);
         }
     };
 
-    for (auto& mat : materials)
+    for (auto& node : dataNodes)
     {
+        NMaterial* mat = dynamic_cast<NMaterial*>(node);
+        if (mat == nullptr)
+            continue;
+
         RemoveMaterialFlag(mat, NMaterialFlagName::FLAG_ILLUMINATION_USED);
         RemoveMaterialFlag(mat, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
         RemoveMaterialFlag(mat, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);

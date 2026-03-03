@@ -13,6 +13,7 @@
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Scene3D/SceneFileV2.h"
+#include "Scene3D/SceneRenderConfig.h"
 
 namespace DAVA
 {
@@ -180,6 +181,8 @@ public:
         \brief Function to unregister component from scene. This function is called when you remove any component from any entity in scene.
      */
     void UnregisterComponent(Entity* entity, Component* component);
+
+    virtual void GetDataNodes(Set<DataNode*>& dataNodes) override;
 
     /**
      * @brief Adds a scene system to the scene with specified component mask and processing flags
@@ -506,12 +509,18 @@ public:
 
     String GetSceneComponents();
     String GetSceneComponentSets();
-    String GetSceneRenderConfig();
-    String GetParticleEmitterNodes();
+
+    SceneRenderConfig* GetSceneRenderConfig();
+    Vector<ParticleEmitterNode*> GetParticleEmitterNodes();
+
     void SetSceneComponents(String value);
     void SetSceneComponentSets(String value);
-    void SetSceneRenderConfig(String value);
-    void SetParticleEmitterNodes(String value);
+
+    void SetSceneRenderConfig(SceneRenderConfig* node);
+    void AddParticleEmitterNode(ParticleEmitterNode* node);
+
+    void ClearParticleEmitterNodes();
+    void ClearSceneRenderConfig();
 
 public: // deprecated methods
     DAVA_DEPRECATED(rhi::RenderPassConfig& GetMainPassConfig());
@@ -551,8 +560,9 @@ protected:
 
     String sceneComponents = "";
     String sceneComponentSets = "";
-    String sceneRenderConfig = "";
-    String particleEmitterNodes = "";
+
+    SceneRenderConfig* sceneRenderConfig = nullptr;
+    Vector<ParticleEmitterNode*> particleEmitterNodes;
 
     struct FixedUpdate
     {

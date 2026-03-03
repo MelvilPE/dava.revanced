@@ -370,7 +370,7 @@ void ParticleEffectComponent::SerializeNestedEmitters(KeyedArchive* archive, Ser
             }
 
             uint64 oldId = emitterDataArch->GetUInt64("emitter.id");
-            uint64 newId = serializationContext->GetUpdatedEmitterNodeId(oldId);
+            uint64 newId = serializationContext->GetUpdatedNodeId(oldId);
             emitterDataArch->SetUInt64("emitter.id", newId);
         }
 
@@ -387,77 +387,61 @@ void ParticleEffectComponent::Deserialize(KeyedArchive* archive, SerializationCo
     bool nestedEmitters = archive->GetBool("pe.nestedEmitters", false);
     if (!nestedEmitters)
     {
-        DeserializeLegacyYaml(archive, serializationContext);
-    }
-    else
-    {
-        DeserializeNestedEmitters(archive, serializationContext);
-    }
-}
-
-void ParticleEffectComponent::DeserializeLegacyYaml(KeyedArchive* archive, SerializationContext* serializationContext)
-{
-    const ParticlesQualitySettings::FilepathSelector* filepathSelector = QualitySettingsSystem::Instance()->GetParticlesQualitySettings().GetOrCreateFilepathSelector();
-    loadedVersion = archive->GetUInt32("pe.version", 0);
-    stopWhenEmpty = archive->GetBool("pe.stopWhenEmpty");
-    effectDuration = archive->GetFloat("pe.effectDuration");
-    repeatsCount = archive->GetUInt32("pe.repeatsCount");
-    clearOnRestart = archive->GetBool("pe.clearOnRestart");
-    uint32 emittersCount = archive->GetUInt32("pe.emittersCount");
-    startFromTime = archive->GetFloat("pe.startFromTime");
-    KeyedArchive* emittersArch = archive->GetArchive("pe.emitters");
-    emitterInstances.resize(emittersCount);
-    for (uint32 i = 0; i < emittersCount; ++i)
-    {
-        emitterInstances[i].ConstructInplace(this);
-
-        KeyedArchive* emitterArch = emittersArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
-        String filename = emitterArch->GetString("emitter.filename");
-        if (!filename.empty())
-        {
-            emitterInstances[i]->SetFilePath(serializationContext->GetScenePath() + filename);
-            FilePath qualityFilepath = emitterInstances[i]->GetFilePath();
-            if (filepathSelector)
-            {
-                qualityFilepath = filepathSelector->SelectFilepath(emitterInstances[i]->GetFilePath());
-            }
-            emitterInstances[i]->SetEmitter(ParticleEmitter::LoadEmitter(qualityFilepath));
-        }
-        else
-        {
-            emitterInstances[i]->SetEmitter(new ParticleEmitter());
-        }
-        emitterInstances[i]->SetSpawnPosition(emitterArch->GetVector3("emitter.position"));
-    }
-    uint32 savedFlags = RenderObject::SERIALIZATION_CRITERIA & archive->GetUInt32("ro.flags", RenderObject::VISIBLE);
-    effectRenderObject->SetFlags(savedFlags | (effectRenderObject->GetFlags() & ~PARTICLE_FLAGS_SERIALIZATION_CRITERIA));
-    RebuildEffectModifiables();
-}
-
-void ParticleEffectComponent::DeserializeNestedEmitters(KeyedArchive* archive, SerializationContext* serializationContext)
-{
-    nestedEmittersComponent = archive->SaveToYamlString();
-
-    if (!archive->IsKeyExists("pe.updatedFromGame"))
-    {
-        Logger::Warning("[ParticleEffectComponent::DeserializeNestedEmitters] Effect not updated from game - skipping load of nested emitters");
+        DeserializeLoadEmitters(archive, serializationContext, eLoadway::LEGACY);
         return;
     }
 
-    updatedFromGame = archive->GetBool("pe.updatedFromGame");
+    nestedEmittersComponent = archive->SaveToYamlString();
 
-    // If we hit this point, it means that we already updated particles via particles god library (pe.updatedFromGame)
-    // Then we can try to reload the particle (mainly to keep original rendering)
+    ParticleMeshesComponent::SetupParticleMeshesComponent(entity, archive, serializationContext);
+
+    eLoadway loadway = eLoadway::NESTED;
+    if (archive->IsKeyExists("pe.updatedFromGame"))
+    {
+        loadway = eLoadway::NESTED_PARTICLES_GOD;
+        updatedFromGame = archive->GetBool("pe.updatedFromGame");
+    }
+
+    DeserializeLoadEmitters(archive, serializationContext, loadway);
+}
+
+void ParticleEffectComponent::DeserializeLoadEmitters(KeyedArchive* archive, SerializationContext* serializationContext, eLoadway loadway)
+{
+    if (loadway == eLoadway::NESTED)
+    {
+        Logger::Warning("[ParticleEffectComponent::DeserializeLoadEmitters] nested emitter without particles god - skipping loading emitters");
+        return;
+    }
 
     const ParticlesQualitySettings::FilepathSelector* filepathSelector = QualitySettingsSystem::Instance()->GetParticlesQualitySettings().GetOrCreateFilepathSelector();
+
     loadedVersion = archive->GetUInt32("pe.version", 0);
     stopWhenEmpty = archive->GetBool("pe.stopWhenEmpty");
     effectDuration = archive->GetFloat("pe.effectDuration");
     repeatsCount = archive->GetUInt32("pe.repeatsCount");
     clearOnRestart = archive->GetBool("pe.clearOnRestart");
     startFromTime = archive->GetFloat("pe.startFromTime");
-    Vector<VariantType> emitters = archive->GetVariantVector("pe.emitters");
-    uint32 emittersCount = static_cast<uint32>(emitters.size());
+
+    uint32 emittersCount = 0;
+    Vector<VariantType> emitters;
+    if (loadway == eLoadway::NESTED_PARTICLES_GOD)
+    {
+        emitters = archive->GetVariantVector("pe.emitters");
+        emittersCount = static_cast<uint32>(emitters.size());
+    }
+    if (loadway == eLoadway::LEGACY)
+    {
+        emittersCount = archive->GetUInt32("pe.emittersCount");
+        KeyedArchive* legacy = archive->GetArchive("pe.emitters");
+        for (uint32 emitterIndex = 0; emitterIndex < emittersCount; ++emitterIndex)
+        {
+            KeyedArchive* emitterArch = legacy->GetArchive(KeyedArchive::GenKeyFromIndex(emitterIndex));
+            VariantType emitter;
+            emitter.SetKeyedArchive(emitterArch);
+            emitters.push_back(emitter);
+        }
+    }
+
     emitterInstances.resize(emittersCount);
     for (uint32 emitterIndex = 0; emitterIndex < emittersCount; ++emitterIndex)
     {

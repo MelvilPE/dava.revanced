@@ -7,6 +7,7 @@
 #include "Particles/ParticleRenderObject.h"
 #include "Particles/ParticleEmitterInstance.h"
 #include "Particles/Gen2/ParticleEmitterNode.h"
+#include "Scene3D/Components/ParticleMeshesComponent.h"
 #include "Reflection/Reflection.h"
 #include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
@@ -32,15 +33,20 @@ public:
         STATE_STOPPED //effect is completely stopped and removed from active lists
     };
 
+    enum eLoadway : uint32
+    {
+        LEGACY,
+        NESTED,
+        NESTED_PARTICLES_GOD
+    };
+
     ParticleEffectComponent();
     ~ParticleEffectComponent();
 
     Component* Clone(Entity* toEntity) override;
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
-
-    void DeserializeLegacyYaml(KeyedArchive* archive, SerializationContext* serializationContext);
-    void DeserializeNestedEmitters(KeyedArchive* archive, SerializationContext* serializationContext);
+    void DeserializeLoadEmitters(KeyedArchive* archive, SerializationContext* serializationContext, eLoadway loadway);
 
     void SerializeLegacyYaml(KeyedArchive* archive, SerializationContext* serializationContext);
     void SerializeNestedEmitters(KeyedArchive* archive, SerializationContext* serializationContext);

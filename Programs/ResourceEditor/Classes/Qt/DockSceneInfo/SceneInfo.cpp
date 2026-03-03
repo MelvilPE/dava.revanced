@@ -986,14 +986,14 @@ void SceneInfo::InitializeParticleEmitterNodesSection()
 void SceneInfo::RefreshSceneRenderConfigSection()
 {
     QtPropertyData* header = GetInfoHeader("SceneRenderConfig");
-    QString summary = QString("Size: %1 characters").arg(activeScene->GetSceneRenderConfig().size());
+    QString summary = QString("Size: %1 characters").arg(activeScene->GetSceneRenderConfigAsYaml().size());
     SetChild("SceneRenderConfig", summary, header);
 }
 
 void SceneInfo::RefreshParticleEmitterNodesSection()
 {
     QtPropertyData* header = GetInfoHeader("ParticleEmitterNodes");
-    QString summary = QString("Size: %1 characters").arg(activeScene->GetParticleEmitterNodes().size());
+    QString summary = QString("Size: %1 characters").arg(activeScene->GetParticleEmitterNodesAsYaml().size());
     SetChild("ParticleEmitterNodes", summary, header);
 }
 
@@ -1052,7 +1052,7 @@ void SceneInfo::EditSceneRenderConfig()
     QVBoxLayout* layout = new QVBoxLayout(&dialog);
 
     QPlainTextEdit* editor = new QPlainTextEdit(&dialog);
-    editor->setPlainText(QString::fromStdString(activeScene->GetSceneRenderConfig()));
+    editor->setPlainText(QString::fromStdString(activeScene->GetSceneRenderConfigAsYaml()));
     layout->addWidget(editor);
 
     QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
@@ -1063,7 +1063,7 @@ void SceneInfo::EditSceneRenderConfig()
 
     if (dialog.exec() == QDialog::Accepted)
     {
-        activeScene->SetSceneRenderConfig(editor->toPlainText().toStdString());
+        activeScene->SetSceneRenderConfigFromYaml(editor->toPlainText().toStdString());
         activeScene->MarkAsChanged();
         RefreshSceneRenderConfigSection();
     }
@@ -1076,7 +1076,7 @@ void SceneInfo::EditParticleEmitterNodes()
     QVBoxLayout* layout = new QVBoxLayout(&dialog);
 
     QPlainTextEdit* editor = new QPlainTextEdit(&dialog);
-    editor->setPlainText(QString::fromStdString(activeScene->GetParticleEmitterNodes()));
+    editor->setPlainText(QString::fromStdString(activeScene->GetParticleEmitterNodesAsYaml()));
     layout->addWidget(editor);
 
     QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
@@ -1087,7 +1087,7 @@ void SceneInfo::EditParticleEmitterNodes()
 
     if (dialog.exec() == QDialog::Accepted)
     {
-        activeScene->SetParticleEmitterNodes(editor->toPlainText().toStdString());
+        activeScene->SetParticleEmitterNodesFromYaml(editor->toPlainText().toStdString());
         activeScene->MarkAsChanged();
         RefreshParticleEmitterNodesSection();
     }

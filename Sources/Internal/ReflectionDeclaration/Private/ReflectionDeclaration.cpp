@@ -23,6 +23,7 @@
 #include "Scene3D/Components/LightComponent.h"
 #include "Scene3D/Components/MotionComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
+#include "Scene3D/Components/ParticleMeshesComponent.h"
 #include "Scene3D/Components/QualitySettingsComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/SkeletonComponent.h"
@@ -40,6 +41,7 @@
 #include "Scene3D/Components/TextComponent.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Lod/LodComponent.h"
+#include "Scene3D/SceneRenderConfig.h"
 #include "Entity/Component.h"
 #include "Entity/ComponentManager.h"
 #include "Particles/ParticleEmitterInstance.h"
@@ -313,6 +315,7 @@ void RegisterPermanentNames()
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(DebugRenderComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(LightComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(ParticleEffectComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(ParticleMeshesComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(ParticleEmitterInstance);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(ParticleLayer);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(ParticleForce);

@@ -164,22 +164,18 @@ public:
     eSavedSceneMethod GetSavedSceneMethod();
     void SetSavedSceneMethod(eSavedSceneMethod method);
 
-    void AddParticleEmitterNode(ParticleEmitterNode* emitterNode);
-    Vector<ParticleEmitterNode*> GetParticleEmitterNodes();
-
     /**
-     * @brief Used while serializing particle emitter nodes and particle effect component
      * @brief We update old ids with new ids to avoid collisions with other data nodes
      * @param oldId Old particle emitter node id
      * @param newId New particle emitter node id
      */
-    void UpdateEmitterNodeId(uint64 oldId, uint64 newId);
+    void SetUpdatedNodeId(uint64 oldId, uint64 newId);
     /**
      * @brief Used while serializing particle emitter nodes and particle effect component
      * @param oldId Old particle emitter node id
      * @return newId if found with oldId or original oldId
      */
-    uint64 GetUpdatedEmitterNodeId(uint64 oldId);
+    uint64 GetUpdatedNodeId(uint64 oldId);
 
 private:
     struct MaterialBinding
@@ -193,7 +189,7 @@ private:
     Vector<MaterialBinding> materialBindings;
     Map<PolygonGroup*, PolygonGroupLoadInfo> loadedPolygonGroups;
     Vector<ParticleEmitterNode*> particleEmitterNodes;
-    Map<uint64, uint64> updatedEmitterNodesIds;
+    Map<uint64, uint64> updatedNodeIds;
 
     Scene* scene = nullptr;
     FilePath rootNodePathName;

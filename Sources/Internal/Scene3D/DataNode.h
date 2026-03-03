@@ -47,13 +47,13 @@ public:
      * @brief Get node identifier
      * @return Node identifier
      */
-    uint64 GetNodeID() const;
+    virtual uint64 GetNodeID() const;
 
     /**
      * @brief Set node identifier
      * @param id Identifier to set
      */
-    void SetNodeID(uint64 id);
+    virtual void SetNodeID(uint64 id);
 
     /**
      * @brief Set runtime flag

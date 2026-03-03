@@ -5,7 +5,7 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
-#include "Scene3D/DataNode.h"
+#include "Scene3D/ArchiveDataNode.h"
 #include "Reflection/ReflectionRegistrator.h"
 #include "Render/Shader.h"
 
@@ -20,26 +20,24 @@ class Scene;
 class DataNode;
 class SerializationContext;
 
-class ParticleEmitterNode : public DataNode
+class ParticleEmitterNode : public ArchiveDataNode
 {
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_PARTICLEEMITTERNODE)
 
 public:
-    ParticleEmitterNode();
-    ~ParticleEmitterNode();
+    void GetMeshGeometryIds(Vector<uint64>& output);
+    void UpdateMeshGeometryIds(SerializationContext* serializationContext);
 
-    void Load(KeyedArchive* archive, SerializationContext* serializationContext) override;
-    void Save(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    bool IsClone();
 
-    uint64 GetParticleEmitterNodeID();
+    uint64 GetReferenceId();
+    void SetReferenceId(uint64 id);
 
-    DAVA_VIRTUAL_REFLECTION(ParticleEmitterNode, DataNode);
-
-    String GetNodeYaml();
-    void SetNodeYaml(String value);
+    DAVA_VIRTUAL_REFLECTION(ParticleEmitterNode, ArchiveDataNode);
 
 private:
-    String nodeYaml;
+    void GetMeshGeometryIdsRecursively(Vector<uint64>& output, KeyedArchive* archive);
+    void UpdateMeshGeometryIdsRecursively(KeyedArchive* archive, SerializationContext* serializationContext);
 };
 }; // namespace DAVA
 
