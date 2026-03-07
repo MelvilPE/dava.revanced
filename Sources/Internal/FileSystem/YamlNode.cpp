@@ -1230,8 +1230,8 @@ bool YamlNode::InitMapFromVariantType(const VariantType& varType)
     case VariantType::TYPE_AABBOX2:
     {
         const AABBox2& box2 = varType.AsAABBox2();
-        auto& min = VariantType(box2.min);
-        auto& max = VariantType(box2.max);
+        VariantType min(box2.min);
+        VariantType max(box2.max);
         RefPtr<YamlNode> arrayElementNodeValue = CreateMapNode(true, MR_BLOCK_REPRESENTATION);
         arrayElementNodeValue->InternalAddNodeToMap(min.GetTypeName(), CreateNodeFromVariantType(min), false);
         RefPtr<YamlNode> arrayElementNodeValue1 = CreateMapNode(true, MR_BLOCK_REPRESENTATION);
@@ -1243,8 +1243,8 @@ bool YamlNode::InitMapFromVariantType(const VariantType& varType)
     case VariantType::TYPE_AABBOX3:
     {
         const AABBox3& box3 = varType.AsAABBox3();
-        auto& min = VariantType(box3.min);
-        auto& max = VariantType(box3.max);
+        VariantType min(box3.min);
+        VariantType max(box3.max);
         RefPtr<YamlNode> arrayElementNodeValue = CreateMapNode(true, MR_BLOCK_REPRESENTATION);
         arrayElementNodeValue->InternalAddNodeToMap(min.GetTypeName(), CreateNodeFromVariantType(min), false);
         RefPtr<YamlNode> arrayElementNodeValue1 = CreateMapNode(true, MR_BLOCK_REPRESENTATION);
