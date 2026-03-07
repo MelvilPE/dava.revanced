@@ -5,13 +5,19 @@ set          ( WARNINGS_AS_ERRORS true )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include      ( CMake-common )
 
+if (LINUX)
+    dava_add_definitions(-DDISABLE_NATIVE_MOVIEVIEW)
+    dava_add_definitions(-DDISABLE_NATIVE_TEXTFIELD)
+    dava_add_definitions(-DDISABLE_NATIVE_WEBVIEW)
+endif()
+
 find_dava_module( NetworkHelpers )
 find_dava_module( LoggerService )
 find_dava_module( MemoryProfilerService )
 find_dava_module( DocDirSetup )
 find_dava_module( TestCharacterController )
 
-find_package( DavaFramework REQUIRED COMPONENTS DAVA_DISABLE_AUTOTESTS "Sound" )
+find_package( DavaFramework REQUIRED COMPONENTS DAVA_DISABLE_AUTOTESTS )
 
 find_dava_module( ScenePerformanceTests )
 find_dava_module( Version )
