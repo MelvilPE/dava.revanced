@@ -630,14 +630,18 @@ void QualitySettingsDialog::ApplyTextureQuality()
 {
     DAVA::Set<DAVA::NMaterial*> materialList;
 
-    DAVA::List<DAVA::NMaterial*> materials;
-    scene->GetDataNodes(materials);
+    DAVA::List<DAVA::DataNode*> dataNodes;
+    scene->GetDataNodes(dataNodes);
 
     DAVA::List<DAVA::Texture*> textures;
 
-    for (auto& material : materials)
+    for (auto& dataNode : dataNodes)
     {
-        materialList.insert(material);
+        DAVA::NMaterial* material = dynamic_cast<DAVA::NMaterial*>(dataNode);
+        if (material)
+        {
+            materialList.insert(material);
+        }
     }
 
     DAVA::TexturesMap textureMap;
@@ -682,12 +686,16 @@ void QualitySettingsDialog::ApplyTextureQuality()
 
 void QualitySettingsDialog::ApplyMaterialQuality()
 {
-    DAVA::List<DAVA::NMaterial*> materials;
-    scene->GetDataNodes(materials);
+    DAVA::List<DAVA::DataNode*> dataNodes;
+    scene->GetDataNodes(dataNodes);
 
-    for (auto material : materials)
+    for (auto dataNode : dataNodes)
     {
-        material->InvalidateRenderVariants();
+        DAVA::NMaterial* material = dynamic_cast<DAVA::NMaterial*>(dataNode);
+        if (material)
+        {
+            material->InvalidateRenderVariants();
+        }
     }
 
     scene->renderSystem->SetForceUpdateLights();
