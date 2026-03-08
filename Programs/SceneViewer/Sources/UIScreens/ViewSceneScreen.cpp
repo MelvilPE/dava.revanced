@@ -424,11 +424,16 @@ void ViewSceneScreen::OnButtonReloadShaders(DAVA::BaseObject* caller, void* para
     {
         ShaderDescriptorCache::ReloadShaders();
 
-        List<NMaterial*> materials;
-        scene->GetDataNodes(materials);
-        for (auto material : materials)
+        Set<DataNode*> dataNodes;
+        scene->GetDataNodes(dataNodes);
+
+        for (auto& dataNode : dataNodes)
         {
-            material->InvalidateRenderVariants();
+            DAVA::NMaterial* material = dynamic_cast<DAVA::NMaterial*>(dataNode);
+            if (material)
+            {
+                material->InvalidateRenderVariants();
+            }
         }
 
         const auto particleInstances = scene->particleEffectSystem->GetMaterialInstances();

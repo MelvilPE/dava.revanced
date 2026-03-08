@@ -630,7 +630,7 @@ void QualitySettingsDialog::ApplyTextureQuality()
 {
     DAVA::Set<DAVA::NMaterial*> materialList;
 
-    DAVA::List<DAVA::DataNode*> dataNodes;
+    DAVA::Set<DAVA::DataNode*> dataNodes;
     scene->GetDataNodes(dataNodes);
 
     DAVA::List<DAVA::Texture*> textures;
@@ -686,7 +686,7 @@ void QualitySettingsDialog::ApplyTextureQuality()
 
 void QualitySettingsDialog::ApplyMaterialQuality()
 {
-    DAVA::List<DAVA::DataNode*> dataNodes;
+    DAVA::Set<DAVA::DataNode*> dataNodes;
     scene->GetDataNodes(dataNodes);
 
     for (auto dataNode : dataNodes)
