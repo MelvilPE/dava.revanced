@@ -10,9 +10,6 @@ namespace DAVA
 
 #if defined(__DAVAENGINE_WINDOWS__)
 
-//-----------------------------------------------------------------------------
-//Atomic template class realization using native Windows functions
-//-----------------------------------------------------------------------------
 namespace Detail
 {
 template <size_t N>
@@ -41,78 +38,76 @@ struct TypeSelector<sizeof(LONGLONG)>
 
 void DVMemBarrier();
 
-//atomic increment overloads
+// 8-bit
 inline CHAR AtomicIncrement(volatile CHAR* value)
 {
-    CHAR initial = ::_InterlockedExchangeAdd8(value, 1);
-    return initial + 1;
+    return (CHAR)__sync_add_and_fetch((volatile char*)value, 1);
 }
-inline SHORT AtomicIncrement(volatile SHORT* value)
-{
-    return ::InterlockedIncrement16(value);
-}
-inline LONG AtomicIncrement(volatile LONG* value)
-{
-    return ::InterlockedIncrement(value);
-}
-inline LONGLONG AtomicIncrement(volatile LONGLONG* value)
-{
-    return ::InterlockedIncrement64(value);
-}
-
-//atomic decrement overloads
 inline CHAR AtomicDecrement(volatile CHAR* value)
 {
-    CHAR initial = ::_InterlockedExchangeAdd8(value, -1);
-    return initial - 1;
+    return (CHAR)__sync_sub_and_fetch((volatile char*)value, 1);
+}
+inline CHAR AtomicSwap(volatile CHAR* target, CHAR desired)
+{
+    return (CHAR)__sync_lock_test_and_set((volatile char*)target, desired);
+}
+inline CHAR AtomicCAS(volatile CHAR* target, CHAR expected, CHAR desired)
+{
+    return (CHAR)__sync_val_compare_and_swap((volatile char*)target, expected, desired);
+}
+
+// 16-bit
+inline SHORT AtomicIncrement(volatile SHORT* value)
+{
+    return (SHORT)__sync_add_and_fetch((volatile short*)value, 1);
 }
 inline SHORT AtomicDecrement(volatile SHORT* value)
 {
-    return ::InterlockedDecrement16(value);
-}
-inline LONG AtomicDecrement(volatile LONG* value)
-{
-    return ::InterlockedDecrement(value);
-}
-inline LONGLONG AtomicDecrement(volatile LONGLONG* value)
-{
-    return ::InterlockedDecrement64(value);
-}
-
-//atomic swap overloads
-inline CHAR AtomicSwap(volatile CHAR* target, CHAR desired)
-{
-    return ::InterlockedExchange8(target, desired);
+    return (SHORT)__sync_sub_and_fetch((volatile short*)value, 1);
 }
 inline SHORT AtomicSwap(volatile SHORT* target, SHORT desired)
 {
-    return ::InterlockedExchange16(target, desired);
-}
-inline LONG AtomicSwap(volatile LONG* target, LONG desired)
-{
-    return ::InterlockedExchange(target, desired);
-}
-inline LONGLONG AtomicSwap(volatile LONGLONG* target, LONGLONG desired)
-{
-    return ::InterlockedExchange64(target, desired);
-}
-
-//atomic cas overloads
-inline CHAR AtomicCAS(volatile CHAR* target, CHAR expected, CHAR desired)
-{
-    return ::_InterlockedCompareExchange8(target, desired, expected);
+    return (SHORT)__sync_lock_test_and_set((volatile short*)target, desired);
 }
 inline SHORT AtomicCAS(volatile SHORT* target, SHORT expected, SHORT desired)
 {
-    return ::InterlockedCompareExchange16(target, desired, expected);
+    return (SHORT)__sync_val_compare_and_swap((volatile short*)target, expected, desired);
+}
+
+// 32-bit
+inline LONG AtomicIncrement(volatile LONG* value)
+{
+    return (LONG)__sync_add_and_fetch((volatile long*)value, 1);
+}
+inline LONG AtomicDecrement(volatile LONG* value)
+{
+    return (LONG)__sync_sub_and_fetch((volatile long*)value, 1);
+}
+inline LONG AtomicSwap(volatile LONG* target, LONG desired)
+{
+    return (LONG)__sync_lock_test_and_set((volatile long*)target, desired);
 }
 inline LONG AtomicCAS(volatile LONG* target, LONG expected, LONG desired)
 {
-    return ::InterlockedCompareExchange(target, desired, expected);
+    return (LONG)__sync_val_compare_and_swap((volatile long*)target, expected, desired);
+}
+
+// 64-bit
+inline LONGLONG AtomicIncrement(volatile LONGLONG* value)
+{
+    return (LONGLONG)__sync_add_and_fetch((volatile long long*)value, 1);
+}
+inline LONGLONG AtomicDecrement(volatile LONGLONG* value)
+{
+    return (LONGLONG)__sync_sub_and_fetch((volatile long long*)value, 1);
+}
+inline LONGLONG AtomicSwap(volatile LONGLONG* target, LONGLONG desired)
+{
+    return (LONGLONG)__sync_lock_test_and_set((volatile long long*)target, desired);
 }
 inline LONGLONG AtomicCAS(volatile LONGLONG* target, LONGLONG expected, LONGLONG desired)
 {
-    return ::InterlockedCompareExchange64(target, desired, expected);
+    return (LONGLONG)__sync_val_compare_and_swap((volatile long long*)target, expected, desired);
 }
 
 } //  namespace Detail
@@ -143,7 +138,6 @@ T Atomic<T>::Increment() DAVA_NOEXCEPT
 {
     using Type = typename Detail::TypeSelector<sizeof(T)>::Type;
     Type* val = reinterpret_cast<Type*>(&value);
-
     T result = Cast(Detail::AtomicIncrement(val));
     return result;
 }
@@ -153,7 +147,6 @@ T Atomic<T>::Decrement() DAVA_NOEXCEPT
 {
     using Type = typename Detail::TypeSelector<sizeof(T)>::Type;
     Type* val = reinterpret_cast<Type*>(&value);
-
     T result = Cast(Detail::AtomicDecrement(val));
     return result;
 }
@@ -164,7 +157,6 @@ T Atomic<T>::Swap(T desired) DAVA_NOEXCEPT
     using Type = typename Detail::TypeSelector<sizeof(T)>::Type;
     Type* val = reinterpret_cast<Type*>(&value);
     Type des = static_cast<Type>(desired);
-
     T result = Cast(Detail::AtomicSwap(val, des));
     return result;
 }
@@ -176,7 +168,6 @@ bool Atomic<T>::CompareAndSwap(T expected, T desired) DAVA_NOEXCEPT
     Type* val = reinterpret_cast<Type*>(&value);
     Type exp = static_cast<Type>(expected);
     Type des = static_cast<Type>(desired);
-
     T result = Cast(Detail::AtomicCAS(val, exp, des));
     return result == expected;
 }
@@ -194,7 +185,6 @@ bool Atomic<bool>::Cast(Y val)
 {
     return val != 0;
 }
-
 
 #endif //  __DAVAENGINE_WINDOWS__
 
