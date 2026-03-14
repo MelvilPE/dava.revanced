@@ -387,7 +387,7 @@ void ParticleEffectComponent::Deserialize(KeyedArchive* archive, SerializationCo
     bool nestedEmitters = archive->GetBool("pe.nestedEmitters", false);
     if (!nestedEmitters)
     {
-        DeserializeLoadEmitters(archive, serializationContext, eLoadway::LEGACY);
+        DeserializeLoadEmitters(archive, serializationContext);
         return;
     }
 
@@ -395,24 +395,15 @@ void ParticleEffectComponent::Deserialize(KeyedArchive* archive, SerializationCo
 
     ParticleMeshesComponent::SetupParticleMeshesComponent(entity, archive, serializationContext);
 
-    eLoadway loadway = eLoadway::NESTED;
     if (archive->IsKeyExists("pe.updatedFromGame"))
     {
-        loadway = eLoadway::NESTED_PARTICLES_GOD;
         updatedFromGame = archive->GetBool("pe.updatedFromGame");
+        DeserializeLoadEmitters(archive, serializationContext);
     }
-
-    DeserializeLoadEmitters(archive, serializationContext, loadway);
 }
 
-void ParticleEffectComponent::DeserializeLoadEmitters(KeyedArchive* archive, SerializationContext* serializationContext, eLoadway loadway)
+void ParticleEffectComponent::DeserializeLoadEmitters(KeyedArchive* archive, SerializationContext* serializationContext)
 {
-    if (loadway == eLoadway::NESTED)
-    {
-        Logger::Warning("[ParticleEffectComponent::DeserializeLoadEmitters] nested emitter without particles god - skipping loading emitters");
-        return;
-    }
-
     const ParticlesQualitySettings::FilepathSelector* filepathSelector = QualitySettingsSystem::Instance()->GetParticlesQualitySettings().GetOrCreateFilepathSelector();
 
     loadedVersion = archive->GetUInt32("pe.version", 0);
@@ -424,15 +415,17 @@ void ParticleEffectComponent::DeserializeLoadEmitters(KeyedArchive* archive, Ser
 
     uint32 emittersCount = 0;
     Vector<VariantType> emitters;
-    if (loadway == eLoadway::NESTED_PARTICLES_GOD)
+
+    VariantType* emittersAny = archive->GetVariant("pe.emitters");
+    if (emittersAny->GetType() == VariantType::TYPE_VARIANT_VECTOR)
     {
-        emitters = archive->GetVariantVector("pe.emitters");
+        emitters = emittersAny->AsVariantVector();
         emittersCount = static_cast<uint32>(emitters.size());
     }
-    if (loadway == eLoadway::LEGACY)
+    else
     {
         emittersCount = archive->GetUInt32("pe.emittersCount");
-        KeyedArchive* legacy = archive->GetArchive("pe.emitters");
+        KeyedArchive* legacy = emittersAny->AsKeyedArchive();
         for (uint32 emitterIndex = 0; emitterIndex < emittersCount; ++emitterIndex)
         {
             KeyedArchive* emitterArch = legacy->GetArchive(KeyedArchive::GenKeyFromIndex(emitterIndex));

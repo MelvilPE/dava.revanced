@@ -54,6 +54,18 @@ void ParticleMeshesComponent::AddMesh(PolygonGroup* mesh)
 
 void ParticleMeshesComponent::SetupParticleMeshesComponent(Entity* entity, KeyedArchive* archive, SerializationContext* serializationContext)
 {
+    uint32 emittersCount = 0;
+    Vector<VariantType> emitters;
+
+    VariantType* emittersAny = archive->GetVariant("pe.emitters");
+    if (emittersAny->GetType() != VariantType::TYPE_VARIANT_VECTOR)
+    {
+        return;
+    }
+    
+    emitters = emittersAny->AsVariantVector();
+    emittersCount = static_cast<uint32>(emitters.size());
+
     Scene* scene = serializationContext->GetScene();
     Vector<ParticleEmitterNode*> nodes = scene->GetParticleEmitterNodes();
 
@@ -64,7 +76,6 @@ void ParticleMeshesComponent::SetupParticleMeshesComponent(Entity* entity, Keyed
         nodeMap[node->GetNodeID()] = node;
     }
 
-    Vector<VariantType> emitters = archive->GetVariantVector("pe.emitters");
     Vector<uint64> meshGeometryIds;
 
     for (auto& emitterVar : emitters)

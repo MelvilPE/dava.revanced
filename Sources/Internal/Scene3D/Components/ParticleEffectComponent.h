@@ -33,20 +33,20 @@ public:
         STATE_STOPPED //effect is completely stopped and removed from active lists
     };
 
-    enum eLoadway : uint32
-    {
-        LEGACY,
-        NESTED,
-        NESTED_PARTICLES_GOD
-    };
-
     ParticleEffectComponent();
     ~ParticleEffectComponent();
 
     Component* Clone(Entity* toEntity) override;
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
+
+    /**
+     * @brief We deserialize ParticleEffectComponent in 3 different ways:
+     * Legacy when it's using only yaml files
+     * Nested when it's using only nested emitters
+     * Nested with ParticlesGod - means updated particles from game, with both legacy and nested at same time
+     */
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
-    void DeserializeLoadEmitters(KeyedArchive* archive, SerializationContext* serializationContext, eLoadway loadway);
+    void DeserializeLoadEmitters(KeyedArchive* archive, SerializationContext* serializationContext);
 
     void SerializeLegacyYaml(KeyedArchive* archive, SerializationContext* serializationContext);
     void SerializeNestedEmitters(KeyedArchive* archive, SerializationContext* serializationContext);
