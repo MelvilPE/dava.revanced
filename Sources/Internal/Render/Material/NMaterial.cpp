@@ -78,7 +78,7 @@ MaterialConfig::MaterialConfig()
     , localPresets(16)
 {
     customCullMode = rhi::CullMode::CULL_MODE_COUNT;
-    forceQuality = FastName(NMaterialSerializationKey::ForceQuality);
+    forceQuality = FastName("DEFAULT");
 }
 MaterialConfig::MaterialConfig(const MaterialConfig& config)
     : localProperties(16)
@@ -87,7 +87,7 @@ MaterialConfig::MaterialConfig(const MaterialConfig& config)
     , localPresets(16)
 {
     customCullMode = rhi::CullMode::CULL_MODE_COUNT;
-    forceQuality = FastName(NMaterialSerializationKey::ForceQuality);
+    forceQuality = FastName("DEFAULT");
     operator=(config);
 }
 
