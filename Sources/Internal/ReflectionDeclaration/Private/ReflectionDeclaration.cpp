@@ -39,6 +39,7 @@
 #include "Scene3D/Components/GeoDecalComponent.h"
 #include "Scene3D/Components/SlotComponent.h"
 #include "Scene3D/Components/TextComponent.h"
+#include "Scene3D/Components/MapBorderComponent.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Lod/LodComponent.h"
 #include "Scene3D/SceneRenderConfig.h"
@@ -341,6 +342,7 @@ void RegisterPermanentNames()
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(LodComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(SlotComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(TextComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(MapBorderComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(ActionComponent::Action);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(PolygonGroup);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(RenderObject);

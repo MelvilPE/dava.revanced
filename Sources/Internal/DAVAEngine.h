@@ -231,6 +231,7 @@
 #include "Scene3D/Components/TextComponent.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
 #include "Scene3D/Components/GeoDecalComponent.h"
+#include "Scene3D/Components/MapBorderComponent.h"
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
 #include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
