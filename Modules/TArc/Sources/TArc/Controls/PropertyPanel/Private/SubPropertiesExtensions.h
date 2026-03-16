@@ -12,6 +12,7 @@ public:
 private:
     void ExposeColorChildren(const std::shared_ptr<PropertyNode>& parent, Vector<std::shared_ptr<PropertyNode>>& children) const;
     void ExposeRectChildren(const std::shared_ptr<PropertyNode>& parent, Vector<std::shared_ptr<PropertyNode>>& children) const;
+    void ExposeAABBox2Children(const std::shared_ptr<PropertyNode>& parent, Vector<std::shared_ptr<PropertyNode>>& children) const;
     void ExposeAABBox3Children(const std::shared_ptr<PropertyNode>& parent, Vector<std::shared_ptr<PropertyNode>>& children) const;
 
     template <typename TVector>

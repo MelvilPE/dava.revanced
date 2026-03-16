@@ -9,6 +9,7 @@
 
 #include <Math/Vector.h>
 #include <Math/Rect.h>
+#include <Math/AABBox2.h>
 #include <Math/AABBox3.h>
 #include <Math/Color.h>
 #include <Base/BaseTypes.h>
@@ -332,6 +333,61 @@ struct RectTraits
     {
         DVASSERT(false);
         return Rect();
+    }
+
+    static Any GetParseResult(const Vector<float32>& value)
+    {
+        DVASSERT(false);
+        return value;
+    }
+
+    static bool IsReadOnly()
+    {
+        return true;
+    }
+
+    static String GetParseErrorMessage()
+    {
+        DVASSERT(false);
+        return "";
+    }
+};
+struct AABBox2Traits
+{
+    using Type = AABBox2;
+    static int32 GetFieldIndex(const FastName& /*name*/)
+    {
+        return -1;
+    }
+
+    static String ToString(const AABBox2& v, int32 /*fieldIndex*/, const Reflection& ref)
+    {
+        int32 accuracy = 6;
+        const M::FloatNumberAccuracy* accuracyMeta = ref.GetMeta<M::FloatNumberAccuracy>();
+        if (accuracyMeta != nullptr)
+        {
+            accuracy = accuracyMeta->accuracy;
+        }
+
+        String minX, minY, maxX, maxY;
+        FloatToString(v.min.x, accuracy, minX);
+        FloatToString(v.min.y, accuracy, minY);
+        FloatToString(v.max.x, accuracy, maxX);
+        FloatToString(v.max.y, accuracy, maxY);
+
+        return Format("[ %s, %s,\n %s, %s]", minX.c_str(), minY.c_str(), maxX.c_str(), maxY.c_str());
+    }
+
+    static uint32 GetMaxComponentCount()
+    {
+        DVASSERT(false);
+        return 0;
+    }
+
+    static AABBox2 CombineValue(const Any& v, const AABBox2& /*prevValue*/, int32 /*fieldIndex*/)
+    {
+        DVASSERT(false);
+        return AABBox2();
     }
 
     static Any GetParseResult(const Vector<float32>& value)
@@ -713,6 +769,83 @@ private:
     }
 };
 
+struct AABBox2ChannelTraits : public NotReadOnlyTraits
+{
+public:
+    using Type = AABBox2;
+
+    static int32 GetFieldIndex(const FastName& name)
+    {
+        if (name == boxMinX)
+            return 0;
+        else if (name == boxMinY)
+            return 1;
+        else if (name == boxMaxX)
+            return 2;
+        else if (name == boxMaxY)
+            return 3;
+
+        return -1;
+    }
+
+    static String ToString(const AABBox2& value, int32 fieldIndex, const Reflection& ref)
+    {
+        int32 accuracy = 6;
+        const M::FloatNumberAccuracy* accuracyMeta = ref.GetMeta<M::FloatNumberAccuracy>();
+        if (accuracyMeta != nullptr)
+        {
+            accuracy = accuracyMeta->accuracy;
+        }
+
+        String result;
+        FloatToString(*GetComponentPointer<const AABBox2, const float32>(value, fieldIndex), accuracy, result);
+        return result;
+    }
+
+    static uint32 GetMaxComponentCount()
+    {
+        return 1;
+    }
+
+    static AABBox2 CombineValue(const Any& v, const AABBox2& prevValue, int32 fieldIndex)
+    {
+        AABBox2 result = prevValue;
+        *GetComponentPointer<AABBox2, float32>(result, fieldIndex) = v.Get<float32>();
+
+        return result;
+    }
+
+    static Any GetParseResult(const Vector<float32>& value)
+    {
+        if (value.empty())
+        {
+            return 0.0f;
+        }
+        return value[0];
+    }
+
+    static String GetParseErrorMessage()
+    {
+        return "Incorrect aabbox2 component format. Value should be float";
+    }
+
+private:
+    template <typename T, typename TRet>
+    static TRet* GetComponentPointer(T& r, int32 index)
+    {
+        if (index < 2)
+        {
+            return &r.min.data[index];
+        }
+        else
+        {
+            DVASSERT(index < 4);
+            index = index - 2;
+            return &r.max.data[index];
+        }
+    }
+};
+
 struct AABBox3ChannelTraits : public NotReadOnlyTraits
 {
 public:
@@ -1032,6 +1165,16 @@ void InitSubPropertyTypes()
         }
 
         {
+            Key k(Type::Instance<AABBox2>(), PropertyNode::RealProperty);
+            creatorMap[k] = [](const FastName& fieldName) { return std::make_unique<TextComponentValue>(std::make_unique<TraitsFieldAccessor<AABBox2Traits>>(fieldName)); };
+        }
+
+        {
+            Key k(Type::Instance<AABBox2>(), PropertyNode::VirtualProperty);
+            creatorMap[k] = [](const FastName& fieldName) { return std::make_unique<TextComponentValue>(std::make_unique<TraitsFieldAccessor<AABBox2ChannelTraits>>(fieldName)); };
+        }
+
+        {
             Key k(Type::Instance<AABBox3>(), PropertyNode::RealProperty);
             creatorMap[k] = [](const FastName& fieldName) { return std::make_unique<TextComponentValue>(std::make_unique<TraitsFieldAccessor<AABBox3Traits>>(fieldName)); };
         }
@@ -1075,6 +1218,11 @@ void SubPropertyValueChildCreator::ExposeChildren(const std::shared_ptr<Property
         else if (valueType == Type::Instance<Rect>())
         {
             ExposeRectChildren(parent, children);
+            isOurType = true;
+        }
+        else if (valueType == Type::Instance<AABBox2>())
+        {
+            ExposeAABBox2Children(parent, children);
             isOurType = true;
         }
         else if (valueType == Type::Instance<AABBox3>())
@@ -1136,6 +1284,31 @@ void SubPropertyValueChildCreator::ExposeRectChildren(const std::shared_ptr<Prop
     {
         Reflection::Field field = parent->field;
         field.key = rectH;
+        children.push_back(allocator->CreatePropertyNode(parent, std::move(field), static_cast<int32>(children.size()), PropertyNode::VirtualProperty));
+    }
+}
+
+void SubPropertyValueChildCreator::ExposeAABBox2Children(const std::shared_ptr<PropertyNode>& parent, Vector<std::shared_ptr<PropertyNode>>& children) const
+{
+    using namespace SubPropertiesExtensionsDetail;
+    {
+        Reflection::Field field = parent->field;
+        field.key = boxMinX;
+        children.push_back(allocator->CreatePropertyNode(parent, std::move(field), static_cast<int32>(children.size()), PropertyNode::VirtualProperty));
+    }
+    {
+        Reflection::Field field = parent->field;
+        field.key = boxMinY;
+        children.push_back(allocator->CreatePropertyNode(parent, std::move(field), static_cast<int32>(children.size()), PropertyNode::VirtualProperty));
+    }
+    {
+        Reflection::Field field = parent->field;
+        field.key = boxMaxX;
+        children.push_back(allocator->CreatePropertyNode(parent, std::move(field), static_cast<int32>(children.size()), PropertyNode::VirtualProperty));
+    }
+    {
+        Reflection::Field field = parent->field;
+        field.key = boxMaxY;
         children.push_back(allocator->CreatePropertyNode(parent, std::move(field), static_cast<int32>(children.size()), PropertyNode::VirtualProperty));
     }
 }

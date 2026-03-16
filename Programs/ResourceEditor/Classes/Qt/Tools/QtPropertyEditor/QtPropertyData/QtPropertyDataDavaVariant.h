@@ -89,6 +89,7 @@ protected:
     QVariant FromMatrix3(const DAVA::Matrix3& matrix) const;
     QVariant FromMatrix2(const DAVA::Matrix2& matrix) const;
     QVariant FromColor(const DAVA::Color& color) const;
+    QVariant FromAABBox2(const DAVA::AABBox2& aabbox) const;
     QVariant FromAABBox3(const DAVA::AABBox3& aabbox) const;
 
     void ToKeyedArchive(const QVariant& value);
@@ -100,6 +101,7 @@ protected:
     void ToMatrix3(const QVariant& value);
     void ToMatrix2(const QVariant& value);
     void ToColor(const QVariant& value);
+    void ToAABBox2(const QVariant& value);
     void ToAABBox3(const QVariant& value);
     int ParseFloatList(const QString& str, int maxCount, DAVA::float32* dest);
 

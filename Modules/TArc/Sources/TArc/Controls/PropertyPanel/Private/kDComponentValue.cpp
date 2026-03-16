@@ -8,6 +8,8 @@
 
 #include <Reflection/ReflectionRegistrator.h>
 #include <Math/Vector.h>
+#include <Math/AABBox2.h>
+#include <Math/AABBox3.h>
 #include <Base/BaseTypes.h>
 
 #include <QHBoxLayout>
@@ -343,6 +345,24 @@ DAVA_VIRTUAL_TEMPLATE_SPECIALIZATION_REFLECTION_IMPL(IntColorComponentValue)
     .End();
 }
 
+using AABBox2ComponentValue = kDComponentValue<AABBox2, MultiDoubleSpinBox, float32>;
+DAVA_VIRTUAL_TEMPLATE_SPECIALIZATION_REFLECTION_IMPL(AABBox2ComponentValue)
+{
+    ReflectionRegistrator<AABBox2ComponentValue>::Begin()
+    .Field("fieldsList", &AABBox2ComponentValue::fields)
+    .Field("Min X", &AABBox2ComponentValue::Get1Axis, &AABBox2ComponentValue::Set1Axis)
+    .Field("Min Y", &AABBox2ComponentValue::Get2Axis, &AABBox2ComponentValue::Set2Axis)
+    .Field("Max X", &AABBox2ComponentValue::Get3Axis, &AABBox2ComponentValue::Set3Axis)
+    .Field("Max Y", &AABBox2ComponentValue::Get4Axis, &AABBox2ComponentValue::Set4Axis)
+    .Field("accuracy", &AABBox2ComponentValue::GetAccuracy, nullptr)
+    .Field("minXRange", &AABBox2ComponentValue::Get1AxisRange, nullptr)
+    .Field("minYRange", &AABBox2ComponentValue::Get2AxisRange, nullptr)
+    .Field("maxXRange", &AABBox2ComponentValue::Get3AxisRange, nullptr)
+    .Field("maxYRange", &AABBox2ComponentValue::Get4AxisRange, nullptr)
+    .Field("showSpinArrows", &AABBox2ComponentValue::ShowSpinArrows, nullptr)
+    .End();
+}
+
 using AABBox3ComponentValue = kDComponentValue<AABBox3, MultiDoubleSpinBox, float32>;
 DAVA_VIRTUAL_TEMPLATE_SPECIALIZATION_REFLECTION_IMPL(AABBox3ComponentValue)
 {
@@ -375,6 +395,7 @@ template class kDComponentValue<Vector3, MultiDoubleSpinBox, float32>;
 template class kDComponentValue<Vector4, MultiDoubleSpinBox, float32>;
 template class kDComponentValue<Rect, MultiDoubleSpinBox, float32>;
 template class kDComponentValue<Color, MultiDoubleSpinBox, float32>;
+template class kDComponentValue<AABBox2, MultiDoubleSpinBox, float32>;
 template class kDComponentValue<AABBox3, MultiDoubleSpinBox, float32>;
 
 #if __clang__

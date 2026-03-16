@@ -67,6 +67,7 @@ void QtPropertyDataDavaVariant::InitFlags()
     case DAVA::VariantType::TYPE_MATRIX2:
     case DAVA::VariantType::TYPE_MATRIX3:
     case DAVA::VariantType::TYPE_MATRIX4:
+    case DAVA::VariantType::TYPE_AABBOX2:
     case DAVA::VariantType::TYPE_AABBOX3:
         SetEditable(false);
         break;
@@ -366,6 +367,9 @@ void QtPropertyDataDavaVariant::SetValueInternal(const QVariant& value)
         else
             curVariantValue.SetFastName(DAVA::FastName());
         break;
+    case DAVA::VariantType::TYPE_AABBOX2:
+        ToAABBox2(value);
+        break;
     case DAVA::VariantType::TYPE_AABBOX3:
         ToAABBox3(value);
         break;
@@ -465,6 +469,16 @@ void QtPropertyDataDavaVariant::ChildsCreate()
         SubValueAdd(DAVA::FastName("A"), DAVA::VariantType(color.a));
     }
     break;
+    case DAVA::VariantType::TYPE_AABBOX2:
+    {
+        DAVA::AABBox2 box = curVariantValue.AsAABBox2();
+
+        SubValueAdd(DAVA::FastName("min X"), DAVA::VariantType(box.min.x));
+        SubValueAdd(DAVA::FastName("min Y"), DAVA::VariantType(box.min.y));
+        SubValueAdd(DAVA::FastName("max X"), DAVA::VariantType(box.max.x));
+        SubValueAdd(DAVA::FastName("max Y"), DAVA::VariantType(box.max.y));
+    }
+    break;
     case DAVA::VariantType::TYPE_AABBOX3:
     {
         DAVA::AABBox3 box = curVariantValue.AsAABBox3();
@@ -537,6 +551,15 @@ void QtPropertyDataDavaVariant::ChildsSetFromMe()
             SubValueSetFromMe(DAVA::FastName("Y"), vec.y);
             SubValueSetFromMe(DAVA::FastName("Z"), vec.z);
             SubValueSetFromMe(DAVA::FastName("W"), vec.w);
+        }
+        break;
+        case DAVA::VariantType::TYPE_AABBOX2:
+        {
+            DAVA::AABBox2 box = curVariantValue.AsAABBox2();
+            SubValueSetFromMe(DAVA::FastName("min X"), box.min.x);
+            SubValueSetFromMe(DAVA::FastName("min Y"), box.min.y);
+            SubValueSetFromMe(DAVA::FastName("max X"), box.max.x);
+            SubValueSetFromMe(DAVA::FastName("max Y"), box.max.y);
         }
         break;
         case DAVA::VariantType::TYPE_AABBOX3:
@@ -630,6 +653,22 @@ void QtPropertyDataDavaVariant::MeSetFromChilds()
             curVariantValue.SetColor(color);
             SetValue(FromColor(color), QtPropertyData::VALUE_EDITED);
             UpdateColorButtonIcon();
+        }
+    }
+    break;
+    case DAVA::VariantType::TYPE_AABBOX2:
+    {
+        DAVA::AABBox2 box;
+
+        box.min.x = SubValueGet(DAVA::FastName("min X")).toFloat();
+        box.min.y = SubValueGet(DAVA::FastName("min Y")).toFloat();
+        box.max.x = SubValueGet(DAVA::FastName("max X")).toFloat();
+        box.max.y = SubValueGet(DAVA::FastName("max Y")).toFloat();
+
+        if (curVariantValue.AsAABBox2().min != box.min || curVariantValue.AsAABBox2().max != box.max)
+        {
+            curVariantValue.SetAABBox2(box);
+            SetValue(FromAABBox2(box), QtPropertyData::VALUE_EDITED);
         }
     }
     break;
@@ -728,6 +767,9 @@ QVariant QtPropertyDataDavaVariant::FromDavaVariant(const DAVA::VariantType& var
     case DAVA::VariantType::TYPE_FASTNAME:
         if (variant.AsFastName().IsValid())
             v = QString(variant.AsFastName().c_str());
+        break;
+    case DAVA::VariantType::TYPE_AABBOX2:
+        v = FromAABBox2(variant.AsAABBox2());
         break;
     case DAVA::VariantType::TYPE_AABBOX3:
         v = FromAABBox3(variant.AsAABBox3());
@@ -839,6 +881,17 @@ QVariant QtPropertyDataDavaVariant::FromColor(const DAVA::Color& color) const
     return v;
 }
 
+QVariant QtPropertyDataDavaVariant::FromAABBox2(const DAVA::AABBox2& aabbox) const
+{
+    QVariant v;
+
+    v = QString().sprintf("[" FLOAT_PRINTF_FORMAT2 "]\n[" FLOAT_PRINTF_FORMAT2 "]",
+                          aabbox.min.x, aabbox.min.y,
+                          aabbox.max.x, aabbox.max.y);
+
+    return v;
+}
+
 QVariant QtPropertyDataDavaVariant::FromAABBox3(const DAVA::AABBox3& aabbox) const
 {
     QVariant v;
@@ -917,22 +970,69 @@ int QtPropertyDataDavaVariant::ParseFloatList(const QString& str, int maxCount, 
     return index;
 }
 
-void QtPropertyDataDavaVariant::ToMatrix4(const QVariant& value)
+void QtPropertyDataDavaVariant::ToMatrix2(const QVariant& value)
 {
-    // TODO:
-    // ...
+    DAVA::float32 vals[4];
+    QString str = value.toString();
+
+    if (4 == ParseFloatList(str, 4, vals))
+    {
+        DAVA::Matrix2 m;
+        m._00 = vals[0];
+        m._01 = vals[1];
+        m._10 = vals[2];
+        m._11 = vals[3];
+        curVariantValue.SetMatrix2(m);
+    }
 }
 
 void QtPropertyDataDavaVariant::ToMatrix3(const QVariant& value)
 {
-    // TODO:
-    // ...
+    DAVA::float32 vals[9];
+    QString str = value.toString();
+
+    if (9 == ParseFloatList(str, 9, vals))
+    {
+        DAVA::Matrix3 m;
+        m._00 = vals[0];
+        m._01 = vals[1];
+        m._02 = vals[2];
+        m._10 = vals[3];
+        m._11 = vals[4];
+        m._12 = vals[5];
+        m._20 = vals[6];
+        m._21 = vals[7];
+        m._22 = vals[8];
+        curVariantValue.SetMatrix3(m);
+    }
 }
 
-void QtPropertyDataDavaVariant::ToMatrix2(const QVariant& value)
+void QtPropertyDataDavaVariant::ToMatrix4(const QVariant& value)
 {
-    // TODO:
-    // ...
+    DAVA::float32 vals[16];
+    QString str = value.toString();
+
+    if (16 == ParseFloatList(str, 16, vals))
+    {
+        DAVA::Matrix4 m;
+        m._00 = vals[0];
+        m._01 = vals[1];
+        m._02 = vals[2];
+        m._03 = vals[3];
+        m._10 = vals[4];
+        m._11 = vals[5];
+        m._12 = vals[6];
+        m._13 = vals[7];
+        m._20 = vals[8];
+        m._21 = vals[9];
+        m._22 = vals[10];
+        m._23 = vals[11];
+        m._30 = vals[12];
+        m._31 = vals[13];
+        m._32 = vals[14];
+        m._33 = vals[15];
+        curVariantValue.SetMatrix4(m);
+    }
 }
 
 void QtPropertyDataDavaVariant::ToColor(const QVariant& value)
@@ -975,10 +1075,42 @@ void QtPropertyDataDavaVariant::UpdateColorButtonIcon()
     }
 }
 
+void QtPropertyDataDavaVariant::ToAABBox2(const QVariant& value)
+{
+    DAVA::float32 vals[4];
+    QString str = value.toString();
+
+    if (4 == ParseFloatList(str, 4, vals))
+    {
+        DAVA::AABBox2 box;
+        box.min.x = vals[0];
+        box.min.y = vals[1];
+        box.max.x = vals[2];
+        box.max.y = vals[3];
+
+        curVariantValue.SetAABBox2(box);
+    }
+}
+
 void QtPropertyDataDavaVariant::ToAABBox3(const QVariant& value)
 {
-    // TODO:
-    // ...
+    DAVA::float32 vals[6];
+    QString str = value.toString();
+
+    if (6 == ParseFloatList(str, 6, vals))
+    {
+        DAVA::AABBox3 box;
+
+        box.min.x = vals[0];
+        box.min.y = vals[1];
+        box.min.z = vals[2];
+
+        box.max.x = vals[3];
+        box.max.y = vals[4];
+        box.max.z = vals[5];
+
+        curVariantValue.SetAABBox3(box);
+    }
 }
 
 QWidget* QtPropertyDataDavaVariant::CreateEditorInternal(QWidget* parent, const QStyleOptionViewItem& option) const

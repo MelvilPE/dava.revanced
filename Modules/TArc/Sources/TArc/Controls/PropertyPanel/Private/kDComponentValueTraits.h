@@ -9,6 +9,7 @@
 #include <Math/Vector.h>
 #include <Math/Color.h>
 #include <Math/Rect.h>
+#include <Math/AABBox2.h>
 #include <Math/AABBox3.h>
 #include <Base/Vector.h>
 
@@ -608,6 +609,107 @@ void InitRanges<Color, uint32>(const Vector<std::shared_ptr<PropertyNode>>& node
     ranges[1] = std::make_unique<M::Range>(0u, 255u, 1u);
     ranges[2] = std::make_unique<M::Range>(0u, 255u, 1u);
     ranges[3] = std::make_unique<M::Range>(0u, 255u, 1u);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+//                         AABBox2 traits                                          //
+/////////////////////////////////////////////////////////////////////////////////////
+template <>
+float32 GetAxisValue<AABBox2, float32, 0>(const AABBox2& v)
+{
+    return v.min.x;
+}
+
+template <>
+float32 GetAxisValue<AABBox2, float32, 1>(const AABBox2& v)
+{
+    return v.min.y;
+}
+
+template <>
+float32 GetAxisValue<AABBox2, float32, 2>(const AABBox2& v)
+{
+    return v.max.x;
+}
+
+template <>
+float32 GetAxisValue<AABBox2, float32, 3>(const AABBox2& v)
+{
+    return v.max.y;
+}
+
+template <>
+void SetAxisValue<AABBox2, float32, 0>(AABBox2& v, float32 component)
+{
+    v.min.x = component;
+}
+
+template <>
+void SetAxisValue<AABBox2, float32, 1>(AABBox2& v, float32 component)
+{
+    v.min.y = component;
+}
+
+template <>
+void SetAxisValue<AABBox2, float32, 2>(AABBox2& v, float32 component)
+{
+    v.max.x = component;
+}
+
+template <>
+void SetAxisValue<AABBox2, float32, 3>(AABBox2& v, float32 component)
+{
+    v.max.y = component;
+}
+
+template <>
+void InitFieldsList<AABBox2, MultiDoubleSpinBox>(Vector<MultiDoubleSpinBox::FieldDescriptor>& fields)
+{
+    {
+        MultiDoubleSpinBox::FieldDescriptor descr;
+        descr.valueRole = "Min X";
+        descr.accuracyRole = "accuracy";
+        descr.readOnlyRole = BaseComponentValue::readOnlyFieldName;
+        descr.rangeRole = "minXRange";
+        descr.showSpinArrowsRole = "showSpinArrows";
+        fields.push_back(descr);
+    }
+
+    {
+        MultiDoubleSpinBox::FieldDescriptor descr;
+        descr.valueRole = "Min Y";
+        descr.accuracyRole = "accuracy";
+        descr.readOnlyRole = BaseComponentValue::readOnlyFieldName;
+        descr.rangeRole = "minYRange";
+        descr.showSpinArrowsRole = "showSpinArrows";
+        fields.push_back(descr);
+    }
+
+    {
+        MultiDoubleSpinBox::FieldDescriptor descr;
+        descr.valueRole = "Max X";
+        descr.accuracyRole = "accuracy";
+        descr.readOnlyRole = BaseComponentValue::readOnlyFieldName;
+        descr.rangeRole = "maxXRange";
+        descr.showSpinArrowsRole = "showSpinArrows";
+        fields.push_back(descr);
+    }
+
+    {
+        MultiDoubleSpinBox::FieldDescriptor descr;
+        descr.valueRole = "Max Y";
+        descr.accuracyRole = "accuracy";
+        descr.readOnlyRole = BaseComponentValue::readOnlyFieldName;
+        descr.rangeRole = "maxYRange";
+        descr.showSpinArrowsRole = "showSpinArrows";
+        fields.push_back(descr);
+    }
+}
+
+template <>
+void InitRanges<AABBox2, float32>(const Vector<std::shared_ptr<PropertyNode>>& nodes, Array<std::unique_ptr<M::Range>, 6>& ranges)
+{
+
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
