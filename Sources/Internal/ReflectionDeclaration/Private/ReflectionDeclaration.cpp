@@ -64,6 +64,7 @@
 #include "Math/Vector.h"
 #include "Math/Quaternion.h"
 #include "Math/Rect.h"
+#include "Math/AABBox2.h"
 #include "Math/AABBox3.h"
 #include "Math/Color.h"
 #include "Math/Transform.h"
@@ -144,62 +145,103 @@ namespace DAVA
 {
 namespace ReflectionDeclarationDetail
 {
-float32 GetMinX(AABBox3* box)
+float32 AABBox2_GetMinX(AABBox2* box)
 {
     return box->min.x;
 }
 
-void SetMinX(AABBox3* box, float32 v)
+void AABBox2_SetMinX(AABBox2* box, float32 v)
 {
     box->min.x = v;
 }
 
-float32 GetMinY(AABBox3* box)
+float32 AABBox2_GetMinY(AABBox2* box)
 {
     return box->min.y;
 }
 
-void SetMinY(AABBox3* box, float32 v)
+void AABBox2_SetMinY(AABBox2* box, float32 v)
 {
     box->min.y = v;
 }
 
-float32 GetMinZ(AABBox3* box)
-{
-    return box->min.z;
-}
-
-void SetMinZ(AABBox3* box, float32 v)
-{
-    box->min.z = v;
-}
-
-float32 GetMaxX(AABBox3* box)
+float32 AABBox2_GetMaxX(AABBox2* box)
 {
     return box->max.x;
 }
 
-void SetMaxX(AABBox3* box, float32 v)
+void AABBox2_SetMaxX(AABBox2* box, float32 v)
 {
     box->max.x = v;
 }
 
-float32 GetMaxY(AABBox3* box)
+float32 AABBox2_GetMaxY(AABBox2* box)
 {
     return box->max.y;
 }
 
-void SetMaxY(AABBox3* box, float32 v)
+void AABBox2_SetMaxY(AABBox2* box, float32 v)
 {
     box->max.y = v;
 }
 
-float32 GetMaxZ(AABBox3* box)
+// AABBox3
+float32 AABBox3_GetMinX(AABBox3* box)
+{
+    return box->min.x;
+}
+
+void AABBox3_SetMinX(AABBox3* box, float32 v)
+{
+    box->min.x = v;
+}
+
+float32 AABBox3_GetMinY(AABBox3* box)
+{
+    return box->min.y;
+}
+
+void AABBox3_SetMinY(AABBox3* box, float32 v)
+{
+    box->min.y = v;
+}
+
+float32 AABBox3_GetMinZ(AABBox3* box)
+{
+    return box->min.z;
+}
+
+void AABBox3_SetMinZ(AABBox3* box, float32 v)
+{
+    box->min.z = v;
+}
+
+float32 AABBox3_GetMaxX(AABBox3* box)
+{
+    return box->max.x;
+}
+
+void AABBox3_SetMaxX(AABBox3* box, float32 v)
+{
+    box->max.x = v;
+}
+
+float32 AABBox3_GetMaxY(AABBox3* box)
+{
+    return box->max.y;
+}
+
+void AABBox3_SetMaxY(AABBox3* box, float32 v)
+{
+    box->max.y = v;
+}
+
+float32 AABBox3_GetMaxZ(AABBox3* box)
 {
     return box->max.z;
 }
 
-void SetMaxZ(AABBox3* box, float32 v)
+void AABBox3_SetMaxZ(AABBox3* box, float32 v)
 {
     box->max.z = v;
 }
@@ -254,15 +296,25 @@ void RegisterRect()
     .End();
 }
 
+void RegisterAABBox2()
+{
+    ReflectionRegistrator<AABBox2>::Begin()
+    .Field("MinX", &ReflectionDeclarationDetail::AABBox2_GetMinX, &ReflectionDeclarationDetail::AABBox2_SetMinX)[M::SubProperty()]
+    .Field("MinY", &ReflectionDeclarationDetail::AABBox2_GetMinY, &ReflectionDeclarationDetail::AABBox2_SetMinY)[M::SubProperty()]
+    .Field("MaxX", &ReflectionDeclarationDetail::AABBox2_GetMaxX, &ReflectionDeclarationDetail::AABBox2_SetMaxX)[M::SubProperty()]
+    .Field("MaxY", &ReflectionDeclarationDetail::AABBox2_GetMaxY, &ReflectionDeclarationDetail::AABBox2_SetMaxY)[M::SubProperty()]
+    .End();
+}
+
 void RegisterAABBox3()
 {
     ReflectionRegistrator<AABBox3>::Begin()
-    .Field("MinX", &ReflectionDeclarationDetail::GetMinX, &ReflectionDeclarationDetail::SetMinX)[M::SubProperty()]
-    .Field("MinY", &ReflectionDeclarationDetail::GetMinY, &ReflectionDeclarationDetail::SetMinY)[M::SubProperty()]
-    .Field("MinZ", &ReflectionDeclarationDetail::GetMinZ, &ReflectionDeclarationDetail::SetMinZ)[M::SubProperty()]
-    .Field("MaxX", &ReflectionDeclarationDetail::GetMaxX, &ReflectionDeclarationDetail::SetMaxX)[M::SubProperty()]
-    .Field("MaxY", &ReflectionDeclarationDetail::GetMaxY, &ReflectionDeclarationDetail::SetMaxY)[M::SubProperty()]
-    .Field("MaxZ", &ReflectionDeclarationDetail::GetMaxZ, &ReflectionDeclarationDetail::SetMaxZ)[M::SubProperty()]
+    .Field("MinX", &ReflectionDeclarationDetail::AABBox3_GetMinX, &ReflectionDeclarationDetail::AABBox3_SetMinX)[M::SubProperty()]
+    .Field("MinY", &ReflectionDeclarationDetail::AABBox3_GetMinY, &ReflectionDeclarationDetail::AABBox3_SetMinY)[M::SubProperty()]
+    .Field("MinZ", &ReflectionDeclarationDetail::AABBox3_GetMinZ, &ReflectionDeclarationDetail::AABBox3_SetMinZ)[M::SubProperty()]
+    .Field("MaxX", &ReflectionDeclarationDetail::AABBox3_GetMaxX, &ReflectionDeclarationDetail::AABBox3_SetMaxX)[M::SubProperty()]
+    .Field("MaxY", &ReflectionDeclarationDetail::AABBox3_GetMaxY, &ReflectionDeclarationDetail::AABBox3_SetMaxY)[M::SubProperty()]
+    .Field("MaxZ", &ReflectionDeclarationDetail::AABBox3_GetMaxZ, &ReflectionDeclarationDetail::AABBox3_SetMaxZ)[M::SubProperty()]
     .End();
 }
 
@@ -462,6 +514,7 @@ void RegisterReflectionForBaseTypes()
     RegisterVector4();
     RegisterQuaternion();
     RegisterRect();
+    RegisterAABBox2();
     RegisterAABBox3();
     RegisterColor();
     RegisterTransform();
