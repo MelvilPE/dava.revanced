@@ -332,7 +332,8 @@ String NMaterialStateDynamicSingleton::GetDefaultArchiveYaml()
         "floraLandscapeNormalMap",
         "floraLightmap",
         "floraEdgeMap",
-        "floraFakeShadow"
+        "floraFakeShadow",
+        "vertexDisplacementMap",
     };
 
     Vector<VariantType> textures;
@@ -378,7 +379,10 @@ String NMaterialStateDynamicSingleton::GetDefaultArchiveYaml()
         { "detailTileCoordScale", 1, 1, VariantType(Vector2(0.0f, 0.0f)) },
         { "shadowColor", 3, 1, VariantType(Color(1.0f, 0.0f, 0.0f, 1.0f)) },
         { "forcedShadowDirection", 2, 1, VariantType(Vector3(0.0f, 0.0f, 0.0f)) },
-        { "waterColor", 3, 1, VariantType(Color(0.0f, 0.0f, 0.0f, 1.0f)) }
+        { "waterColor", 3, 1, VariantType(Color(0.0f, 0.0f, 0.0f, 1.0f)) },
+        { "vertexDisplacementMapUVSpeed", 1, 1, VariantType(Vector2(0.0f, 0.0f)) },
+        { "vertexDisplacementMapUVOffsetScale", 3, 1, VariantType(Vector4(0.0f, 0.0f, 1.0f, 1.0f)) },
+        { "vertexDisplacementScale", 0, 1, VariantType(0.0f) }
     };
 
     Vector<VariantType> properties = DefaultArchiveProperties(defs);
