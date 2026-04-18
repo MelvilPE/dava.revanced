@@ -206,5 +206,5 @@ QStringList InstallApplicationTask::GetApplicationsToRestart(const QString& bran
 
 bool InstallApplicationTask::NeedUnpack() const
 {
-    return params.newVersion.url.endsWith("zip");
+    return QUrl(params.newVersion.url).fileName().endsWith(".zip");
 }

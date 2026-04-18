@@ -279,15 +279,12 @@ QString FileManager::GetFilesDirectory() const
 
 QString FileManager::GetFileNameFromURL(const QString& url)
 {
-    int index = url.lastIndexOf('/');
-    if (index == -1)
+    QString fileName = QUrl(url).fileName();
+    if (fileName.isEmpty())
     {
         return "archive.zip";
     }
-    else
-    {
-        return url.right(url.size() - index - 1); //remove extra '/'
-    }
+    return fileName;
 }
 
 void FileManager::MakeDirectory(const QString& path)

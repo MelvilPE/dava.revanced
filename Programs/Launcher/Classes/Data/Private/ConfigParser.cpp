@@ -228,7 +228,7 @@ bool IsBuildSupported(const QString& url)
 
     for (const QString& ext : supportedExtensions)
     {
-        if (url.endsWith(ext))
+        if (url.contains(ext)) // contains() instead of endsWith() (beacause dropbox case)
         {
             return true;
         }
