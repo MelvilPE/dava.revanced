@@ -20,6 +20,7 @@
 #include <QVariant>
 #include <QComboBox>
 #include <QMessageBox>
+#include <qbuttongroup.h>
 
 namespace MainWindowDetails
 {

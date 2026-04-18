@@ -49,6 +49,9 @@ void UrlsHolder::SetUseTestAPI(bool use)
 
 std::vector<QUrl> UrlsHolder::GetURLs() const
 {
+    std::string hostname = serverHostName.toStdString();
+    return { QUrl(hostname.c_str()) };
+
     std::vector<QUrl> urls;
     if (IsTestAPIUsed())
     {
