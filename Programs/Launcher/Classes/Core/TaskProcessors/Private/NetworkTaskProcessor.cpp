@@ -83,7 +83,13 @@ void NetworkTaskProcessor::StartNextTask()
 
     for (const QUrl& url : urls)
     {
-        QNetworkReply* reply = networkAccessManager->get(QNetworkRequest(url));
+        // QNetworkReply* reply = networkAccessManager->get(QNetworkRequest(url));
+        QNetworkRequest request(url);
+        request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                             QNetworkRequest::NoLessSafeRedirectPolicy);
+        QNetworkReply* reply = networkAccessManager->get(request);
+
+
         Q_ASSERT(reply != nullptr);
         connect(reply, &QNetworkReply::downloadProgress, this, &NetworkTaskProcessor::OnDownloadProgress);
 
@@ -155,7 +161,11 @@ void NetworkTaskProcessor::OnDownloadProgress(qint64 bytes, qint64 total)
     }
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
     Q_ASSERT(reply != nullptr);
-    currentTask->task->AddLoadedData(reply->url(), reply->readAll());
+
+    // currentTask->task->AddLoadedData(reply->url(), reply->readAll());
+    // Use the original request URL, not reply->url() which may be the redirect target
+    QUrl originalUrl = reply->request().url();
+    currentTask->task->AddLoadedData(originalUrl, reply->readAll());
 
     connectionGuard->start();
 
