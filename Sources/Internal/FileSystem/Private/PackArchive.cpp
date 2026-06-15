@@ -275,6 +275,11 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
         }
     }
     break;
+    default:
+    {
+        Logger::Error("can't load file: %s course: unsupported compression type", relativeFilePath.c_str());
+        return false;
+    }
     } // end switch
 
     // check crc32 for file content

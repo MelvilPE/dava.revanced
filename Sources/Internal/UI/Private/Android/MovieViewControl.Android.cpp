@@ -12,6 +12,8 @@
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
 
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+
 extern "C"
 {
 

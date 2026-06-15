@@ -10,6 +10,6 @@ android {
 }
 
 dependencies {
-    compile project(':DavaEngine')
-    compile files('libs/fmodex.jar')
+    implementation project(':DavaEngine')
+    implementation files('libs/fmodex.jar')
 }

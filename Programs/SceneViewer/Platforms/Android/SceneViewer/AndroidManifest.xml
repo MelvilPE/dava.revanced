@@ -17,6 +17,7 @@
         
         <activity
             android:name="com.dava.engine.DavaActivity"
+            android:exported="true"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             android:screenOrientation="sensorLandscape" 
             android:configChanges="keyboard|keyboardHidden|screenSize|orientation"
@@ -26,7 +27,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <receiver android:name="com.dava.engine.notification.ScheduledNotificationReceiver"/>
+        <receiver 
+            android:name="com.dava.engine.notification.ScheduledNotificationReceiver"
+            android:exported="false"/>
     </application>
 
 </manifest>

@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply from: '../../../../../Platforms/Android/common.gradle'
 
 android {
+    ndkVersion "16.1.4479499"
     signingConfigs {
         DavaTest {
             keyAlias 'test'
@@ -36,6 +37,6 @@ android {
 }
 
 dependencies {
-    compile project(':DavaEngine')
-    compile project(':DavaEngine:ModuleSound')
+    implementation project(':DavaEngine')
+    implementation project(':DavaEngine:ModuleSound')
 }
