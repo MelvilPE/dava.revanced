@@ -237,6 +237,9 @@ void MitsubaExporterDetail::Exporter::ExportBatch(const DAVA::String& name, cons
         DAVA::int32 vertexCount = poly->GetVertexCount();
         DAVA::int32 vertexFormat = poly->GetFormat();
 
+        // We should early return, this happens to speed tree objects
+        // Instead we placehold normals
+        // Maybe we could filter in depth by fxName rb.rb->GetMaterial()
         if ((vertexFormat & DAVA::EVF_NORMAL) == 0)
         {
             DAVA::Logger::Error("%s data does not contain normals", name.c_str());
@@ -258,9 +261,19 @@ void MitsubaExporterDetail::Exporter::ExportBatch(const DAVA::String& name, cons
             poly->GetCoord(vertexIndex, v);
             fOut << DAVA::Format("v %.7f %.7f %.7f\n", v.x, v.y, v.z);
 
-            DAVA::Vector3 n;
-            poly->GetNormal(vertexIndex, n);
-            fOut << DAVA::Format("vn %.7f %.7f %.7f\n", n.x, n.y, n.z);
+            // Placehold fake numbers to normals
+            if ((vertexFormat & DAVA::EVF_NORMAL) == 0)
+            {
+                DAVA::Vector3 n = { 0.0f, 0.0f, 0.0f };
+                fOut << DAVA::Format("vn %.7f %.7f %.7f\n", n.x, n.y, n.z);
+            }
+            else
+            {
+                DAVA::Vector3 n;
+                poly->GetNormal(vertexIndex, n);
+                fOut << DAVA::Format("vn %.7f %.7f %.7f\n", n.x, n.y, n.z);
+            }
+
 
             if (hasTexCoords)
             {
